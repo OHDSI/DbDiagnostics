@@ -40,24 +40,24 @@ connectionDetails <- DatabaseConnector::createConnectionDetails(
 
 **overwriteAchilles** = whether the function should overwrite existing Achilles tables and create new ones
 
-**conceptCheckThresholds** = the location on your machine of the DQD config file for concept check thresholds
+**conceptCheckThresholds** = the location on your machine of the DQD config file for concept check thresholds **LEGEND-T2DM concept level check located in the extras/ folder**
 
 
 ```r
 execute <- function(connectionDetails,
-										cdmDatabaseSchema,
-										resultsDatabaseSchema,
-										vocabDatabaseSchema,
-										cdmSourceName,
-										outputFolder = getwd(),
-										cdmVersion = "5.3",
-										overwriteAchilles = FALSE,
-										conceptCheckThresholds = "default")
+		cdmDatabaseSchema,
+		resultsDatabaseSchema,
+		vocabDatabaseSchema,
+		cdmSourceName,
+		outputFolder = getwd(),
+		cdmVersion = "5.3",
+		overwriteAchilles = FALSE,
+		conceptCheckThresholds = "default")
 
 ```
 
 
-This function will execute and/or export the following Achilles analyses and DQD checks:
+**This function will execute and/or export the following Achilles analyses and DQD checks:**
 
 - Number of persons
 -	Number of persons by gender
@@ -94,3 +94,7 @@ This function will execute and/or export the following Achilles analyses and DQD
 - [plausibleValueHigh](https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#plausiblevaluehigh-2)
 - [plausibleTemporalAfter](https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#plausibletemporalafter-1)
 - [plausibleDuringLife](https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#plausibleduringlife-1)
+
+### **3. Output**
+
+The Achilles results csv file and the data quality dashboard JSON file will be located in the output location you specified in the execute function. 
