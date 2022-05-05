@@ -1,0 +1,36 @@
+Package: DbProfile
+Type: Package
+Title: OMOP CDM Database Profile Utility
+Version: 0.1
+Date: 2022-04-20
+Authors@R: c(
+  person("Clair", "Blacketer", , "mblacke@its.jnj.com", role = c("aut", "cre")),
+	person("Frank", "DeFalco", role = c("aut"))
+	)
+Maintainer: Clair Blacketer <mblacke@its.jnj.com>
+Description: Functions for extracting profile data for an OMOP CDM Database.
+License: Apache License 2.0
+VignetteBuilder: knitr
+Depends:
+	R (>= 3.5.0),
+	DatabaseConnector (>= 4.0.0),
+Imports:
+	readr,
+	plyr,
+	dplyr,
+	rlang,
+	SqlRender (>= 1.7.0),
+	Achilles (>= 1.7.0),
+	DataQualityDashboard (>= 1.4.0)
+Suggests:
+	testthat,
+	knitr,
+	rmarkdown,
+	Eunomia,
+Remotes:
+	ohdsi/Eunomia,
+	ohdsi/Achilles,
+	ohdsi/DataQualityDashboard
+RoxygenNote: 7.1.2
+Roxygen: list(markdown = TRUE)
+Encoding: UTF-8
