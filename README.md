@@ -1,4 +1,4 @@
-# DbProfile ReadMe
+# DbProfile README
 
 This package relies on the [Achilles](https://github.com/ohdsi/Achilles) and [DataQualityDashboard](https://github.com/ohdsi/DataQualityDashboard) packages to run a subset of characterization and data quality analyses. This subset is referred to as the database profile. This profile will be used to determine if a database has the necessary elements required to run a study. 
 
@@ -6,61 +6,73 @@ It works by connecting to a database through a connectionDetails object created 
 
 ## How to run DbProfile
 
-*If you just want the code, please see extras/CodeToRun.R*
+1. Create an empty folder or new RStudio project, and in `R`, use the following code to install the study package and its dependencies:
 
-### **1. Create a connectionDetails object**
+  ```r
+  install.packages("renv")
+  download.file("https://raw.githubusercontent.com/ohdsi/DbProfile/reproducibility/renv.lock", "renv.lock")
+  renv::init()
+  ```  
 
-Call the `createConnectionDetails` function to create the object, inputting the information for how to connect to your database. Detailed instructions on how to do this can be found [here](http://ohdsi.github.io/DatabaseConnector/articles/Connecting.html). 
+  Once installed, you can execute the study by modifying and using the following code.
+  
+2. Create a connectionDetails object:
 
-```r
-connectionDetails <- DatabaseConnector::createConnectionDetails(
-	dbms = Sys.getenv("dbms"),
-	server = Sys.getenv("server"),
-	user = Sys.getenv("user"),
-	password = Sys.getenv("password"),
-	pathToDriver = Sys.getenv("path_to_driver")
-)
-```
-### **2. Call the execute function**
+  Call the `createConnectionDetails` function to create the object, inputting the information for how to connect to your database. Detailed instructions on how to do this can be found [here](http://ohdsi.github.io/DatabaseConnector/articles/Connecting.html). 
 
+  ```r 
+  library(DbProfile)
+  connectionDetails <- DatabaseConnector::createConnectionDetails(
+    dbms = Sys.getenv("dbms"),
+      server = Sys.getenv("server"),
+    user = Sys.getenv("user"),
+    password = Sys.getenv("password"),
+    pathToDriver = Sys.getenv("path_to_driver"))
+  ```
+  
+3. Call the execute function with options:
 
-**connectionDetails** = a connectionDetails object for your database
-
-**cdmDatabaseSchema** = the schema where your CDM-structured data are housed
-
-**resultsDatabaseSchema** = the (writeable) schema where your achilles results are or will be housed
-
-**vocabDatabaseSchema** = the schema where your vocabulary tables are housed, typically the same as the cdmDatabaseSchema
-
-**cdmSourceName** = a unique, identifiable name for your database
-
-**outputFolder** = the folder where your results should be written
-
-**cdmVersion** = the version of the OMOP CDM you are currently on, v5.3 and v5.4 are supported.
-
-**overwriteAchilles** = whether the function should overwrite existing Achilles tables and create new ones
-
-**conceptCheckThresholds** = the location on your machine of the DQD config file for concept check thresholds **LEGEND-T2DM concept level check located in the extras/ folder**
-
-
-```r
-execute <- function(connectionDetails,
-		cdmDatabaseSchema,
-		resultsDatabaseSchema,
-		vocabDatabaseSchema,
-		cdmSourceName,
-		outputFolder = getwd(),
-		cdmVersion = "5.3",
-		overwriteAchilles = FALSE,
-		conceptCheckThresholds = "default")
-
-```
+  ```r
+  # The schema where your CDM-structured data are housed
+  cdmDatabaseSchema <- "" 
+  
+  # The (writeable) schema where your achilles results are or will be housed
+  resultsDatabaseSchema <- ""
+  
+  # The schema where your vocabulary tables are housed, typically the same as the cdmDatabaseSchema
+  vocabDatabaseSchema <- cdmDatabaseSchema
+  
+  # A unique, identifiable name for your database
+  cdmSourceName <- ""
+  
+  # The folder where your results should be written
+  outputFolder <- ""
+  
+  # The version of the OMOP CDM you are currently on, v5.3 and v5.4 are supported.
+  cmdVersion <- "5.3"
+  
+  # Whether the function should overwrite existing Achilles tables and create new ones
+  overwriteAchilles <- FALSE
+  
+  # The location on your machine of the DQD config file for concept check thresholds or "default".
+  conceptCheckThresholds <- system.file("thresholds", "LegendT2dm.adf", package = "DbProfile")
+    
+  execute <- function(connectionDetails = connectionDetails
+                      cdmDatabaseSchema = cdmDatabaseSchema,
+                      resultsDatabaseSchema = resultsDatabaseSchema,
+                      vocabDatabaseSchema = vocabDatabaseSchema,
+                      cdmSourceName = cdmSourceName,
+                      outputFolder = outputFolder,
+                      cdmVersion = cdmVersion,
+                      overwriteAchilles = overwriteAchilles,
+                      conceptCheckThresholds = conceptCheckThresholds)
+  ```
 
 
 **This function will execute and/or export the following Achilles analyses and DQD checks:**
 
 - Number of persons
--	Number of persons by gender
+- Number of persons by gender
 - Number of persons by year of birth
 - Number of persons by race
 - Number of persons by ethnicity
@@ -95,6 +107,6 @@ execute <- function(connectionDetails,
 - [plausibleTemporalAfter](https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#plausibletemporalafter-1)
 - [plausibleDuringLife](https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#plausibleduringlife-1)
 
-### **3. Output**
+4. Output:
 
-The Achilles results csv file and the data quality dashboard JSON file will be located in the output location you specified in the execute function. 
+  The Achilles results `*.csv` file and the data quality dashboard JSON file will be located in the output location you specified in the execute function. 
