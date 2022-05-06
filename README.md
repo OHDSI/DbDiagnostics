@@ -10,7 +10,7 @@ It works by connecting to a database through a connectionDetails object created 
 
   ```r
   install.packages("renv")
-  download.file("https://raw.githubusercontent.com/ohdsi/DbProfile/reproducibility/renv.lock", "renv.lock")
+  download.file("https://raw.githubusercontent.com/ohdsi/DbProfile/main/renv.lock", "renv.lock")
   renv::init()
   ```  
 
