@@ -60,6 +60,7 @@ execute <- function(connectionDetails,
 			3,
 			4,
 			5,
+			105,
 			117,
 			111,
 			113,
@@ -212,6 +213,66 @@ execute <- function(connectionDetails,
 		exportFolder = outputFolder
 	)
 
+	#Need to list the missing results again as anything still missing should have a count_value of 0
+
+	missingAnalyses <-
+		Achilles::listMissingAnalyses(connectionDetails,
+																	resultsDatabaseSchema)
+
+	missingAnalyses$requiredAnalyses <-
+		ifelse(missingAnalyses$ANALYSIS_ID %in% analysisIds, 1, 0)
+
+	analysesToAdd <- subset(missingAnalyses, requiredAnalyses == 1)
+
+	achillesResults <- read.csv(paste(outputFolder, "achilles_results.csv", sep="/"))
+
+	for(i in 1:nrow(analysesToAdd)){
+	 ANALYSIS_ID <- c(analysesToAdd$ANALYSIS_ID[i])
+	 STRATUM_1 <- c(0)
+	 STRATUM_2 <- c(NA)
+	 STRATUM_3 <- c(NA)
+	 STRATUM_4 <- c(NA)
+	 STRATUM_5 <- c(NA)
+	 COUNT_VALUE <- c(0)
+
+	 addAnalyses <- data.frame(ANALYSIS_ID, STRATUM_1, STRATUM_2, STRATUM_3, STRATUM_4, STRATUM_5, COUNT_VALUE)
+
+	 achillesResults <- rbind(achillesResults,addAnalyses)
+
+	 rm(ANALYSIS_ID, STRATUM_1, STRATUM_2, STRATUM_3, STRATUM_4, STRATUM_5, COUNT_VALUE)
+	}
+
+	# Add vocabulary ancestor information for later processing
+
+	sql <- SqlRender::loadRenderTranslateSql("visitAncestors.sql",
+																					 packageName = "DbProfile",
+																					 dbms = connectionDetails$dbms,
+																					 vocabDatabaseSchema = vocabDatabaseSchema)
+
+	conn <- DatabaseConnector::connect(connectionDetails)
+
+	visitAncestors <- DatabaseConnector::querySql(conn, sql)
+
+	DatabaseConnector::disconnect(conn)
+
+	achillesResults <- sqldf::sqldf(
+		"SELECT ANALYSIS_ID,
+						STRATUM_1,
+						STRATUM_2,
+						STRATUM_3,
+						STRATUM_4,
+						STRATUM_5,
+						COUNT_VALUE,
+						DESCENDANT_CONCEPT_NAME AS VISIT_CONCEPT_NAME,
+						VISIT_ANCESTOR_CONCEPT_ID,
+						VISIT_ANCESTOR_CONCEPT_NAME
+			FROM achillesResults ar
+			LEFT JOIN visitAncestors va
+				ON ar.STRATUM_1 = va.DESCENDANT_CONCEPT_ID
+				AND ar.ANALYSIS_ID = 200"
+	)
+
+
 	checkNames <- c(
 		"measurePersonCompleteness",
 		"cdmField",
@@ -266,4 +327,6 @@ execute <- function(connectionDetails,
 		fieldCheckThresholdLoc = fieldCheckThresholds,
 		conceptCheckThresholdLoc = conceptCheckThresholds
 	)
+
+	zip(dbProfileResults.zip,paste(outputFolder,"achilles_results.zip"))
 }
