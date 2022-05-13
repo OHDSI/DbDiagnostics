@@ -272,6 +272,10 @@ execute <- function(connectionDetails,
 				AND ar.ANALYSIS_ID = 200"
 	)
 
+	# export the new achilles analysis
+	write.csv(achillesResults, paste(outputFolder,"achilles_results_augmented.csv", sep="/"))
+
+	# start of DQD analysis
 
 	checkNames <- c(
 		"measurePersonCompleteness",
@@ -318,6 +322,7 @@ execute <- function(connectionDetails,
 		resultsDatabaseSchema = resultsDatabaseSchema,
 		cdmSourceName = cdmSourceName,
 		outputFolder = outputFolder,
+		outputFile = paste(cdmSourceName,"DbProfile.json",sep = "_"),
 		verboseMode = TRUE,
 		writeToTable = FALSE,
 		checkNames = checkNames,
@@ -328,5 +333,8 @@ execute <- function(connectionDetails,
 		conceptCheckThresholdLoc = conceptCheckThresholds
 	)
 
-	zip(dbProfileResults.zip,paste(outputFolder,"achilles_results.zip"))
+	zip(zipfile = paste(outputFolder,"DbProfileResults.zip",sep = "/"),
+			c(paste(outputFolder,"achilles_results.csv",sep = "/"),
+				paste(outputFolder,"achilles_results_augmented.csv", sep = "/"),
+			  paste (outputFolder,paste(cdmSourceName,"DbProfile.json",sep = "_"), sep="/")))
 }
