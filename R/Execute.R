@@ -132,7 +132,7 @@ execute <- function(connectionDetails,
 				cdmVersion = cdmVersion,
 				outputFolder = outputFolder
 			)
-		} else if (overwrite) {
+		} else if (overwriteAchilles) {
 			writeLines(
 				"One or more achilles tables are missing, running entire package for the required analyses and regenerating tables"
 			)
@@ -148,7 +148,7 @@ execute <- function(connectionDetails,
 				outputFolder = outputFolder
 			)
 
-		} else if (!overwrite) {
+		} else if (!overwriteAchilles) {
 			tryCatch(
 				expr = {
 					writeLines(
@@ -182,7 +182,7 @@ execute <- function(connectionDetails,
 				error = function(e) {
 					message(
 						paste(
-							"An attempt was made to update missing analyses but the table could not be overwritten. Try setting overwrite = TRUE. Any results exported are most likely incomplete."
+							"An attempt was made to update missing analyses but the table could not be overwritten. Try setting overwriteAchilles = TRUE. Any results exported are most likely incomplete."
 						)
 					)
 					message(e)

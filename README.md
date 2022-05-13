@@ -6,13 +6,17 @@ It works by connecting to a database through a connectionDetails object created 
 
 ## How to run DbProfile
 
+0. Ensure that your `GitHub Personal Access Token` lies in an accessible `.Renviron` file.
+
 1. Create an empty folder or new RStudio project, and in `R`, use the following code to install the study package and its dependencies:
 
   ```r
   install.packages("renv")
   download.file("https://raw.githubusercontent.com/OHDSI/DbProfile/main/extras/renv.lock", "renv.lock")
   renv::init()
-  ```  
+  ```
+  
+  Select option 1 (Restore the project from the lockfile).
 
   Once installed, you can execute the study by modifying and using the following code.
   
@@ -49,23 +53,23 @@ It works by connecting to a database through a connectionDetails object created 
   outputFolder <- ""
   
   # The version of the OMOP CDM you are currently on, v5.3 and v5.4 are supported.
-  cmdVersion <- "5.3"
+  cdmVersion <- "5.3"
   
   # Whether the function should overwrite existing Achilles tables and create new ones
   overwriteAchilles <- FALSE
   
   # The location on your machine of the DQD config file for concept check thresholds or "default".
-  conceptCheckThresholds <- system.file("thresholds", "LegendT2dm.adf", package = "DbProfile")
+  conceptCheckThresholds <- system.file("LegendT2dm", "ConceptLevelMeasurements.csv", package = "DbProfile")
     
-  execute <- function(connectionDetails = connectionDetails
-                      cdmDatabaseSchema = cdmDatabaseSchema,
-                      resultsDatabaseSchema = resultsDatabaseSchema,
-                      vocabDatabaseSchema = vocabDatabaseSchema,
-                      cdmSourceName = cdmSourceName,
-                      outputFolder = outputFolder,
-                      cdmVersion = cdmVersion,
-                      overwriteAchilles = overwriteAchilles,
-                      conceptCheckThresholds = conceptCheckThresholds)
+  DbProfile::execute(connectionDetails = connectionDetails,
+                     cdmDatabaseSchema = cdmDatabaseSchema,
+                     resultsDatabaseSchema = resultsDatabaseSchema,
+                     vocabDatabaseSchema = vocabDatabaseSchema,
+                     cdmSourceName = cdmSourceName,
+                     outputFolder = outputFolder,
+                     cdmVersion = cdmVersion,
+                     overwriteAchilles = overwriteAchilles,
+                     conceptCheckThresholds = conceptCheckThresholds)
   ```
 
 
