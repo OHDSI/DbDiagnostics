@@ -336,5 +336,6 @@ execute <- function(connectionDetails,
 	zip(zipfile = paste(outputFolder,"DbProfileResults.zip",sep = "/"),
 			c(paste(outputFolder,"achilles_results.csv",sep = "/"),
 				paste(outputFolder,"achilles_results_augmented.csv", sep = "/"),
-			  paste (outputFolder,paste(cdmSourceName,"DbProfile.json",sep = "_"), sep="/")))
+			  paste (outputFolder,paste(cdmSourceName,"DbProfile.json",sep = "_"), sep="/")),
+			flags = '-j')
 }
