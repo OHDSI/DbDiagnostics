@@ -337,5 +337,5 @@ execute <- function(connectionDetails,
 			c(paste(outputFolder,"achilles_results.csv",sep = "/"),
 				paste(outputFolder,"achilles_results_augmented.csv", sep = "/"),
 			  paste (outputFolder,paste(cdmSourceName,"DbProfile.json",sep = "_"), sep="/")),
-			flags = '-j')
+			extras = '-j')
 }
