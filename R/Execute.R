@@ -333,7 +333,7 @@ execute <- function(connectionDetails,
 		conceptCheckThresholdLoc = conceptCheckThresholds
 	)
 
-	outputFile <- file.path(outputFile, paste0("DbProfileResults_", cdmSourceName, ".zip"))
+	outputFile <- file.path(outputFolder, paste0("DbProfileResults_", cdmSourceName, ".zip"))
 
 	zip(zipfile = outputFile,
 			c(paste(outputFolder,"achilles_results.csv",sep = "/"),
