@@ -96,14 +96,13 @@
     },
     "DbProfile": {
       "Package": "DbProfile",
-      "Version": "0.1",
+      "Version": "0.1.1",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteUsername": "OHDSI",
       "RemoteRepo": "DbProfile",
       "RemoteRef": "main",
-      "RemoteSha": "d29932f7daa1e2b558026bf3d7ff0310e014576d",
       "Requirements": []
     },
     "Eunomia": {
