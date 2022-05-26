@@ -9,6 +9,17 @@
     ]
   },
   "Packages": {
+    "DbProfile": {
+      "Package": "DbProfile",
+      "Version": "0.1.1",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "OHDSI",
+      "RemoteRepo": "DbProfile",
+      "RemoteRef": "main",
+      "Requirements": []
+    },
     "Achilles": {
       "Package": "Achilles",
       "Version": "1.7",
@@ -93,17 +104,6 @@
         "stringr",
         "urltools"
       ]
-    },
-    "DbProfile": {
-      "Package": "DbProfile",
-      "Version": "0.1.1",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteUsername": "OHDSI",
-      "RemoteRepo": "DbProfile",
-      "RemoteRef": "main",
-      "Requirements": []
     },
     "Eunomia": {
       "Package": "Eunomia",
@@ -250,6 +250,14 @@
         "processx"
       ]
     },
+    "chron": {
+      "Package": "chron",
+      "Version": "2.3-56",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "2d8e9b1143af1caf26a521ed26e8736b",
+      "Requirements": []
+    },
     "cli": {
       "Package": "cli",
       "Version": "3.2.0",
@@ -390,6 +398,16 @@
       "Repository": "CRAN",
       "Hash": "4f2596dfb05dac67b9dc558e5c6fba2e",
       "Requirements": []
+    },
+    "gsubfn": {
+      "Package": "gsubfn",
+      "Version": "0.7",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "a8ebb0bb0edcf041a7649ee43a0e1735",
+      "Requirements": [
+        "proto"
+      ]
     },
     "highr": {
       "Package": "highr",
@@ -626,6 +644,14 @@
         "prettyunits"
       ]
     },
+    "proto": {
+      "Package": "proto",
+      "Version": "1.0.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "5cb1623df69ee6102d011c7f78f5791d",
+      "Requirements": []
+    },
     "ps": {
       "Package": "ps",
       "Version": "1.6.0",
@@ -747,6 +773,20 @@
       "Repository": "CRAN",
       "Hash": "40b74690debd20c57d93d8c246b305d4",
       "Requirements": []
+    },
+    "sqldf": {
+      "Package": "sqldf",
+      "Version": "0.4-11",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "56b0039f97882b0627defddd4375dcce",
+      "Requirements": [
+        "DBI",
+        "RSQLite",
+        "chron",
+        "gsubfn",
+        "proto"
+      ]
     },
     "stringi": {
       "Package": "stringi",
