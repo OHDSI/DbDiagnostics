@@ -341,5 +341,5 @@ execute <- function(connectionDetails,
 			  paste (outputFolder,paste(cdmSourceName,"DbProfile.json",sep = "_"), sep="/")),
 			extras = '-j')
 
-	ParallelLogger::logInfo("Final results are now available in: ", outputFile)
+	writeLines(paste0("Final results are now available in: ", outputFile)) # TODO: change to ParallelLogger
 }
