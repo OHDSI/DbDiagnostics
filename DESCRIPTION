@@ -1,8 +1,8 @@
 Package: DbProfile
 Type: Package
 Title: OMOP CDM Database Profile Utility
-Version: 0.1
-Date: 2022-04-20
+Version: 0.1.1
+Date: 2022-04-26
 Authors@R: c(
   person("Clair", "Blacketer", , "mblacke@its.jnj.com", role = c("aut", "cre")),
 	person("Frank", "DeFalco", role = c("aut"))
@@ -21,6 +21,7 @@ Imports:
 	rlang,
 	SqlRender (>= 1.7.0),
 	Achilles (>= 1.7.0),
+	ParallelLogger,
 	DataQualityDashboard (>= 1.4.0)
 Suggests:
 	testthat,

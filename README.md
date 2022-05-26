@@ -72,7 +72,7 @@ It works by connecting to a database through a connectionDetails object created 
                      conceptCheckThresholds = conceptCheckThresholds)
   ```
 
-4. Email the file `DbProfileResults.zip` in the `outputFolder` directory to the data-quality study coordinator.
+4. Email the file `DbProfileResults_<cdmSourceName>.zip` in the `outputFolder` directory to the data-quality study coordinator.
 
 **DbProfile will execute and/or export the following Achilles analyses and DQD checks:**
 

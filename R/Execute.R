@@ -333,9 +333,13 @@ execute <- function(connectionDetails,
 		conceptCheckThresholdLoc = conceptCheckThresholds
 	)
 
-	zip(zipfile = paste(outputFolder,"DbProfileResults.zip",sep = "/"),
+	outputFile <- file.path(outputFile, paste0("DbProfileResults_", cdmSourceName, ".zip"))
+
+	zip(zipfile = outputFile,
 			c(paste(outputFolder,"achilles_results.csv",sep = "/"),
 				paste(outputFolder,"achilles_results_augmented.csv", sep = "/"),
 			  paste (outputFolder,paste(cdmSourceName,"DbProfile.json",sep = "_"), sep="/")),
 			extras = '-j')
+
+	ParallelLogger::logInfo("Final results are now available in: ", outputFile)
 }
