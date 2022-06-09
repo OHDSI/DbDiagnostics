@@ -78,6 +78,8 @@ execute <- function(connectionDetails,
 			701,
 			800,
 			801,
+			900,
+			901,
 			2100,
 			2101,
 			1815)
@@ -111,10 +113,10 @@ execute <- function(connectionDetails,
 		ifelse(resultsTables$resultsTables %in% achillesTables, 1, 0)
 
 	if (!is.na(resultsTables[1, 1])) {
-		if (sum(resultsTables$achillesTables) == length(achillesTables)) {
+		if (sum(resultsTables$achillesTables) == length(achillesTables) && !overwriteAchilles) {
 			#check for both results tables
 
-			writeLines("All achilles tables present, now checking required analyses")
+			writeLines("All achilles tables present, now checking required analyses and running only missing analyses")
 
 			missingAnalyses <-
 				Achilles::listMissingAnalyses(connectionDetails,
@@ -125,21 +127,24 @@ execute <- function(connectionDetails,
 
 			analysesToRun <- subset(missingAnalyses, requiredAnalyses == 1)
 
-			writeLines(paste("Running Analyses", analysesToRun$ANALYSIS_ID))
+			if (nrow(analysesToRun) > 0 ){
 
-			Achilles::achilles(
-				connectionDetails,
-				cdmDatabaseSchema = cdmDatabaseSchema,
-				vocabDatabaseSchema = vocabDatabaseSchema,
-				createTable = FALSE,
-				resultsDatabaseSchema = resultsDatabaseSchema,
-				sourceName = cdmSourceName,
-				updateGivenAnalysesOnly = TRUE,
-				analysisIds = analysesToRun$ANALYSIS_ID,
-				cdmVersion = cdmVersion,
-				outputFolder = outputFolder
-			)
-		} else if (overwriteAchilles) {
+				writeLines(paste("Running Analyses", analysesToRun$ANALYSIS_ID))
+
+				Achilles::achilles(
+					connectionDetails,
+					cdmDatabaseSchema = cdmDatabaseSchema,
+					vocabDatabaseSchema = vocabDatabaseSchema,
+					createTable = FALSE,
+					resultsDatabaseSchema = resultsDatabaseSchema,
+					sourceName = cdmSourceName,
+					updateGivenAnalysesOnly = TRUE,
+					analysisIds = analysesToRun$ANALYSIS_ID,
+					cdmVersion = cdmVersion,
+					outputFolder = outputFolder
+				)
+			}
+		} else if (sum(resultsTables$achillesTables) != length(achillesTables) && overwriteAchilles) {
 			writeLines(
 				"One or more achilles tables are missing, running entire package for the required analyses and regenerating tables"
 			)
@@ -155,7 +160,7 @@ execute <- function(connectionDetails,
 				outputFolder = outputFolder
 			)
 
-		} else if (!overwriteAchilles) {
+		} else if (sum(resultsTables$achillesTables) != length(achillesTables) && !overwriteAchilles) {
 			tryCatch(
 				expr = {
 					writeLines(
@@ -171,20 +176,23 @@ execute <- function(connectionDetails,
 
 					analysesToRun <- subset(missingAnalyses, requiredAnalyses == 1)
 
-					writeLines(paste("Running Analyses", analysesToRun$ANALYSIS_ID))
+					if (nrow(analysesToRun) > 0){
 
-					Achilles::achilles(
-						connectionDetails,
-						cdmDatabaseSchema = cdmDatabaseSchema,
-						vocabDatabaseSchema = vocabDatabaseSchema,
-						createTable = FALSE,
-						resultsDatabaseSchema = resultsDatabaseSchema,
-						sourceName = cdmSourceName,
-						updateGivenAnalysesOnly = TRUE,
-						analysisIds = analysesToRun$ANALYSIS_ID,
-						cdmVersion = cdmVersion,
-						outputFolder = outputFolder
-					)
+						writeLines(paste("Running Analyses", analysesToRun$ANALYSIS_ID))
+
+						Achilles::achilles(
+							connectionDetails,
+							cdmDatabaseSchema = cdmDatabaseSchema,
+							vocabDatabaseSchema = vocabDatabaseSchema,
+							createTable = FALSE,
+							resultsDatabaseSchema = resultsDatabaseSchema,
+							sourceName = cdmSourceName,
+							updateGivenAnalysesOnly = TRUE,
+							analysisIds = analysesToRun$ANALYSIS_ID,
+							cdmVersion = cdmVersion,
+							outputFolder = outputFolder
+						)
+					}
 				},
 				error = function(e) {
 					message(
@@ -232,18 +240,21 @@ execute <- function(connectionDetails,
 
 	achillesResults <- read.csv(paste(outputFolder, "achilles_results.csv", sep="/"))
 
-	for(i in 1:nrow(analysesToAdd)){
-	 ANALYSIS_ID <- c(analysesToAdd$ANALYSIS_ID[i])
-	 STRATUM_1 <- c(0)
-	 STRATUM_2 <- c(NA)
-	 STRATUM_3 <- c(NA)
-	 STRATUM_4 <- c(NA)
-	 STRATUM_5 <- c(NA)
-	 COUNT_VALUE <- c(0)
+	if (nrow(analysesToAdd) > 0){
 
-	 addAnalyses <- data.frame(ANALYSIS_ID, STRATUM_1, STRATUM_2, STRATUM_3, STRATUM_4, STRATUM_5, COUNT_VALUE)
+		for(i in 1:nrow(analysesToAdd)){
+			 ANALYSIS_ID <- c(analysesToAdd$ANALYSIS_ID[i])
+			 STRATUM_1 <- c(0)
+			 STRATUM_2 <- c(NA)
+			 STRATUM_3 <- c(NA)
+			 STRATUM_4 <- c(NA)
+			 STRATUM_5 <- c(NA)
+			 COUNT_VALUE <- c(0)
 
-	 achillesResults <- rbind(achillesResults,addAnalyses)
+			 addAnalyses <- data.frame(ANALYSIS_ID, STRATUM_1, STRATUM_2, STRATUM_3, STRATUM_4, STRATUM_5, COUNT_VALUE)
+
+			 achillesResults <- rbind(achillesResults,addAnalyses)
+		}
 
 	 rm(ANALYSIS_ID, STRATUM_1, STRATUM_2, STRATUM_3, STRATUM_4, STRATUM_5, COUNT_VALUE)
 	}
