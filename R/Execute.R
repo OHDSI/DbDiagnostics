@@ -302,11 +302,9 @@ execute <- function(connectionDetails,
 	)
 
 	tablesToExclude <- c(
-		"DEVICE_EXPOSURE",
 		"VISIT_DETAIL",
 		"NOTE",
 		"NOTE_NLP",
-		"OBSERVATION",
 		"SPECIMEN",
 		"FACT_RELATIONSHIP",
 		"LOCATION",
