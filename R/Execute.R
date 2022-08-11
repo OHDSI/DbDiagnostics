@@ -27,6 +27,7 @@
 #' @param cdmVersion                The CDM version to target for the data source. Default = "5.3"
 #' @param overwriteAchilles         Specify if existing achilles results tables should be overwritten, Default=FALSE
 #' @param minCellCount              Minimum cell count to allow in analyses. Default = 0
+#' @param addDQD										Specify if DQD should be run. Default = TRUE
 #' @param tableCheckThresholds      OPTIONAL Location of the custom threshold file for the DQD table checks. In absence of this parameter the default thresholds are used.
 #' @param fieldCheckThresholds      OPTIONAL Location of the custom threshold file for the DQD field checks. In absence of this parameter the default thresholds are used.
 #' @param conceptCheckThresholds    OPTIONAL Location of the custom threshold file for the DQD concept checks. In absence of this parameter the default thresholds are used.
@@ -45,9 +46,14 @@ execute <- function(connectionDetails,
 										cdmVersion = "5.3",
 										overwriteAchilles = FALSE,
 										minCellCount = 5,
+										addDQD = TRUE,
 										tableCheckThresholds = "default",
 										fieldCheckThresholds = "default",
 										conceptCheckThresholds = "default") {
+
+	# Set the name of the output file
+	outputFile <- file.path(outputFolder, paste0("DbProfileResults_", cdmSourceName, ".zip"))
+
 	# The Achilles tables we will look for to see if the analyses have already been run
 	achillesTables <- c("ACHILLES_RESULTS", "ACHILLES_RESULTS_DIST")
 
@@ -295,6 +301,7 @@ execute <- function(connectionDetails,
 
 	# start of DQD analysis
 
+	if(addDQD) {
 	checkNames <- c(
 		"measurePersonCompleteness",
 		"cdmField",
@@ -349,13 +356,19 @@ execute <- function(connectionDetails,
 		conceptCheckThresholdLoc = conceptCheckThresholds
 	)
 
-	outputFile <- file.path(outputFolder, paste0("DbProfileResults_", cdmSourceName, ".zip"))
-
 	zip(zipfile = outputFile,
 			c(paste(outputFolder,"achilles_results.csv",sep = "/"),
 				paste(outputFolder,"achilles_results_augmented.csv", sep = "/"),
 			  paste (outputFolder,paste(cdmSourceName,"DbProfile.json",sep = "_"), sep="/")),
 			extras = '-j')
+	} else {
+
+		zip(zipfile = outputFile,
+				c(paste(outputFolder,"achilles_results.csv",sep = "/"),
+					paste(outputFolder,"achilles_results_augmented.csv", sep = "/")),
+				extras = '-j')
+
+	}
 
 	writeLines(paste0("Final results are now available in: ", outputFile)) # TODO: change to ParallelLogger
 }
