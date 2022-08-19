@@ -246,7 +246,7 @@ execute <- function(connectionDetails,
 
 	analysesToAdd <- subset(missingAnalyses, requiredAnalyses == 1)
 
-	achillesResults <- read.csv(paste(outputFolder, "achilles_results.csv", sep="/"))
+	achillesResults <- read.csv(paste(outputFolder, "achilles_results.csv", sep="/"), colClasses = c("STRATUM_1"="character"))
 
 	if (nrow(analysesToAdd) > 0){
 
@@ -298,7 +298,7 @@ execute <- function(connectionDetails,
 	)
 
 	# export the new achilles analysis
-	write.csv(achillesResults, paste(outputFolder,"achilles_results_augmented.csv", sep="/"))
+	write.csv(x = achillesResults, file = paste(outputFolder,"achilles_results_augmented.csv", sep="/"), quote = TRUE, row.names = FALSE)
 
 	# start of DQD analysis
 
