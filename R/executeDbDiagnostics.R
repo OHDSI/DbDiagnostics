@@ -18,27 +18,25 @@
 
 #' executeDbDiagnostics
 #'
-#' @param specsPath						  	  The path to the excel file with the specifications for the analysis
 #' @param connectionDetails         A connectionDetails object for connecting to the database containing the DbProfile results
 #' @param resultsDatabaseSchema     The fully qualified database name of the results schema where the DbProfile results are housed
 #' @param resultsTableName					The name of the table in the results schema with the DbProfile results
-#' @param outputFolder              Results will be written to this directory, Default = getwd()
+#' @param outputFolder              Results will be written to this directory, default = getwd()
+#' @param dataDiagnosticsSettings		A list of settings created from DataDiagnostics::createDataDiagnosticsSettings() function
 #'
 #' @return
 #'
-#' @import DataQualityDashboard Achilles DatabaseConnector SqlRender dplyr
+#' @import DataQualityDashboard Achilles DatabaseConnector SqlRender dplyr magrittr
 #'
 #' @export
 
-executeDbDiagnostics <- function(specsLocation,
-																 connectionDetails,
+executeDbDiagnostics <- function(connectionDetails,
 																 resultsDatabaseSchema,
 																 resultsTableName,
-																 outputFolder = getwd()) {
+																 outputFolder = getwd(),
+																 dataDiagnosticsSettings) {
 
-	if (!dir.exists(outputFolder)) {
-		dir.create(path = outputFolder, recursive = TRUE)
-	}
+	# Connect to the results schema to get list of databases included in results table ---------------
 
 	conn <- DatabaseConnector::connect(connectionDetails)
 
@@ -54,7 +52,7 @@ executeDbDiagnostics <- function(specsLocation,
 
 	DatabaseConnector::disconnect(conn)
 
-	# Get the most recent release for each database
+	# Get the most recent release for each database -------------------------------
 	for(i in 1:nrow(dbNames)){
 		dbInfo <- strsplit(dbNames$DB_ID[i], split = "-")
 
@@ -72,28 +70,34 @@ executeDbDiagnostics <- function(specsLocation,
 	dbNum <- nrow(latestDbs)
 
 
-	# Get the specifications for all studies included in this run
+	# Get the specifications for all studies included in this run ------------------
 
-	ddSpecs <- readxl::read_xlsx(specsLocation)
+	studySpecs <- dataDiagnosticsSettings
 
-	numDd <- ddSpecs %>%
-		select(-c("Category","Instructions","Abbreviation")) %>%
-		ncol(.)
+	# TODO ---------------
+	# evaluate the specs input
+	# look at data types and stop if target concept id is null
 
-	# Get the thresholds for the study
+	# OLD - this was used with the excel where multiple studies were specified in one file
+	# numDd <- ddSpecs %>%
+	# 	select(-c("Category","Instructions","Abbreviation")) %>%
+	# 	ncol(.)
+
+	# Get the thresholds for the study -------------------------------------------
 
 	ddThresholds <- read.csv(system.file("csv", "ddThresholds.csv", package = "DbDiagnostics"), stringsAsFactors = FALSE)
 
-	# Loop through the studies specified in one file
+	# Loop through the studies specified in one file - OLD
+	# OLD this was used when multiple studies were specified in one file
 
-	for(j in 1:numDd){
-		colIndex <- j+3
-
-		studySpecs <- as.data.frame(t(ddSpecs[,c(1:3,colIndex)]))
-		colnames(studySpecs) <- studySpecs["Abbreviation",]
+	# for(j in 1:numDd){
+	# 	colIndex <- j+3
+	#
+	# 	studySpecs <- as.data.frame(t(ddSpecs[,c(1:3,colIndex)]))
+	# 	colnames(studySpecs) <- studySpecs["Abbreviation",]
 
 		# Name of this individual study
-		studyName <- studySpecs$specsName[4]
+		studyName <- studySpecs$analysisName
 
 		# Set up the output
 
@@ -106,7 +110,7 @@ executeDbDiagnostics <- function(specsLocation,
 					 "propWithRequiredOutcomeConcepts")
 		colnames(output) <- x
 
-		# Loop through the databases
+		# Loop through the databases -----------------------------------------------
 
 		for(i in 1:nrow(latestDbs)){
 
@@ -125,81 +129,78 @@ executeDbDiagnostics <- function(specsLocation,
 
 			dbProfile <- DatabaseConnector::querySql(conn, tsql)
 
-			# Set up the specs for this study/db combination. This is done after getting the dbProfile information because NA
+			DatabaseConnector::disconnect(conn)
+
+			# Set up the specs for this study/db combination. This is done after getting the dbProfile information because NULL
 			# values in the specs get values from the database in order to evaluate them
 
 			numCriteria <- 0
 
 			# Age
-			if(is.na(studySpecs$minAge[4])){
+			if(is.null(studySpecs$minAge)){
 				minAge <- min(as.integer(dbProfile[which(dbProfile$ANALYSIS_ID == 101),]$STRATUM_1))
 			}else{
-				minAge <- as.numeric(studySpecs$minAge[4])
+				minAge <- studySpecs$minAge
 				numCriteria <- numCriteria + 1
 			}
 
-			if(is.na(studySpecs$maxAge[4])){
+			if(is.null(studySpecs$maxAge)){
 				maxAge <- max(as.integer(dbProfile[which(dbProfile$ANALYSIS_ID == 101),]$STRATUM_1))
 			}else{
-				maxAge <- as.numeric(studySpecs$maxAge[4])
+				maxAge <- studySpecs$maxAge
 				numCriteria <- numCriteria + 1
 			}
 
 			# Gender
-			if(is.na(studySpecs$genderConceptIds[4])){
-				genderConceptIds <- c(8532, 8507) # Q - limit to these two or to all genders in the db? Means including 0
+				genderConceptIds <- studySpecs$genderConceptIds # Q - limit to these two or to all genders in the db? Means including 0
 				numCriteria <- numCriteria + 1
-			}else{
-				genderConceptIds <- c(unlist(strsplit(studySpecs$genderConceptIds[4], ",")))
-				numCriteria <- numCriteria + 1
-			}
 
 			# Race
-			if(is.na(studySpecs$raceConceptIds[4])){
+			if(is.null(studySpecs$raceConceptIds)){
 				raceConceptIds <- dbProfile %>%
 					filter(ANALYSIS_ID == 4) %>%
 					select(STRATUM_1) %>%
 					.[["STRATUM_1"]]
 			}else{
-				raceConceptIds <- c(unlist(strsplit(studySpecs$raceConceptIds[4], ",")))
+				raceConceptIds <- studySpecs$raceConceptIds
 				numCriteria <- numCriteria + 1
 			}
 
 			# Ethnicity
-			if(is.na(studySpecs$ethnicityConceptIds[4])){
+			if(is.null(studySpecs$ethnicityConceptIds)){
 				ethnicityConceptIds <- dbProfile %>%
 					filter(ANALYSIS_ID == 5) %>%
 					select(STRATUM_1) %>%
 					.[["STRATUM_1"]]
 			}else{
-				ethnicityConceptIds <- c(unlist(strsplit(studySpecs$ethnicityConceptIds[4], ",")))
+				ethnicityConceptIds <- studySpecs$ethnicityConceptIds
 				numCriteria <- numCriteria + 1
 			}
 
 			#Study Start Date
-			if(is.na(studySpecs$studyStartDate[4])){
+			if(is.null(studySpecs$studyStartDate)){
 				studyStartDate <- min(dbProfile[which(dbProfile$ANALYSIS_ID == 111),]$STRATUM_1)
 
 			}else{
-				studyStartDate <- max(as.numeric(studySpecs$studyStartDate[4]), min(dbProfile[which(dbProfile$ANALYSIS_ID == 111),]$STRATUM_1))
+				studyStartDate <- max(as.numeric(studySpecs$studyStartDate), min(dbProfile[which(dbProfile$ANALYSIS_ID == 111),]$STRATUM_1))
 				numCriteria <- numCriteria + 1
 			}
 
 			#Study End Date
-			if(is.na(studySpecs$studyEndDate[4])){
+			if(is.null(studySpecs$studyEndDate)){
 				studyEndDate <- max(dbProfile[which(dbProfile$ANALYSIS_ID == 111),]$STRATUM_1)
 
 			}else{
-				studyEndDate <- min(as.numeric(studySpecs$studyEndDate[4]), max(dbProfile[which(dbProfile$ANALYSIS_ID == 111),]$STRATUM_1))
+				studyEndDate <- min(as.numeric(studySpecs$studyEndDate), max(dbProfile[which(dbProfile$ANALYSIS_ID == 111),]$STRATUM_1))
 				numCriteria <- numCriteria + 1
 			}
 
 			# Required follow-up time
-			requiredDurationDays <- as.numeric(studySpecs$requiredDurationDays[4])
+			requiredDurationDays <- studySpecs$requiredDurationDays
 			numCriteria <- numCriteria + 1
 
 			# Required domains
-			requiredDomains <- c(unlist(strsplit(studySpecs$requiredDomains[4], ",")))
+			requiredDomains <- studySpecs$requiredDomains
 			numCriteria <- numCriteria + 1
 
 			if("condition" %in% requiredDomains){requiredCondition <- 1}else{requiredCondition <- 0}
@@ -210,7 +211,7 @@ executeDbDiagnostics <- function(specsLocation,
 			if("observation" %in% requiredDomains){requiredObservation <-1}else{requiredObservation <- 0}
 
 			# Desired domains
-			desiredDomains <- c(unlist(strsplit(studySpecs$desiredDomains[4], ",")))
+			desiredDomains <- studySpecs$desiredDomains
 
 			if("condition" %in% desiredDomains){desiredCondition <- 1
 				numCriteria <- numCriteria + 1}else{desiredCondition <- 0}
@@ -230,14 +231,14 @@ executeDbDiagnostics <- function(specsLocation,
 				numCriteria <- numCriteria + 1}else{desiredDeath <- 0}
 
 			# Required visits
-			requiredVisits <- c(unlist(strsplit(studySpecs$requiredVisits[4], ",")))
+			requiredVisits <- studySpecs$requiredVisits
 
 			if("IP" %in% requiredVisits){requiredIP <- 1}else{requiredIP <- 0}
 			if("OP" %in% requiredVisits){requiredOP <-1}else{requiredOP <- 0}
 			if("ER" %in% requiredVisits){requiredER <-1}else{requiredER <- 0}
 
 			# Desired visits
-			desiredVisits <- c(unlist(strsplit(studySpecs$desiredVisits[4], ",")))
+			desiredVisits <- studySpecs$desiredVisits
 
 			if("IP" %in% desiredVisits){desiredIP <- 1
 			numCriteria <- numCriteria + 1}else{desiredIP <- 0}
@@ -247,33 +248,37 @@ executeDbDiagnostics <- function(specsLocation,
 			numCriteria <- numCriteria + 1}else{desiredER <- 0}
 
 			#target
-			target <- studySpecs$targetName[4]
-			requiredTargetConcepts <- c(unlist(strsplit(studySpecs$targetConceptIds[4],",")))
+			target <- studySpecs$targetName
+			requiredTargetConcepts <- studySpecs$targetConceptIds
 			numCriteria <- numCriteria + 1
 
 			#comparator
-			if(!is.na(studySpecs$comparatorName[4])){
-				comparator <- studySpecs$comparatorName[4]
-				requiredComparatorConcepts <- c(unlist(strsplit(studySpecs$comparatorConceptIds[4],",")))
+			if(!is.null(studySpecs$comparatorName)){
+				comparator <- studySpecs$comparatorName
+				requiredComparatorConcepts <- studySpecs$comparatorConceptIds
 				numCriteria <- numCriteria + 1
+			}else{
+				requiredComparatorConcepts <- NULL
 			}
 
 			#outcome
-			if(!is.na(studySpecs$outcomeName[4])){
-				outcome <- studySpecs$outcomeName[4]
-				requiredOutcomeConcepts <-  c(unlist(strsplit(studySpecs$outcomeConceptIds[4],",")))
+			if(!is.null(studySpecs$outcomeName)){
+				outcome <- studySpecs$outcomeName
+				requiredOutcomeConcepts <-  studySpecs$outcomeConceptIds
 				numCriteria <- numCriteria + 1
+			}else{
+				requiredOutcomeConcepts <- NULL
 			}
 
 			# Get values for each criterion using Achilles analyses pulled in dbProfile
 
-			# Total persons in database
+			# Total persons in database --------------
 
 			numPersonsInDb <- dbProfile[which(dbProfile$ANALYSIS_ID == 1),]$COUNT_VALUE
 
-			#Demographics
+			#Demographics ---------
 
-			##Age
+			##Age -----------
 			maxYearInDb <- as.integer(substr(max(dbProfile[which(dbProfile$ANALYSIS_ID == 111),]$STRATUM_1),1,4))
 			minYearInDb <- as.integer(substr(min(dbProfile[which(dbProfile$ANALYSIS_ID == 111),]$STRATUM_1),1,4))
 
@@ -293,7 +298,7 @@ executeDbDiagnostics <- function(specsLocation,
 				summarise(personsWithAgeAtFirstObs = sum(COUNT_VALUE)) %>%
 				mutate(propWithAgeAtFirstObs = personsWithAgeAtFirstObs/numPersonsInDb)
 
-			##Gender
+			##Gender ----------
 			personsWithGenderCriteria <- dbProfile %>%
 				filter(ANALYSIS_ID == 2) %>%
 				filter(STRATUM_1 %in% genderConceptIds) %>%
@@ -302,21 +307,21 @@ executeDbDiagnostics <- function(specsLocation,
 
 			### personsWithGenderCriteria/numPersonInDb = estimated proportion of ppl who meet gender criteria in db
 
-			##Race
+			##Race -------------
 			personsWithRaceCriteria <- dbProfile %>%
 				filter(ANALYSIS_ID == 4) %>%
 				filter(STRATUM_1 %in% raceConceptIds) %>%
 				summarise(personsWithRaceCriteria = sum(COUNT_VALUE)) %>%
 				mutate(propWithRaceCriteria = personsWithRaceCriteria/numPersonsInDb)
 
-			##Ethnicity
+			##Ethnicity ----------
 			personsWithEthnicityCriteria <- dbProfile %>%
 				filter(ANALYSIS_ID == 5) %>%
 				filter(STRATUM_1 %in% ethnicityConceptIds) %>%
 				summarise(personsWithEthnicityCriteria = sum(COUNT_VALUE)) %>%
 				mutate(propWithEthnicityCriteria = personsWithEthnicityCriteria/numPersonsInDb)
 
-			#Calendar Time
+			#Calendar Time ----------
 
 			totalObsPeriods <- sum(dbProfile[which(dbProfile$ANALYSIS_ID == 111),]$COUNT_VALUE)
 
@@ -340,7 +345,7 @@ executeDbDiagnostics <- function(specsLocation,
 
 			colnames(personsWithCalendarTime) <- c( "personsWithCalendarTime", "propWithCalendarTime")
 
-			##longitudinality
+			## Longitudinality --------
 
 			num30DayIncrements <- round(requiredDurationDays/30, digits = 0)
 
@@ -350,7 +355,7 @@ executeDbDiagnostics <- function(specsLocation,
 				summarise(personsWithLongitudinalCriteria = sum(COUNT_VALUE)) %>%
 				mutate(propWithLongitudinalCriteria = personsWithLongitudinalCriteria/numPersonsInDb)
 
-			#Data Domain Coverage
+			#Data Domain Coverage ----------
 
 			bitString <- paste0(requiredCondition,requiredDrug,requiredDevice,requiredMeasurement,0,requiredProcedure,requiredObservation)
 
@@ -443,7 +448,7 @@ executeDbDiagnostics <- function(specsLocation,
 
 			colnames(measRecordsWithValues) <- c( "measRecordsWithValues", "propMeasRecordsWithValues")
 
-			#Visit Context
+			#Visit Context --------
 
 			personsWithIPCriteria <- dbProfile %>%
 				filter(ANALYSIS_ID == 200) %>%
@@ -463,7 +468,7 @@ executeDbDiagnostics <- function(specsLocation,
 				summarise(personsWithERCriteria = sum(COUNT_VALUE)) %>%
 				mutate(propWithERCriteria = personsWithERCriteria/numPersonsInDb)
 
-			#Required Concepts
+			#Required Concepts ------
 
 			personsWithRequiredTargetConcepts <- dbProfile %>%
 				filter(ANALYSIS_ID %in% c(1800, 400, 600, 700, 800, 2100)) %>%
@@ -471,19 +476,33 @@ executeDbDiagnostics <- function(specsLocation,
 				summarise(personsWithRequiredTargetConcepts = sum(COUNT_VALUE)) %>%
 				mutate(propWithRequiredTargetConcepts = personsWithRequiredTargetConcepts/numPersonsInDb)
 
-			personsWithRequiredComparatorConcepts <- dbProfile %>%
-				filter(ANALYSIS_ID %in% c(1800, 400, 600, 700, 800, 2100)) %>%
-				filter(STRATUM_1 %in% requiredComparatorConcepts) %>%
-				summarise(personsWithRequiredComparatorConcepts = sum(COUNT_VALUE)) %>%
-				mutate(propWithRequiredComparatorConcepts = personsWithRequiredComparatorConcepts/numPersonsInDb)
+			if(is.null(studySpecs$comparatorConceptIds)){
+				personsWithRequiredComparatorConcepts <- data.frame(matrix(ncol = 2, nrow = 1))
+				y <- c("personsWithRequiredComparatorConcepts", "propWithRequiredComparatorConcepts")
+				colnames(personsWithRequiredComparatorConcepts) <- y
 
-			personsWithRequiredOutcomeConcepts <- dbProfile %>%
-				filter(ANALYSIS_ID %in% c(1800, 400, 600, 700, 800, 2100)) %>%
-				filter(STRATUM_1 %in% requiredOutcomeConcepts) %>%
-				summarise(personsWithRequiredOutcomeConcepts = sum(COUNT_VALUE)) %>%
-				mutate(propWithRequiredOutcomeConcepts = personsWithRequiredOutcomeConcepts/numPersonsInDb)
+			}else{
+				personsWithRequiredComparatorConcepts <- dbProfile %>%
+					filter(ANALYSIS_ID %in% c(1800, 400, 600, 700, 800, 2100)) %>%
+					filter(STRATUM_1 %in% requiredComparatorConcepts) %>%
+					summarise(personsWithRequiredComparatorConcepts = sum(COUNT_VALUE)) %>%
+					mutate(propWithRequiredComparatorConcepts = personsWithRequiredComparatorConcepts/numPersonsInDb)
+				}
 
-			# Evaluate diagnostics for recommended Dbs per study question
+			if(is.null(studySpecs$outcomeConceptIds)){
+				personsWithRequiredOutcomeConcepts <- data.frame(matrix(ncol = 2, nrow = 1))
+				z <- c("personsWithRequiredOutcomeConcepts", "propWithRequiredOutcomeConcepts")
+				colnames(personsWithRequiredOutcomeConcepts) <- z
+
+			}else{
+				personsWithRequiredOutcomeConcepts <- dbProfile %>%
+					filter(ANALYSIS_ID %in% c(1800, 400, 600, 700, 800, 2100)) %>%
+					filter(STRATUM_1 %in% requiredOutcomeConcepts) %>%
+					summarise(personsWithRequiredOutcomeConcepts = sum(COUNT_VALUE)) %>%
+					mutate(propWithRequiredOutcomeConcepts = personsWithRequiredOutcomeConcepts/numPersonsInDb)
+			}
+
+			# Evaluate diagnostics for recommended Dbs per study question -----------
 
 			# Start with required/desired domains
 
@@ -721,7 +740,7 @@ executeDbDiagnostics <- function(specsLocation,
 				dbDiagnostics$failTarget = 0
 			}
 
-			if(length(requiredComparatorConcepts)>0){
+			if(!is.null(requiredComparatorConcepts)){
 				if(dbDiagnostics$propWithRequiredComparatorConcepts > ddThresholds$propWithRequiredComparatorConcepts){
 					dbDiagnostics$failComparator = 0
 				}else{
@@ -731,7 +750,7 @@ executeDbDiagnostics <- function(specsLocation,
 				dbDiagnostics$failComparator = 0
 			}
 
-			if(length(requiredOutcomeConcepts)>0){
+			if(!is.null(requiredOutcomeConcepts)){
 				if(dbDiagnostics$propWithRequiredOutcomeConcepts > ddThresholds$propWithRequiredOutcomeConcepts){
 					dbDiagnostics$failOutcome = 0
 				}else{
@@ -741,10 +760,10 @@ executeDbDiagnostics <- function(specsLocation,
 				dbDiagnostics$failOutcome = 0
 			}
 
-			dbDiagnostics$minSampleSizeProp <- min(dbDiagnostics$propWithRequiredTargetConcepts, dbDiagnostics$propWithRequiredComparatorConcepts)*prod(as.numeric(sampleSizeValues))
+			dbDiagnostics$minSampleSizeProp <- min(dbDiagnostics$propWithRequiredTargetConcepts, dbDiagnostics$propWithRequiredComparatorConcepts, na.rm = TRUE)*prod(as.numeric(sampleSizeValues))
 			dbDiagnostics$minSampleSize <- as.numeric(dbDiagnostics$minSampleSizeProp)*as.numeric(dbDiagnostics$totalPersonsInDb)
 
-			dbDiagnostics$maxSampleSizeProp <- min(sampleSizeValues, dbDiagnostics$propWithRequiredTargetConcepts, dbDiagnostics$propWithRequiredComparatorConcepts)
+			dbDiagnostics$maxSampleSizeProp <- min(sampleSizeValues, dbDiagnostics$propWithRequiredTargetConcepts, dbDiagnostics$propWithRequiredComparatorConcepts, na.rm = TRUE)
 			dbDiagnostics$maxSampleSize <- as.numeric(dbDiagnostics$maxSampleSizeProp)*as.numeric(dbDiagnostics$totalPersonsInDb)
 
 			if(dbDiagnostics$minSampleSize > 1000){
@@ -806,11 +825,9 @@ executeDbDiagnostics <- function(specsLocation,
 				dbDiagnosticsResults <- dbDiagnosticsResultsNew
 			}
 
-			DatabaseConnector::disconnect(conn)
-
 		}
 
-		write.csv(dbDiagnosticsResults, paste0(outputFolder,"/dataDiagnosticsOutput",j,".csv"))
+		write.csv(dbDiagnosticsResults, paste0(outputFolder,"/dataDiagnosticsOutput_",studyName,".csv"))
 
-	}
+ return(dbDiagnosticsResults)
 }

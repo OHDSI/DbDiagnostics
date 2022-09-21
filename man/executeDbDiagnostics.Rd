@@ -5,11 +5,11 @@
 \title{executeDbDiagnostics}
 \usage{
 executeDbDiagnostics(
-  specsLocation,
   connectionDetails,
   resultsDatabaseSchema,
   resultsTableName,
-  outputFolder = getwd()
+  outputFolder = getwd(),
+  dataDiagnosticsSettings
 )
 }
 \arguments{
@@ -19,9 +19,9 @@ executeDbDiagnostics(
 
 \item{resultsTableName}{The name of the table in the results schema with the DbProfile results}
 
-\item{outputFolder}{Results will be written to this directory, Default = getwd()}
+\item{outputFolder}{Results will be written to this directory, default = getwd()}
 
-\item{specsPath}{The path to the excel file with the specifications for the analysis}
+\item{dataDiagnosticsSettings}{A list of settings created from DataDiagnostics::createDataDiagnosticsSettings() function}
 }
 \value{
 
