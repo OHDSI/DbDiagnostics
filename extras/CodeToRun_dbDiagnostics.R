@@ -28,7 +28,7 @@ ddSettings <- DbDiagnostics::createDataDiagnosticsSettings(analysisName = "gynec
 																													 requiredDomains = c("condition", "drug"),
 																													 targetName = "gynecomastia",
 																													 targetConceptIds = targetConcepts)
-)
+
 
 ## Create the connection details for the database where the dbProfile results are held
 
