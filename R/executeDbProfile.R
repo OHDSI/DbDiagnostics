@@ -270,7 +270,7 @@ executeDbProfile <- function(connectionDetails,
 	# Add vocabulary ancestor information for later processing
 
 	sql <- SqlRender::loadRenderTranslateSql("visitAncestors.sql",
-																					 packageName = "DbProfile",
+																					 packageName = "DbDiagnostics",
 																					 dbms = connectionDetails$dbms,
 																					 vocabDatabaseSchema = vocabDatabaseSchema)
 
