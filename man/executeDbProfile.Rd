@@ -47,9 +47,6 @@ executeDbProfile(
 
 \item{conceptCheckThresholds}{OPTIONAL Location of the custom threshold file for the DQD concept checks. In absence of this parameter the default thresholds are used.}
 }
-\value{
-
-}
 \description{
 executeDbProfile
 }

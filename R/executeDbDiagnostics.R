@@ -24,8 +24,6 @@
 #' @param outputFolder              Results will be written to this directory, default = getwd()
 #' @param dataDiagnosticsSettings		A list of settings created from DataDiagnostics::createDataDiagnosticsSettings() function
 #'
-#' @return
-#'
 #' @import DataQualityDashboard Achilles DatabaseConnector SqlRender dplyr magrittr
 #'
 #' @export

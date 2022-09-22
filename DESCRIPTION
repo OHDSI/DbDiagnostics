@@ -15,13 +15,11 @@ Depends:
 	R (>= 3.5.0),
 	DatabaseConnector (>= 4.0.0),
 Imports:
-	readr,
-	plyr,
 	dplyr,
-	rlang,
+	sqldf,
+	magrittr,
 	SqlRender (>= 1.7.0),
 	Achilles (>= 1.7.0),
-	ParallelLogger,
 	DataQualityDashboard (>= 1.4.0)
 Suggests:
 	testthat,
@@ -32,6 +30,6 @@ Remotes:
 	ohdsi/Eunomia,
 	ohdsi/Achilles,
 	ohdsi/DataQualityDashboard
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 Roxygen: list(markdown = TRUE)
 Encoding: UTF-8

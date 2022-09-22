@@ -23,9 +23,6 @@ executeDbDiagnostics(
 
 \item{dataDiagnosticsSettings}{A list of settings created from DataDiagnostics::createDataDiagnosticsSettings() function}
 }
-\value{
-
-}
 \description{
 executeDbDiagnostics
 }
