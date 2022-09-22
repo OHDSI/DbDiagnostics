@@ -20,29 +20,29 @@ targetConcepts <- diagnosticsConcepts$Concept.ID[diagnosticsConcepts$Concept.Set
 ## specify comparator and outcome names and concepts.
 
 ddSettings <- DbDiagnostics::createDataDiagnosticsSettings(analysisName = "gynecomastia",
-																													 minAge = 6,
-																													 maxAge = 12,
-																													 studyStartDate = 200706,
-																													 studyEndDate = 202201,
-																													 requiredDurationDays = 365,
-																													 requiredDomains = c("condition", "drug"),
-																													 targetName = "gynecomastia",
-																													 targetConceptIds = targetConcepts)
+								 minAge = 6,
+								 maxAge = 12,
+								 studyStartDate = 200706,
+								 studyEndDate = 202201,
+								 requiredDurationDays = 365,
+								 requiredDomains = c("condition", "drug"),
+								 targetName = "gynecomastia",
+								 targetConceptIds = targetConcepts)
 
 
 ## Create the connection details for the database where the dbProfile results are held
 
 dbProfileConnectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "postgresql",
-																																				 user = "user",
-																																				 password = "password",
-																																				 server = "server_address",
-																																				 port =  ,
-																																				 extraSettings = "")
+									 user = "user",
+									 password = "password",
+									 server = "server_address",
+									 port =  ,
+									 extraSettings = "")
 
 ## Run data diagnostics. The results will be exported as a csv to the output folder and returned as a dataframe in your R session.
 
 dbDiagnosticResults <- DbDiagnostics::executeDbDiagnostics(connectionDetails = dbProfileConnectionDetails,
-																													 resultsDatabaseSchema = "results_schema_name",
-																													 resultsTableName = "results_table_name",
-																													 outputFolder = "D:\\output",
-																													 dataDiagnosticsSettings = ddSettings)
+								 resultsDatabaseSchema = "results_schema_name",
+								 resultsTableName = "results_table_name",
+								 outputFolder = "D:\\output",
+								 dataDiagnosticsSettings = ddSettings)

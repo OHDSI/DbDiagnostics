@@ -1,10 +1,12 @@
-# DbProfile README
+# DbDiagnostics README
 
-This package relies on the [Achilles](https://github.com/ohdsi/Achilles) and [DataQualityDashboard](https://github.com/ohdsi/DataQualityDashboard) packages to run a subset of characterization and data quality analyses. This subset is referred to as the database profile. This profile will be used to determine if a database has the necessary elements required to run a study. 
+The `executeDbProfile` function in this package relies on the [Achilles](https://github.com/ohdsi/Achilles) and [DataQualityDashboard](https://github.com/ohdsi/DataQualityDashboard) packages to run a subset of characterization and data quality analyses. This subset is referred to as the database profile. This profile will be used to determine if a database has the necessary elements required to run a study. 
 
 It works by connecting to a database through a connectionDetails object created by the [DatabaseConnector](http://ohdsi.github.io/DatabaseConnector/articles/Connecting.html) package. It will then check to see if Achilles results are already present. If so, it will export those results. If not, it will run the required Achilles analyses and then export. Then, it will run a set of DataQualityDashboard checks and export those results as well.
 
-## How to run DbProfile
+Once the results are generated they are then loaded to a separate results schema. The `executeDbDiagnostics` function will take in a list of analysis settings to compare against the dbProfile results to determine if a database is eligible to run a particular analysis.
+
+## How to run DbDiagnostics::executeDbProfile
 
 0. Ensure that your `GitHub Personal Access Token` lies in an accessible `.Renviron` file.
 
@@ -34,7 +36,7 @@ It works by connecting to a database through a connectionDetails object created 
     pathToDriver = Sys.getenv("path_to_driver"))
   ```
   
-3. Call the execute function with options:
+3. Call the executeDbProfile function with options:
 
   ```r
   # The schema where your CDM-structured data are housed
@@ -61,15 +63,15 @@ It works by connecting to a database through a connectionDetails object created 
   # The location on your machine of the DQD config file for concept check thresholds or "default".
   conceptCheckThresholds <- system.file("LegendT2dm", "ConceptLevelMeasurements.csv", package = "DbProfile")
     
-  DbProfile::execute(connectionDetails = connectionDetails,
-                     cdmDatabaseSchema = cdmDatabaseSchema,
-                     resultsDatabaseSchema = resultsDatabaseSchema,
-                     vocabDatabaseSchema = vocabDatabaseSchema,
-                     cdmSourceName = cdmSourceName,
-                     outputFolder = outputFolder,
-                     cdmVersion = cdmVersion,
-                     overwriteAchilles = overwriteAchilles,
-                     conceptCheckThresholds = conceptCheckThresholds)
+  DbDiagnostics::executeDbProfile(connectionDetails = connectionDetails,
+                                   cdmDatabaseSchema = cdmDatabaseSchema,
+                                   resultsDatabaseSchema = resultsDatabaseSchema,
+                                   vocabDatabaseSchema = vocabDatabaseSchema,
+                                   cdmSourceName = cdmSourceName,
+                                   outputFolder = outputFolder,
+                                   cdmVersion = cdmVersion,
+                                   overwriteAchilles = overwriteAchilles,
+                                   conceptCheckThresholds = conceptCheckThresholds)
   ```
 
 4. Email the file `DbProfileResults_<cdmSourceName>.zip` in the `outputFolder` directory to the data-quality study coordinator.
