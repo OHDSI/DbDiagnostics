@@ -32,10 +32,8 @@
 #' @param fieldCheckThresholds      OPTIONAL Location of the custom threshold file for the DQD field checks. In absence of this parameter the default thresholds are used.
 #' @param conceptCheckThresholds    OPTIONAL Location of the custom threshold file for the DQD concept checks. In absence of this parameter the default thresholds are used.
 #'
-#' @return
-#'
 #' @import DataQualityDashboard Achilles DatabaseConnector SqlRender
-#'
+#' @importFrom utils read.csv write.csv zip
 #' @export
 executeDbProfile <- function(connectionDetails,
 														 cdmDatabaseSchema,
@@ -335,6 +333,8 @@ executeDbProfile <- function(connectionDetails,
 		"DOSE_ERA",
 		"CONDITION_ERA"
 	)
+
+	dqdCdmVersion <- cdmVersion
 
 	if (cdmVersion == "5.3") {
 		dqdCdmVersion <- "5.3.1"
