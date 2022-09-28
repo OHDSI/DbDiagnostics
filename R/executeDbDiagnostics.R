@@ -825,7 +825,7 @@ executeDbDiagnostics <- function(connectionDetails,
 
 		}
 
-		write.csv(dbDiagnosticsResults, paste0(outputFolder,"/dataDiagnosticsOutput_",studyName,".csv"))
+		CohortGenerator::write.csv(dbDiagnosticsResults, paste0(outputFolder,"/dataDiagnosticsOutput_",studyName,".csv"))
 
  return(dbDiagnosticsResults)
 }

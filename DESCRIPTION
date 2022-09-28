@@ -20,7 +20,8 @@ Imports:
 	magrittr,
 	SqlRender (>= 1.7.0),
 	Achilles (>= 1.7.0),
-	DataQualityDashboard (>= 1.4.0)
+	DataQualityDashboard (>= 1.4.0),
+	CohortGenerator
 Suggests:
 	testthat,
 	knitr,
