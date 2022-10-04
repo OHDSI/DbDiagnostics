@@ -6,22 +6,22 @@
 \usage{
 executeDbDiagnostics(
   connectionDetails,
-  resultsDatabaseSchema,
-  resultsTableName,
+  resultsDatabaseSchema = "dp_temp",
+  resultsTableName = "dp_achilles_results_augmented",
   outputFolder = getwd(),
-  dataDiagnosticsSettings
+  dataDiagnosticsSettingsList
 )
 }
 \arguments{
 \item{connectionDetails}{A connectionDetails object for connecting to the database containing the DbProfile results}
 
-\item{resultsDatabaseSchema}{The fully qualified database name of the results schema where the DbProfile results are housed}
+\item{resultsDatabaseSchema}{The fully qualified database name of the results schema where the DbProfile results are housed. Default is "dp_temp".}
 
-\item{resultsTableName}{The name of the table in the results schema with the DbProfile results}
+\item{resultsTableName}{The name of the table in the results schema with the DbProfile results. Default is "dp_achilles_results_augmented."}
 
 \item{outputFolder}{Results will be written to this directory, default = getwd()}
 
-\item{dataDiagnosticsSettings}{A list of settings created from DataDiagnostics::createDataDiagnosticsSettings() function}
+\item{dataDiagnosticsSettingsList}{A list of settings objects, each created from DataDiagnostics::createDataDiagnosticsSettings() function and each representing one analysis.}
 }
 \description{
 executeDbDiagnostics

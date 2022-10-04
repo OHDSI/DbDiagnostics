@@ -5,6 +5,7 @@
 \title{createDataDiagnosticsSettings}
 \usage{
 createDataDiagnosticsSettings(
+  analysisId,
   analysisName = "analysis",
   minAge = NULL,
   maxAge = NULL,
@@ -27,6 +28,8 @@ createDataDiagnosticsSettings(
 )
 }
 \arguments{
+\item{analysisId}{The identifier for the specific analysis.}
+
 \item{analysisName}{The name for the specific analysis.}
 
 \item{minAge}{The minimum age for patients included in the analysis.

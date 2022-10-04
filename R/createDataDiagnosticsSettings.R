@@ -18,6 +18,7 @@
 
 #' createDataDiagnosticsSettings
 #'
+#' @param analysisId							  The identifier for the specific analysis.
 #' @param analysisName							The name for the specific analysis.
 #' @param minAge										The minimum age for patients included in the analysis.
 #'                               		Default is the lowest age available in the database.
@@ -50,7 +51,8 @@
 #'
 #' @export
 
-createDataDiagnosticsSettings <- function(analysisName = "analysis",
+createDataDiagnosticsSettings <- function(analysisId,
+																					analysisName = "analysis",
 																					minAge = NULL,
 																					maxAge = NULL,
 																					genderConceptIds = c(8507,8532),
