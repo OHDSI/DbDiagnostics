@@ -578,7 +578,10 @@ executeDbDiagnostics <- function(connectionDetails,
 																requiredIP == 1 && desiredIP == 0 ~ 'Inpatient visits required',
 																requiredIP == 0 && desiredIP == 1 ~ 'Inpatient visits desired',
 																requiredIP == 0 && desiredIP == 0 ~ 'Inpatient visits not required nor desired'),
-							 evaluateThreshold = desiredIP)
+							 evaluateThreshold = case_when(requiredIP == 1 && desiredIP == 1 ~ 1,
+							 															requiredIP == 1 && desiredIP == 0 ~ 1,
+							 															requiredIP == 0 && desiredIP == 1 ~ 3,
+							 															requiredIP == 0 && desiredIP == 0 ~ 0))
 
 			#if no criteria is met, add a row with a 0 value
 			if(nrow(personsWithIPCriteria) == 0){
@@ -589,7 +592,10 @@ executeDbDiagnostics <- function(connectionDetails,
 													 requiredIP == 1 && desiredIP == 0 ~ 'Inpatient visits required',
 													 requiredIP == 0 && desiredIP == 1 ~ 'Inpatient visits desired',
 													 requiredIP == 0 && desiredIP == 0 ~ 'Inpatient visits not required nor desired'),
-									evaluateThreshold = desiredIP)
+									evaluateThreshold = case_when(requiredIP == 1 && desiredIP == 1 ~ 1,
+																								requiredIP == 1 && desiredIP == 0 ~ 1,
+																								requiredIP == 0 && desiredIP == 1 ~ 3,
+																								requiredIP == 0 && desiredIP == 0 ~ 0))
 			}
 
 			personOutput <- rbind(personOutput, personsWithIPCriteria)
@@ -603,7 +609,10 @@ executeDbDiagnostics <- function(connectionDetails,
 							 								 requiredOP == 1 && desiredOP == 0 ~ 'Outpatient visits required',
 							 								 requiredOP == 0 && desiredOP == 1 ~ 'Outpatient visits desired',
 							 								 requiredOP == 0 && desiredOP == 0 ~ 'Outpatient visits not required nor desired'),
-							 evaluateThreshold = desiredOP)
+							 evaluateThreshold = case_when(requiredOP == 1 && desiredOP == 1 ~ 1,
+							 															requiredOP == 1 && desiredOP == 0 ~ 1,
+							 															requiredOP == 0 && desiredOP == 1 ~ 3,
+							 															requiredOP == 0 && desiredOP == 0 ~ 0))
 
 			#if no criteria is met, add a row with a 0 value
 			if(nrow(personsWithOPCriteria) == 0){
@@ -614,7 +623,10 @@ executeDbDiagnostics <- function(connectionDetails,
 																	requiredOP == 1 && desiredOP == 0 ~ 'Outpatient visits required',
 																	requiredOP == 0 && desiredOP == 1 ~ 'Outpatient visits desired',
 																	requiredOP == 0 && desiredOP == 0 ~ 'Outpatient visits not required nor desired'),
-								 evaluateThreshold = desiredOP)
+								 evaluateThreshold = case_when(requiredOP == 1 && desiredOP == 1 ~ 1,
+								 															requiredOP == 1 && desiredOP == 0 ~ 1,
+								 															requiredOP == 0 && desiredOP == 1 ~ 3,
+								 															requiredOP == 0 && desiredOP == 0 ~ 0))
 			}
 
 			personOutput <- rbind(personOutput, personsWithOPCriteria)
@@ -628,7 +640,10 @@ executeDbDiagnostics <- function(connectionDetails,
 							 								 requiredER == 1 && desiredER == 0 ~ 'Emergency Room visits required',
 							 								 requiredER == 0 && desiredER == 1 ~ 'Emergency Room visits desired',
 							 								 requiredER == 0 && desiredER == 0 ~ 'Emergency Room visits not required nor desired'),
-							 evaluateThreshold = desiredER)
+							 evaluateThreshold = case_when(requiredER == 1 && desiredER == 1 ~ 1,
+							 															requiredER == 1 && desiredER == 0 ~ 1,
+							 															requiredER == 0 && desiredER == 1 ~ 3,
+							 															requiredER == 0 && desiredER == 0 ~ 0))
 
 			#if no criteria is met, add a row with a 0 value
 			if(nrow(personsWithERCriteria) == 0){
@@ -639,7 +654,10 @@ executeDbDiagnostics <- function(connectionDetails,
 								 								 requiredER == 1 && desiredER == 0 ~ 'Emergency Room visits required',
 								 								 requiredER == 0 && desiredER == 1 ~ 'Emergency Room visits desired',
 								 								 requiredER == 0 && desiredER == 0 ~ 'Emergency Room visits not required nor desired'),
-								 evaluateThreshold = desiredER)
+								 evaluateThreshold = case_when(requiredER == 1 && desiredER == 1 ~ 1,
+								 															requiredER == 1 && desiredER == 0 ~ 1,
+								 															requiredER == 0 && desiredER == 1 ~ 3,
+								 															requiredER == 0 && desiredER == 0 ~ 0))
 			}
 
 			personOutput <- rbind(personOutput, personsWithERCriteria)
@@ -776,22 +794,14 @@ executeDbDiagnostics <- function(connectionDetails,
 
 			minSampleSize <- round(minSampleSizeProp*numPersonsInDb, digits = 0)
 
-			if(minSampleSize < 1000){
-				minSampleStatus <- 'fail'
-				minSampleFail <- 1
-			}else{
-				minSampleStatus <- 'pass'
-				minSampleFail <- 0
-			}
-
 			minSample <- list(statistic = "minSampleSize",
 												value = minSampleSize,
 												proportion = minSampleSizeProp,
 												spec = "> 1000",
 												evaluateThreshold = 1,
-												threshold = 1000,
-												status = minSampleStatus,
-												fail = minSampleFail)
+												threshold = 0,
+												status = 'pass',
+												fail = 0)
 
 			maxSampleSizeProp <- min(as.numeric(sampleSizeValues[,1]),
 															 as.numeric(personOutputSum[which(personOutputSum$statistic == 'propWithRequiredTargetConcepts'),]$proportion),
@@ -835,9 +845,15 @@ executeDbDiagnostics <- function(connectionDetails,
 
 		CohortGenerator::writeCsv(dataDiagnosticsResults, file.path(outputFolder,"data_diagnostics_output.csv"), append = (k != 1))
 
+		if(k==1){
+			totalResults <- dataDiagnosticsResults
+		}else{
+			totalResultsNew <- rbind(dataDiagnosticsResults,totalResults)
+			totalResults <- totalResultsNew
+		}
 
 	} # end of for loop around analysis list
 
 
- return(dataDiagnosticsResults)
+ return(totalResults)
 }
