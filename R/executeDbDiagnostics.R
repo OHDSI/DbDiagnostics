@@ -334,12 +334,12 @@ executeDbDiagnostics <- function(connectionDetails,
 			avgObsPeriodsPerPerson <- totalObsPeriods/numPersonsInDb
 
 			obsPeriodsWithCalendarStarts <- dbProfile %>%
-				filter(ANALYSIS_ID == 111 & STRATUM_1 >= studyStartDate) %>%
+				filter(ANALYSIS_ID == 111 & STRATUM_1 <= studyEndDate) %>%
 				summarise(personsWithCalendarStarts = sum(COUNT_VALUE)/avgObsPeriodsPerPerson) %>%
 				mutate(propWithCalendarStarts = personsWithCalendarStarts/numPersonsInDb)
 
 			obsPeriodsWithCalendarEnds <- dbProfile %>%
-				filter(ANALYSIS_ID == 112 & STRATUM_1 <= studyEndDate) %>%
+				filter(ANALYSIS_ID == 112 & STRATUM_1 >= studyStartDate) %>%
 				summarise(personsWithCalendarEnds = sum(COUNT_VALUE)/avgObsPeriodsPerPerson) %>%
 				mutate(propWithCalendarEnds = personsWithCalendarEnds/numPersonsInDb)
 
@@ -854,6 +854,27 @@ executeDbDiagnostics <- function(connectionDetails,
 
 	} # end of for loop around analysis list
 
+
+	tempFileName <- tempfile()
+
+	ddAnalysisToRow <- function(ddAnalysis) {
+		ParallelLogger::saveSettingsToJson(ddAnalysis, tempFileName)
+		row <- tibble(
+			analysisId = ddAnalysis$analysisId,
+			description = ddAnalysis$description,
+			definition = readChar(tempFileName, file.info(tempFileName)$size)
+		)
+		return(row)
+	}
+
+	dataDiagnosticsAnalysis <- lapply(settingsList, ddAnalysisToRow)
+	dataDiagnosticsAnalysis <- bind_rows(dataDiagnosticsAnalysis) %>%
+		distinct()
+
+	unlink(tempFileName)
+
+	fileName <- file.path(outputFolder, "data_diagnostics_analysis.csv")
+	CohortGenerator::writeCsv(dataDiagnosticsAnalysis, fileName)
 
  return(totalResults)
 }
