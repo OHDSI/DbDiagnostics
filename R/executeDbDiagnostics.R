@@ -684,7 +684,7 @@ executeDbDiagnostics <- function(connectionDetails,
 
 
 			if(is.null(studySpecs$comparatorConceptIds)){
-				personsWithRequiredComparatorConcepts <- as.data.frame()
+				personsWithRequiredComparatorConcepts <- data.frame()
 				personsWithRequiredComparatorConcepts$statistic <- 'propWithRequiredComparatorConcepts'
 				personsWithRequiredComparatorConcepts$COUNT_VALUE <- 0
 				personsWithRequiredComparatorConcepts$spec <- NULL
@@ -711,7 +711,7 @@ executeDbDiagnostics <- function(connectionDetails,
 			personOutput <- rbind(personOutput, personsWithRequiredComparatorConcepts)
 
 			if(is.null(studySpecs$outcomeConceptIds)){
-				personsWithRequiredOutcomeConcepts <- as.data.frame()
+				personsWithRequiredOutcomeConcepts <- data.frame()
 				personsWithRequiredOutcomeConcepts$statistic <- 'propWithRequiredOutcomeConcepts'
 				personsWithRequiredOutcomeConcepts$COUNT_VALUE <- 0
 				personsWithRequiredComparatorConcepts$spec <- NULL
