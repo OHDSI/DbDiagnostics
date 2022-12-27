@@ -40,6 +40,7 @@ executeDbDiagnostics <- function(connectionDetails,
 	options(scipen = 999)
 
 	conn <- DatabaseConnector::connect(connectionDetails)
+	on.exit(DatabaseConnector::disconnect(conn))
 
 	sql <- "SELECT DISTINCT db_id, database_id
         FROM @results_database_schema.@results_table_name"
@@ -51,9 +52,8 @@ executeDbDiagnostics <- function(connectionDetails,
 
 	dbNames <- DatabaseConnector::querySql(conn, tsql)
 
-	DatabaseConnector::disconnect(conn)
-
 	# Get the most recent release for each database -------------------------------
+	message("Get most recent database release")
 	for(i in 1:nrow(dbNames)){
 		dbInfo <- strsplit(dbNames$DB_ID[i], split = "-")
 
@@ -93,11 +93,15 @@ executeDbDiagnostics <- function(connectionDetails,
 	# Name of this individual study
 		analysisName <- studySpecs$analysisName
 
+		message(paste0("Analysis #", analysisId, " - ", analysisName))
+
 		# Loop through the databases -----------------------------------------------
 
 		for(i in 1:nrow(latestDbs)){
 
 			dbName <- latestDbs[i,1]
+
+			message(paste0("  -- Database: ", dbName, " (", i, "/", nrow(latestDbs), ")"))
 
 			# Get the dbProfile information for the database
 			sql <- "SELECT * FROM @results_database_schema.@results_table_name WHERE db_id = '@databaseName'"
@@ -107,12 +111,7 @@ executeDbDiagnostics <- function(connectionDetails,
 																results_table_name = resultsTableName)
 
 			tsql <- SqlRender::translate(rsql, connectionDetails$dbms)
-
-			conn <- DatabaseConnector::connect(connectionDetails)
-
 			dbProfile <- DatabaseConnector::querySql(conn, tsql)
-
-			DatabaseConnector::disconnect(conn)
 
 			# Set up the specs for this study/db combination. This is done after getting the dbProfile information because NULL
 			# values in the specs get values from the database in order to evaluate them
@@ -688,11 +687,6 @@ executeDbDiagnostics <- function(connectionDetails,
 																														COUNT_VALUE = 0,
 																														spec = NA, # Revised from NULL to NA since you cannot declare a column with a NULL value as the only value in the data frame.
 																														evaluateThreshold = 0)
-				# personsWithRequiredComparatorConcepts$statistic <- 'propWithRequiredComparatorConcepts'
-				# personsWithRequiredComparatorConcepts$COUNT_VALUE <- 0
-				# personsWithRequiredComparatorConcepts$spec <- NULL
-				# personsWithRequiredComparatorConcepts$evaluateThreshold <- 0
-
 			}else{
 				personsWithRequiredComparatorConcepts <- dbProfile %>%
 					filter(ANALYSIS_ID %in% c(1800, 400, 600, 700, 800, 2100)) %>%
@@ -718,11 +712,6 @@ executeDbDiagnostics <- function(connectionDetails,
 																												 COUNT_VALUE = 0,
 																												 spec = NA, # Revised from NULL to NA since you cannot declare a column with a NULL value as the only value in the data frame.
 																												 evaluateThreshold = 0)
-				# personsWithRequiredOutcomeConcepts$statistic <- 'propWithRequiredOutcomeConcepts'
-				# personsWithRequiredOutcomeConcepts$COUNT_VALUE <- 0
-				# personsWithRequiredComparatorConcepts$spec <- NULL
-				# personsWithRequiredComparatorConcepts$evaluateThreshold <- 0
-
 			}else{
 				personsWithRequiredOutcomeConcepts <- dbProfile %>%
 					filter(ANALYSIS_ID %in% c(1800, 400, 600, 700, 800, 2100)) %>%
@@ -870,10 +859,10 @@ executeDbDiagnostics <- function(connectionDetails,
 			description = ddAnalysis$description,
 			definition = readChar(tempFileName, file.info(tempFileName)$size)
 		)
-		return(row)
+		invisible(row)
 	}
 
-	dataDiagnosticsAnalysis <- lapply(settingsList, ddAnalysisToRow)
+	dataDiagnosticsAnalysis <- lapply(dataDiagnosticsSettingsList, ddAnalysisToRow)
 	dataDiagnosticsAnalysis <- bind_rows(dataDiagnosticsAnalysis) %>%
 		distinct()
 
@@ -882,5 +871,5 @@ executeDbDiagnostics <- function(connectionDetails,
 	fileName <- file.path(outputFolder, "data_diagnostics_analysis.csv")
 	CohortGenerator::writeCsv(dataDiagnosticsAnalysis, fileName)
 
- return(totalResults)
+ invisible(totalResults)
 }
