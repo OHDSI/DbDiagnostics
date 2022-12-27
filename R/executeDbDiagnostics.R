@@ -684,11 +684,14 @@ executeDbDiagnostics <- function(connectionDetails,
 
 
 			if(is.null(studySpecs$comparatorConceptIds)){
-				personsWithRequiredComparatorConcepts <- data.frame()
-				personsWithRequiredComparatorConcepts$statistic <- 'propWithRequiredComparatorConcepts'
-				personsWithRequiredComparatorConcepts$COUNT_VALUE <- 0
-				personsWithRequiredComparatorConcepts$spec <- NULL
-				personsWithRequiredComparatorConcepts$evaluateThreshold <- 0
+				personsWithRequiredComparatorConcepts <- data.frame(statistic = 'propWithRequiredComparatorConcepts',
+																														COUNT_VALUE = 0,
+																														spec = NA, # Revised from NULL to NA since you cannot declare a column with a NULL value as the only value in the data frame.
+																														evaluateThreshold = 0)
+				# personsWithRequiredComparatorConcepts$statistic <- 'propWithRequiredComparatorConcepts'
+				# personsWithRequiredComparatorConcepts$COUNT_VALUE <- 0
+				# personsWithRequiredComparatorConcepts$spec <- NULL
+				# personsWithRequiredComparatorConcepts$evaluateThreshold <- 0
 
 			}else{
 				personsWithRequiredComparatorConcepts <- dbProfile %>%
@@ -711,11 +714,14 @@ executeDbDiagnostics <- function(connectionDetails,
 			personOutput <- rbind(personOutput, personsWithRequiredComparatorConcepts)
 
 			if(is.null(studySpecs$outcomeConceptIds)){
-				personsWithRequiredOutcomeConcepts <- data.frame()
-				personsWithRequiredOutcomeConcepts$statistic <- 'propWithRequiredOutcomeConcepts'
-				personsWithRequiredOutcomeConcepts$COUNT_VALUE <- 0
-				personsWithRequiredComparatorConcepts$spec <- NULL
-				personsWithRequiredComparatorConcepts$evaluateThreshold <- 0
+				personsWithRequiredOutcomeConcepts <- data.frame(statistic = 'propWithRequiredOutcomeConcepts',
+																												 COUNT_VALUE = 0,
+																												 spec = NA, # Revised from NULL to NA since you cannot declare a column with a NULL value as the only value in the data frame.
+																												 evaluateThreshold = 0)
+				# personsWithRequiredOutcomeConcepts$statistic <- 'propWithRequiredOutcomeConcepts'
+				# personsWithRequiredOutcomeConcepts$COUNT_VALUE <- 0
+				# personsWithRequiredComparatorConcepts$spec <- NULL
+				# personsWithRequiredComparatorConcepts$evaluateThreshold <- 0
 
 			}else{
 				personsWithRequiredOutcomeConcepts <- dbProfile %>%
