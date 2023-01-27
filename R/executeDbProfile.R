@@ -50,6 +50,10 @@ executeDbProfile <- function(connectionDetails,
 														 conceptCheckThresholds = "default") {
 
 	# Set the name of the output file
+	if (!dir.exists(outputFolder)) {
+		dir.create(path = outputFolder, recursive = TRUE)
+	}
+
 	outputFile <- file.path(outputFolder, paste0("DbProfileResults_", cdmSourceName, ".zip"))
 
 	# The Achilles tables we will look for to see if the analyses have already been run

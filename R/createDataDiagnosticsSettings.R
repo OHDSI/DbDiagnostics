@@ -46,6 +46,9 @@
 #' @param targetConceptIds          A vector containing the required target concepts.
 #' @param comparatorName            The name of the comparator of interest.
 #' @param comparatorConceptIds      A vector containing the required comparator concepts.
+#' @param indicationName						The name of the indication of interest.
+#' @param indicationConceptIds			A vector containing the required indication concepts.
+#' @param includeIndicationInCalc	  A T/F object indicating whether the proportion of people with the indication concepts should be included in the estimated sample size calculation. Default is FALSE.
 #' @param outcomeName               The name of the outcome of interest.
 #' @param outcomeConceptIds				  A vector containing the required outcome concepts.
 #'
@@ -69,6 +72,9 @@ createDataDiagnosticsSettings <- function(analysisId,
 																					targetConceptIds = NULL,
 																					comparatorName = NULL,
 																					comparatorConceptIds = NULL,
+																					indicationName = NULL,
+																					indicationConceptIds = NULL,
+																					includeIndicationInCalc = F,
 																					outcomeName = NULL,
 																					outcomeConceptIds = NULL) {
 

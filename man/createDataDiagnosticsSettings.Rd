@@ -23,6 +23,9 @@ createDataDiagnosticsSettings(
   targetConceptIds = NULL,
   comparatorName = NULL,
   comparatorConceptIds = NULL,
+  indicationName = NULL,
+  indicationConceptIds = NULL,
+  includeIndicationInCalc = F,
   outcomeName = NULL,
   outcomeConceptIds = NULL
 )
@@ -73,6 +76,12 @@ Meaning you need the dataset to have these data but each person is not required 
 \item{comparatorName}{The name of the comparator of interest.}
 
 \item{comparatorConceptIds}{A vector containing the required comparator concepts.}
+
+\item{indicationName}{The name of the indication of interest.}
+
+\item{indicationConceptIds}{A vector containing the required indication concepts.}
+
+\item{includeIndicationInCalc}{A T/F object indicating whether the proportion of people with the indication concepts should be included in the estimated sample size calculation. Default is FALSE.}
 
 \item{outcomeName}{The name of the outcome of interest.}
 

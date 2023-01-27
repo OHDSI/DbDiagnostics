@@ -33,6 +33,13 @@ executeDbDiagnostics <- function(connectionDetails,
 																 resultsTableName = "dp_achilles_results_augmented",
 																 outputFolder = getwd(),
 																 dataDiagnosticsSettingsList) {
+
+	# Set up outputFolder
+
+	if (!dir.exists(outputFolder)) {
+		dir.create(path = outputFolder, recursive = TRUE)
+	}
+
 	# TODO Later----------------
 	# add an option to limit to databases
 
@@ -235,7 +242,7 @@ executeDbDiagnostics <- function(connectionDetails,
 			numCriteria <- numCriteria + 1
 
 			#comparator
-			if(!is.null(studySpecs$comparatorName)){
+			if(!is.null(studySpecs$comparatorConceptIds)){
 				comparator <- studySpecs$comparatorName
 				requiredComparatorConcepts <- studySpecs$comparatorConceptIds
 				numCriteria <- numCriteria + 1
@@ -243,8 +250,17 @@ executeDbDiagnostics <- function(connectionDetails,
 				requiredComparatorConcepts <- NULL
 			}
 
+			#indication
+			if(!is.null(studySpecs$indicationConceptIds)){
+				indication <- studySpecs$indicationName
+				requiredIndicationConcepts <- studySpecs$indicationConceptIds
+				numCriteria <- numCriteria + 1
+			}else{
+				requiredIndicationConcepts <- NULL
+			}
+
 			#outcome
-			if(!is.null(studySpecs$outcomeName)){
+			if(!is.null(studySpecs$outcomeConceptIds)){
 				outcome <- studySpecs$outcomeName
 				requiredOutcomeConcepts <-  studySpecs$outcomeConceptIds
 				numCriteria <- numCriteria + 1
@@ -707,6 +723,32 @@ executeDbDiagnostics <- function(connectionDetails,
 
 			personOutput <- rbind(personOutput, personsWithRequiredComparatorConcepts)
 
+			if(is.null(studySpecs$indicationConceptIds)){
+				personsWithRequiredIndicationConcepts <- data.frame(statistic = 'propWithRequiredIndicationConcepts',
+																														COUNT_VALUE = 0,
+																														spec = NA, # Revised from NULL to NA since you cannot declare a column with a NULL value as the only value in the data frame.
+																														evaluateThreshold = 0)
+			}else{
+				personsWithRequiredIndicationConcepts <- dbProfile %>%
+					filter(ANALYSIS_ID %in% c(1800, 400, 600, 700, 800, 2100)) %>%
+					filter(STRATUM_1 %in% requiredIndicationConcepts) %>%
+					select(COUNT_VALUE) %>%
+					mutate(statistic = "propWithRequiredIndicationConcepts",
+								 spec = comparator,
+								 evaluateThreshold = 2)
+
+				if(nrow(personsWithRequiredIndicationConcepts) == 0){
+					personsWithRequiredIndicationConcepts[1,]$statistic <- 'propWithRequiredIndicationConcepts'
+					personsWithRequiredIndicationConcepts[1,]$COUNT_VALUE <- 0
+					personsWithRequiredIndicationConcepts <- personsWithRequiredIndicationConcepts %>%
+						mutate(spec = comparator,
+									 evaluateThreshold = 2)
+				}
+			}
+
+			personOutput <- rbind(personOutput, personsWithRequiredIndicationConcepts)
+
+
 			if(is.null(studySpecs$outcomeConceptIds)){
 				personsWithRequiredOutcomeConcepts <- data.frame(statistic = 'propWithRequiredOutcomeConcepts',
 																												 COUNT_VALUE = 0,
@@ -783,9 +825,17 @@ executeDbDiagnostics <- function(connectionDetails,
 							fail = case_when(proportion <= threshold  ~ 1,
 															 proportion > threshold  ~ 0))
 
-			minSampleSizeProp <- min(as.numeric(personOutputSum[which(personOutputSum$statistic == 'propWithRequiredTargetConcepts'),]$proportion),
-															 as.numeric(personOutputSum[which(personOutputSum$statistic == 'propWithRequiredComparatorConcepts'),]$proportion),
-															 na.rm = TRUE)*prod(as.numeric(sampleSizeValues[,1]))
+			if(studySpecs$includeIndicationInCalc){
+				minSampleSizeProp <- min(as.numeric(personOutputSum[which(personOutputSum$statistic == 'propWithRequiredTargetConcepts'),]$proportion),
+																 as.numeric(personOutputSum[which(personOutputSum$statistic == 'propWithRequiredComparatorConcepts'),]$proportion),
+																 na.rm = TRUE)*prod(as.numeric(sampleSizeValues[,1]))*as.numeric(personOutputSum[which(personOutputSum$statistic == 'propWithRequiredIndicationConcepts'),]$proportion)
+
+			}else{
+				minSampleSizeProp <- min(as.numeric(personOutputSum[which(personOutputSum$statistic == 'propWithRequiredTargetConcepts'),]$proportion),
+																 as.numeric(personOutputSum[which(personOutputSum$statistic == 'propWithRequiredComparatorConcepts'),]$proportion),
+																 na.rm = TRUE)*prod(as.numeric(sampleSizeValues[,1]))
+
+			}
 
 			minSampleSize <- round(minSampleSizeProp*numPersonsInDb, digits = 0)
 
@@ -798,10 +848,20 @@ executeDbDiagnostics <- function(connectionDetails,
 												status = 'pass',
 												fail = 0)
 
-			maxSampleSizeProp <- min(as.numeric(sampleSizeValues[,1]),
-															 as.numeric(personOutputSum[which(personOutputSum$statistic == 'propWithRequiredTargetConcepts'),]$proportion),
-															 as.numeric(personOutputSum[which(personOutputSum$statistic == 'propWithRequiredComparatorConcepts'),]$proportion),
-															 na.rm = TRUE)
+			if(studySpecs$includeIndicationInCalc){
+				maxSampleSizeProp <- min(as.numeric(sampleSizeValues[,1]),
+																 as.numeric(personOutputSum[which(personOutputSum$statistic == 'propWithRequiredTargetConcepts'),]$proportion),
+																 as.numeric(personOutputSum[which(personOutputSum$statistic == 'propWithRequiredComparatorConcepts'),]$proportion),
+																 as.numeric(personOutputSum[which(personOutputSum$statistic == 'propWithRequiredIndicationConcepts'),]$proportion),
+																 na.rm = TRUE)
+
+			}else{
+				maxSampleSizeProp <- min(as.numeric(sampleSizeValues[,1]),
+																 as.numeric(personOutputSum[which(personOutputSum$statistic == 'propWithRequiredTargetConcepts'),]$proportion),
+																 as.numeric(personOutputSum[which(personOutputSum$statistic == 'propWithRequiredComparatorConcepts'),]$proportion),
+																 na.rm = TRUE)
+
+			}
 
 			maxSampleSize <- maxSampleSizeProp*numPersonsInDb
 
