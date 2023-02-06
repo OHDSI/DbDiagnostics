@@ -700,7 +700,7 @@ executeDbDiagnostics <- function(connectionDetails,
 
 			if(is.null(studySpecs$comparatorConceptIds)){
 				personsWithRequiredComparatorConcepts <- data.frame(statistic = 'propWithRequiredComparatorConcepts',
-																														COUNT_VALUE = 0,
+																														COUNT_VALUE = NA,
 																														spec = NA, # Revised from NULL to NA since you cannot declare a column with a NULL value as the only value in the data frame.
 																														evaluateThreshold = 0)
 			}else{
@@ -718,14 +718,15 @@ executeDbDiagnostics <- function(connectionDetails,
 					personsWithRequiredComparatorConcepts <- personsWithRequiredComparatorConcepts %>%
 						mutate(spec = comparator,
 									 evaluateThreshold = 2)
-					}
+				}
+
 			}
 
 			personOutput <- rbind(personOutput, personsWithRequiredComparatorConcepts)
 
 			if(is.null(studySpecs$indicationConceptIds)){
 				personsWithRequiredIndicationConcepts <- data.frame(statistic = 'propWithRequiredIndicationConcepts',
-																														COUNT_VALUE = 0,
+																														COUNT_VALUE = NA,
 																														spec = NA, # Revised from NULL to NA since you cannot declare a column with a NULL value as the only value in the data frame.
 																														evaluateThreshold = 0)
 			}else{
@@ -744,14 +745,13 @@ executeDbDiagnostics <- function(connectionDetails,
 						mutate(spec = comparator,
 									 evaluateThreshold = 2)
 				}
+				personOutput <- rbind(personOutput, personsWithRequiredIndicationConcepts)
 			}
-
-			personOutput <- rbind(personOutput, personsWithRequiredIndicationConcepts)
 
 
 			if(is.null(studySpecs$outcomeConceptIds)){
 				personsWithRequiredOutcomeConcepts <- data.frame(statistic = 'propWithRequiredOutcomeConcepts',
-																												 COUNT_VALUE = 0,
+																												 COUNT_VALUE = NA,
 																												 spec = NA, # Revised from NULL to NA since you cannot declare a column with a NULL value as the only value in the data frame.
 																												 evaluateThreshold = 0)
 			}else{
@@ -770,9 +770,10 @@ executeDbDiagnostics <- function(connectionDetails,
 						mutate(spec = outcome,
 									 evaluateThreshold = 2)
 				}
+				personOutput <- rbind(personOutput, personsWithRequiredOutcomeConcepts)
 			}
 
-			personOutput <- rbind(personOutput, personsWithRequiredOutcomeConcepts)
+
 
 			# Evaluate diagnostics for recommended Dbs per study question -----------
 
