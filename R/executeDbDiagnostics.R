@@ -735,14 +735,14 @@ executeDbDiagnostics <- function(connectionDetails,
 					filter(STRATUM_1 %in% requiredIndicationConcepts) %>%
 					select(COUNT_VALUE) %>%
 					mutate(statistic = "propWithRequiredIndicationConcepts",
-								 spec = comparator,
+								 spec = indication,
 								 evaluateThreshold = 2)
 
 				if(nrow(personsWithRequiredIndicationConcepts) == 0){
 					personsWithRequiredIndicationConcepts[1,]$statistic <- 'propWithRequiredIndicationConcepts'
 					personsWithRequiredIndicationConcepts[1,]$COUNT_VALUE <- 0
 					personsWithRequiredIndicationConcepts <- personsWithRequiredIndicationConcepts %>%
-						mutate(spec = comparator,
+						mutate(spec = indication,
 									 evaluateThreshold = 2)
 				}
 				personOutput <- rbind(personOutput, personsWithRequiredIndicationConcepts)

@@ -1,7 +1,7 @@
 Package: DbDiagnostics
 Type: Package
 Title: OMOP CDM Database Diagnostics Utility
-Version: 0.1.1
+Version: 1.0.2
 Date: 2022-04-26
 Authors@R: c(
   person("Clair", "Blacketer", , "mblacke@its.jnj.com", role = c("aut", "cre")),
