@@ -22,39 +22,167 @@
 #' @param cdmDatabaseSchema         The fully qualified database name of the CDM schema
 #' @param resultsDatabaseSchema     The fully qualified database name of the results schema
 #' @param vocabDatabaseSchema       The fully qualified database name of the vocabulary schema
-#' @param cdmSourceName             The name of the CDM data source
+#' @param cdmSourceName             A string containing the name of the database
+#' @param siteName									The name of the site or institution that owns or licenses the data.
+#' @param siteOHDSIParticipation		Yes/No if the site contributed to an OHDSI study in the past
+#' @param siteOHDSIRunPackage 			Yes/No if site has someone who can run and/or debug an OHDSI study package
+#' @param dataFullName							The full name of the database
+#' @param dataShortName 						The short name or nickname of the database
+#' @param dataContactName 					The *name* of the person who should be contacted in the event this database is identified as a good candidate for a study
+#' @param dataContactemail					The *email address* of the person who should be contacted in the event this database is identified as a good candidate for a study
+#' @param dataDoiType 							The type of data object identifier (DOI) the database has. Options are "DOI", "CURIE", "ARK", "Other",
+#' @param governanceTime						How long (in weeks) it typically takes to receive approval to run a study on this database
+#' @param dataProvenance						The type(s) of data that are present in your database. Options are "Electronic Health Records", "Administrative Claims", "Disease-specific Registry", "Wearable or Sensor Data", "Other".
+#' @param refreshTime 							How often the data are refreshed
 #' @param outputFolder              Results will be written to this directory, Default = getwd()
 #' @param cdmVersion                The CDM version to target for the data source. Default = "5.3"
 #' @param overwriteAchilles         Specify if existing achilles results tables should be overwritten, Default=FALSE
 #' @param minCellCount              Minimum cell count to allow in analyses. Default = 0
+#' @param roundTo										Specify whether to round to the 10s or 100s place. Valid inputs are 10 or 100, default is 10.
+#' @param excludedConcepts					A vector of concepts that should not be included in the final file "achilles_results_augmented.csv".
+#'																	This is the file that is shared with as part of the OHDSI network initiative.
 #' @param addDQD										Specify if DQD should be run. Default = TRUE
 #' @param tableCheckThresholds      OPTIONAL Location of the custom threshold file for the DQD table checks. In absence of this parameter the default thresholds are used.
 #' @param fieldCheckThresholds      OPTIONAL Location of the custom threshold file for the DQD field checks. In absence of this parameter the default thresholds are used.
 #' @param conceptCheckThresholds    OPTIONAL Location of the custom threshold file for the DQD concept checks. In absence of this parameter the default thresholds are used.
 #'
-#' @import DataQualityDashboard Achilles DatabaseConnector SqlRender
+#' @import DataQualityDashboard Achilles DatabaseConnector SqlRender magrittr dplyr
 #' @importFrom utils read.csv write.csv zip
 #' @export
 executeDbProfile <- function(connectionDetails,
 														 cdmDatabaseSchema,
 														 resultsDatabaseSchema,
 														 vocabDatabaseSchema,
-														 cdmSourceName,
+														 cdmSourceName = NA,
+														 siteName = NA,
+														 siteOHDSIParticipation = NA,
+														 siteOHDSIRunPackage = NA,
+														 dataFullName = NA,
+														 dataShortName = NA,
+														 dataContactName = NA,
+														 dataContactEmail = NA,
+														 dataDoiType = NA,
+														 governanceTime = NA,
+														 dataProvenance = NA,
+														 refreshTime = NA,
 														 outputFolder = getwd(),
 														 cdmVersion = "5.3",
 														 overwriteAchilles = FALSE,
 														 minCellCount = 5,
-														 addDQD = TRUE,
+														 roundTo = 10,
+														 excludedConcepts = NULL,
+														 addDQD = FALSE,
 														 tableCheckThresholds = "default",
 														 fieldCheckThresholds = "default",
 														 conceptCheckThresholds = "default") {
 
-	# Set the name of the output file
+	# Set the name of the output file --------------------------------
 	if (!dir.exists(outputFolder)) {
 		dir.create(path = outputFolder, recursive = TRUE)
 	}
 
-	outputFile <- file.path(outputFolder, paste0("DbProfileResults_", cdmSourceName, ".zip"))
+	# Check inputs -------------------------------------
+	if(is.na(cdmSourceName)|cdmSourceName == ""){
+		stop("cdmSourceName cannot be empty, it must be a string containing the name of the database")
+	}
+
+	if(!roundTo %in% c(10,100)){
+		stop(paste0("The rounding value must be either 10 or 100. You inputted ", roundTo))
+	}
+
+	## Create the sourceKey which will become the name of the folder where the results will be stored
+	sourceKey <- gsub(" ","_",cdmSourceName)
+	outputCdmFolder <- paste0(outputFolder,"/",sourceKey)
+
+	if (!dir.exists(outputCdmFolder)) {
+		dir.create(path = outputCdmFolder, recursive = TRUE)
+	}
+
+
+	## Check CDM_SOURCE table ---------------------------------
+		connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+		sql <- SqlRender::render(
+			sql = "select * from @cdmDatabaseSchema.cdm_source;",
+			cdmDatabaseSchema = cdmDatabaseSchema
+		)
+		sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
+		cdm_source <- DatabaseConnector::querySql(connection = connection, sql = sql, snakeCaseToCamelCase = TRUE)
+		if (nrow(cdm_source) < 1) {
+			stop(paste0("Please populate the cdm_source table in the ",cdmDatabaseSchema," schema before executing data profile function."))
+		}
+
+		DatabaseConnector::disconnect(connection)
+
+	## Create the releaseDateKey and create release folder
+
+		releaseDateKey <- format(lubridate::ymd(cdm_source$cdmReleaseDate[1]), "%Y%m%d")
+
+		outputCdmReleaseFolder <- paste0(outputCdmFolder,"/",releaseDateKey)
+
+		if (!dir.exists(outputCdmReleaseFolder)) {
+			dir.create(path = outputCdmReleaseFolder, recursive = TRUE)
+		}
+
+	## Get vocabulary version ----------------------------------
+		connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+		sql <- SqlRender::render(
+			sql = "select vocabulary_version from @vocabDatabaseSchema.vocabulary where vocabulary_id = 'None';",
+			vocabDatabaseSchema = vocabDatabaseSchema
+		)
+		sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
+		vocabVersion <- DatabaseConnector::querySql(connection = connection, sql = sql, snakeCaseToCamelCase = TRUE)
+		if (is.null(vocabVersion)|is.na(vocabVersion)) {
+			stop("Please check your vocabulary tables. The vocabulary version could not be determined")
+		}
+
+		DatabaseConnector::disconnect(connection)
+
+	## Add vocab version from data to cdm_source
+		colnames(vocabVersion) <- "vocabularyVersionFromData"
+
+		cdm_source <- cbind(cdm_source,vocabVersion)
+
+		write.csv(cdm_source,paste0(outputCdmReleaseFolder,"/",sourceKey,"_",releaseDateKey,"_cdm_source.csv"))
+
+	## Collect Metadata
+		if(file.exists(paste0(outputCdmFolder,"/",sourceKey,"_metadata.csv"))){
+
+			metadata <- read.csv(paste0(outputCdmFolder,"/",sourceKey,"_metadata.csv"))
+
+			if(is.na(metadata$dataContactName)|is.na(metadata$dataContactEmail)){
+
+				paste0("Please check the metadata file located at ",outputCdmFolder,"/",sourceKey,"_metadata.csv. It is missing either the contact name or email")
+
+			}else{
+
+				print("Metadata file exists and is populated, skipping metadata collection")
+
+			}
+		}else{
+
+			collectMetadata(outputFolder = outputCdmFolder,
+											outputFileName = paste0(sourceKey,"_metadata"),
+											siteName,
+											siteOHDSIParticipation,
+											siteOHDSIRunPackage,
+											dataFullName,
+											dataShortName,
+											dataContactName,
+											dataContactEmail,
+											dataDoiType,
+											governanceTime,
+											dataProvenance,
+											refreshTime)
+		}
+
+
+
+	## Create zip file name with sourceKey, releaseKey, and timestamp
+	startTime <- Sys.time()
+	startTimestamp <- format(startTime, "%Y%m%d%H%M%S")
+
+	outputFile <- file.path(outputCdmReleaseFolder, paste0("DbProfileResults_", sourceKey, "_" , releaseDateKey, "_", startTimestamp, ".zip"))
+	# ACHILLES ------------------------------------------------
 
 	# The Achilles tables we will look for to see if the analyses have already been run
 	achillesTables <- c("ACHILLES_RESULTS", "ACHILLES_RESULTS_DIST")
@@ -80,23 +208,25 @@ executeDbProfile <- function(connectionDetails,
 			1800,
 			1801,
 			1814,
+			1825,
 			400,
 			401,
+			425,
 			600,
 			601,
+			625,
 			700,
 			701,
+			725,
 			800,
 			801,
+			825,
 			900,
 			901,
 			2100,
 			2101,
+			2125,
 			1815)
-
-	if (!dir.exists(outputFolder)) {
-		dir.create(path = outputFolder, recursive = TRUE)
-	}
 
 	## First we will test to see if the Achilles tables already exist.
 
@@ -234,7 +364,7 @@ executeDbProfile <- function(connectionDetails,
 		resultsDatabaseSchema = resultsDatabaseSchema,
 		analysisIds = analysisIds,
 		minCellCount = minCellCount,
-		exportFolder = outputFolder
+		exportFolder = outputCdmReleaseFolder
 	)
 
 	#Need to list the missing results again as anything still missing should have a count_value of 0
@@ -248,7 +378,7 @@ executeDbProfile <- function(connectionDetails,
 
 	analysesToAdd <- subset(missingAnalyses, requiredAnalyses == 1)
 
-	achillesResults <- read.csv(paste(outputFolder, "achilles_results.csv", sep="/"), colClasses = c("STRATUM_1"="character"))
+	achillesResults <- read.csv(paste(outputCdmReleaseFolder, "achilles_results.csv", sep="/"), colClasses = c("STRATUM_1"="character"))
 
 	if (nrow(analysesToAdd) > 0){
 
@@ -282,27 +412,50 @@ executeDbProfile <- function(connectionDetails,
 
 	DatabaseConnector::disconnect(conn)
 
-	achillesResults <- sqldf::sqldf(
+	#### Rounding and exclusions ----------
+
+	if(!is.null(excludedConcepts)){
+		achillesResultsExclusions <- achillesResults %>%
+			filter(STRATUM_1 %in% as.character(excludedConcepts))
+
+		achillesResultsWithExclusions <- achillesResults %>%
+			filter(!STRATUM_1 %in% as.character(excludedConcepts))
+
+		achillesResultsToAddBack <- achillesResultsExclusions %>%
+			filter(ANALYSIS_ID == 2004)
+
+		achillesResultsFinalExclusions <- rbind(achillesResultsWithExclusions,achillesResultsToAddBack)
+	}else{
+		achillesResultsFinalExclusions <- achillesResults
+	}
+
+	roundingInput <- roundTo/10*-1
+
+	achillesResultsRounded <- achillesResultsFinalExclusions %>%
+		mutate(COUNT_VALUE_ROUNDED = round(COUNT_VALUE,roundingInput))
+
+	achillesResultsFinal <- sqldf::sqldf(
 		"SELECT ANALYSIS_ID,
 						STRATUM_1,
 						STRATUM_2,
 						STRATUM_3,
 						STRATUM_4,
 						STRATUM_5,
-						COUNT_VALUE,
+						COUNT_VALUE_ROUNDED	as COUNT_VALUE,
 						DESCENDANT_CONCEPT_NAME AS VISIT_CONCEPT_NAME,
 						VISIT_ANCESTOR_CONCEPT_ID,
 						VISIT_ANCESTOR_CONCEPT_NAME
-			FROM achillesResults ar
+			FROM achillesResultsRounded ar
 			LEFT JOIN visitAncestors va
 				ON ar.STRATUM_1 = va.DESCENDANT_CONCEPT_ID
 				AND ar.ANALYSIS_ID = 200"
 	)
 
 	# export the new achilles analysis
-	write.csv(x = achillesResults, file = paste(outputFolder,"achilles_results_augmented.csv", sep="/"), quote = TRUE, row.names = FALSE)
+	write.csv(x = achillesResultsFinal, file = paste(outputCdmReleaseFolder,"db_profile_results.csv", sep="/"), quote = TRUE, row.names = FALSE)
 
 	# start of DQD analysis
+	# DQD ----------------------------------
 
 	if(addDQD) {
 	checkNames <- c(
@@ -362,15 +515,19 @@ executeDbProfile <- function(connectionDetails,
 	)
 
 	zip(zipfile = outputFile,
-			c(paste(outputFolder,"achilles_results.csv",sep = "/"),
-				paste(outputFolder,"achilles_results_augmented.csv", sep = "/"),
-			  paste (outputFolder,paste(cdmSourceName,"DbProfile.json",sep = "_"), sep="/")),
+			c(#paste(outputCdmReleaseFolder,"achilles_results.csv",sep = "/"), #####removing for now so there is a choice to filter down the achilles results
+				paste(outputCdmReleaseFolder,"db_profile_results.csv", sep = "/"),
+			  paste(outputCdmReleaseFolder,paste(cdmSourceName,"DbProfile.json",sep = "_"), sep="/"),
+				paste0(outputCdmFolder,"/",sourceKey,"_metadata.csv"),
+				paste0(outputCdmReleaseFolder,"/",sourceKey,"_",releaseDateKey,"_cdm_source.csv")),
 			extras = '-j')
 	} else {
 
 		zip(zipfile = outputFile,
-				c(paste(outputFolder,"achilles_results.csv",sep = "/"),
-					paste(outputFolder,"achilles_results_augmented.csv", sep = "/")),
+				c(#paste(outputCdmReleaseFolder,"achilles_results.csv",sep = "/"),
+					paste(outputCdmReleaseFolder,"db_profile_results.csv", sep = "/"),
+					paste0(outputCdmFolder,"/",sourceKey,"_metadata.csv"),
+					paste0(outputCdmReleaseFolder,"/",sourceKey,"_",releaseDateKey,"_cdm_source.csv")),
 				extras = '-j')
 
 	}
