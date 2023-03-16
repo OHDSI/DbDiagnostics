@@ -1,0 +1,46 @@
+template:
+  params:
+    bootswatch: cosmo
+
+home:
+  links:
+  - text: Ask a question
+    href: http://forums.ohdsi.org
+
+navbar:
+  structure:
+    left:
+    - home
+    - intro
+    - reference
+    - articles
+    - news
+    right: [github]
+  components:
+    home:
+      icon: fa-home fa-lg
+      href: index.html
+    intro:
+      text: Get started
+      href: articles/DataQualityDashboard.html
+    reference:
+      text: Reference
+      href: reference/index.html
+    news:
+      text: Changelog
+      href: news/index.html
+
+reference:
+  - title: "Profiling a database"
+    desc: >
+      Functions for profiling a database using a set of summary statistics
+    contents:
+      - executeDbProfile
+      - collectMetadata
+  - title: "Determine if a database has the necessary elements for a study"
+    desc: >
+      Functions for executing database diagnostics
+    contents:
+      - createDataDiagnosticsSettings
+      - executeDbDiagnostics
+      - createDataDiagnosticsSummary
