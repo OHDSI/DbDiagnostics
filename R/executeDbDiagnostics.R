@@ -40,15 +40,13 @@ executeDbDiagnostics <- function(connectionDetails,
 		dir.create(path = outputFolder, recursive = TRUE)
 	}
 
-	# TODO Later----------------
-	# add an option to limit to databases
-
 	# Connect to the results schema to get list of databases included in results table ---------------
 	options(scipen = 999)
 
 	conn <- DatabaseConnector::connect(connectionDetails)
 	on.exit(DatabaseConnector::disconnect(conn))
 
+	#TODO check the name of the column in the results schema -----------
 	sql <- "SELECT DISTINCT db_id, database_id
         FROM @results_database_schema.@results_table_name"
 
@@ -60,25 +58,22 @@ executeDbDiagnostics <- function(connectionDetails,
 	dbNames <- DatabaseConnector::querySql(conn, tsql)
 
 	# Get the most recent release for each database -------------------------------
-	message("Get most recent database release")
-	for(i in 1:nrow(dbNames)){
-		dbInfo <- strsplit(dbNames$DB_ID[i], split = "-")
+	# message("Get most recent database release")
+	# for(i in 1:nrow(dbNames)){
+	# 	dbInfo <- strsplit(dbNames$DB_ID[i], split = "-")
+	#
+	# 	dbNames$DB_ABBREV[i] <- dbInfo[[1]][[1]]
+	# 	dbNames$DB_DATE[i] <- dbInfo[[1]][[2]]
+	#
+	# 	rm(dbInfo)
+	# }
+	# rm(i)
+	#
+	# latestDbs<- dbNames %>%
+	# 	group_by(DB_ABBREV) %>%
+	# 	slice_max(DB_DATE, n=1)
 
-		dbNames$DB_ABBREV[i] <- dbInfo[[1]][[1]]
-		dbNames$DB_DATE[i] <- dbInfo[[1]][[2]]
-
-		rm(dbInfo)
-	}
-	rm(i)
-
-	latestDbs<- dbNames %>%
-		group_by(DB_ABBREV) %>%
-		slice_max(DB_DATE, n=1)
-
-	dbNum <- nrow(latestDbs)
-
-	#TODO Later ---------------
-	# validation step on database name and version
+	dbNum <- nrow(dbNames)
 
 	for(k in 1:length(dataDiagnosticsSettingsList)){
 	# Get the specifications ------------------
@@ -276,7 +271,7 @@ executeDbDiagnostics <- function(connectionDetails,
 
 			#Demographics ---------
 
-			##Age -----------
+			 ##Age -----------
 			maxYearInDb <- as.integer(substr(max(dbProfile[which(dbProfile$ANALYSIS_ID == 111),]$STRATUM_1),1,4))
 			minYearInDb <- as.integer(substr(min(dbProfile[which(dbProfile$ANALYSIS_ID == 111),]$STRATUM_1),1,4))
 
@@ -299,6 +294,7 @@ executeDbDiagnostics <- function(connectionDetails,
 			personsWithAgeAtFirstObs <- dbProfile %>%
 				filter(ANALYSIS_ID == 101) %>%
 				filter(as.numeric(STRATUM_1) <= maxAge) %>%
+				filter(as.numeric(STARTUM_1) >= minAge) %>%
 				select(COUNT_VALUE) %>%
 				mutate(statistic = 'propWithAgeAtFirstObs',
 							 spec = case_when(is.null(studySpecs$maxAge) && !is.null(studySpecs$minAge) ~ paste("> age",studySpecs$minAge),

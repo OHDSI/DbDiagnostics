@@ -142,7 +142,7 @@ executeDbProfile <- function(connectionDetails,
 
 		cdm_source <- cbind(cdm_source,vocabVersion)
 
-		write.csv(cdm_source,paste0(outputCdmReleaseFolder,"/",sourceKey,"_",releaseDateKey,"_cdm_source.csv"))
+		write.csv(cdm_source,paste0(outputCdmReleaseFolder,"/",sourceKey,"_",releaseDateKey,"_cdm_source.csv"), row.names = FALSE)
 
 	## Collect Metadata
 		if(file.exists(paste0(outputCdmFolder,"/",sourceKey,"_metadata.csv"))){
@@ -461,6 +461,8 @@ executeDbProfile <- function(connectionDetails,
 	checkNames <- c(
 		"measurePersonCompleteness",
 		"cdmField",
+		"measureValueCompleteness",
+		"cdmTable",
 		"isRequired",
 		"cdmDatatype",
 		"isPrimaryKey",
@@ -502,8 +504,8 @@ executeDbProfile <- function(connectionDetails,
 		cdmDatabaseSchema = cdmDatabaseSchema,
 		resultsDatabaseSchema = resultsDatabaseSchema,
 		cdmSourceName = cdmSourceName,
-		outputFolder = outputFolder,
-		outputFile = paste(cdmSourceName,"DbProfile.json",sep = "_"),
+		outputFolder = outputCdmReleaseFolder,
+		outputFile = paste(sourceKey,releaseDateKey,"dqd_results.json",sep = "_"),
 		verboseMode = TRUE,
 		writeToTable = FALSE,
 		checkNames = checkNames,
@@ -517,7 +519,7 @@ executeDbProfile <- function(connectionDetails,
 	zip(zipfile = outputFile,
 			c(#paste(outputCdmReleaseFolder,"achilles_results.csv",sep = "/"), #####removing for now so there is a choice to filter down the achilles results
 				paste(outputCdmReleaseFolder,"db_profile_results.csv", sep = "/"),
-			  paste(outputCdmReleaseFolder,paste(cdmSourceName,"DbProfile.json",sep = "_"), sep="/"),
+			  paste(outputCdmReleaseFolder,paste(sourceKey,releaseDateKey,"DbProfile.json",sep = "_"), sep="/"),
 				paste0(outputCdmFolder,"/",sourceKey,"_metadata.csv"),
 				paste0(outputCdmReleaseFolder,"/",sourceKey,"_",releaseDateKey,"_cdm_source.csv")),
 			extras = '-j')

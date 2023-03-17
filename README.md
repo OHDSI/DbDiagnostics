@@ -8,21 +8,7 @@ Once the results are generated they are then loaded to a separate results schema
 
 ## How to run DbDiagnostics::executeDbProfile
 
-0. Ensure that your `GitHub Personal Access Token` lies in an accessible `.Renviron` file.
-
-1. Create an empty folder or new RStudio project, and in `R`, use the following code to install the study package and its dependencies:
-
-  ```r
-  install.packages("renv")
-  download.file("https://raw.githubusercontent.com/OHDSI/DbProfile/main/extras/renv.lock", "renv.lock")
-  renv::init()
-  ```
-  
-  Select option 1 (Restore the project from the lockfile).
-
-  Once installed, you can execute the study by modifying and using the following code.
-  
-2. Create a connectionDetails object:
+1. Create a connectionDetails object:
 
   Call the `createConnectionDetails` function to create the object, inputting the information for how to connect to your database. Detailed instructions on how to do this can be found [here](http://ohdsi.github.io/DatabaseConnector/articles/Connecting.html). 
 
@@ -36,7 +22,7 @@ Once the results are generated they are then loaded to a separate results schema
     pathToDriver = Sys.getenv("path_to_driver"))
   ```
   
-3. Call the executeDbProfile function with options:
+2. Call the executeDbProfile function with options:
 
   ```r
   # The schema where your CDM-structured data are housed
@@ -84,56 +70,9 @@ Once the results are generated they are then loaded to a separate results schema
                                    addDQD = addDQD
                                    )
   ```
-  
-  
-  # The location on your machine of the DQD config file for concept check thresholds or "default".
-  conceptCheckThresholds <- system.file("LegendT2dm", "ConceptLevelMeasurements.csv", package = "DbProfile")
 
-4. Email the file `DbProfileResults_<cdmSourceName>.zip` in the `outputFolder` directory to the data-quality study coordinator.
+3. Email the file `DbProfileResults_<cdmSourceName>.zip` in the `outputFolder` directory to the data-quality study coordinator.
 
-**DbProfile will execute and/or export the following aggregate summary statistics and DQD checks:**
-
-- Number of persons
-- Number of persons by gender
-- Number of persons by year of birth
-- Number of persons by race
-- Number of persons by ethnicity
-- Number of persons with at least one day of observation in each month
-- Number of persons by observation period start month
-- Number of persons by number of observation periods
-- Number of persons by length of observation period, in 30d increments
-- Number of persons with at least one visit occurrence, by visit_concept_id
-- Number of distinct patients that overlap between specific domains
-- Number of measurement occurrence records, by measurement_concept_id
-- Number of measurement occurrence records, by measurement_source_concept_id
-- Number of measurement records with no value (numeric, string, or concept)
-- Number of condition occurrence records, by condition_concept_id
-- Number of condition occurrence records, by condition_source_concept_id
-- Number of procedure occurrence records, by procedure_concept_id
-- Number of procedure occurrence records, by procedure_source_concept_id
-- Number of drug exposure records, by drug_concept_id
-- Number of drug exposure records, by drug_source_concept_id
-- Number of observation occurrence records, by observation_concept_id
-- Number of observation occurrence records, by observation_source_concept_id
-- Number of device exposure records, by device_concept_id
-- Number of device exposure records, by device_source_concept_id
-- Distribution of numeric values, by measurement_concept_id and unit_concept_id
-
-- [measurePersonCompleteness](https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#measurepersoncompleteness-1)
-- [cdmField](https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#cdmfield-1)
-- [isRequired](https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#isrequired)
-- [cdmDatatype](https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#cdmdatatype-1)
-- [isPrimaryKey](https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#isprimarykey-1)
-- [isForeignKey](https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#isforeignkey-1)
-- [fkDomain](https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#fkdomain-1)
-- [fkClass](https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#fkclass-1)
-- [isStandardValidConcept](https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#isstandardvalidconcept-1)
-- [standardConceptRecordCompleteness](https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#standardconceptrecordcompleteness)
-- [sourceConceptRecordCompleteness](https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#sourceconceptrecordcompleteness-1)
-- [plausibleValueLow](https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#plausiblevaluelow-2)
-- [plausibleValueHigh](https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#plausiblevaluehigh-2)
-- [plausibleTemporalAfter](https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#plausibletemporalafter-1)
-- [plausibleDuringLife](https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#plausibleduringlife-1)
 
 4. Output:
 

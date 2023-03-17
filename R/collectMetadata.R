@@ -50,7 +50,7 @@ collectMetadata <- function(outputFolder,
 														dataProvenance = NA,
 														refreshTime = NA){
 
-if(is.na(c(siteName,
+if(all(is.na(c(siteName,
 						 siteOHDSIParticipation,
 						 siteOHDSIRunPackage,
 						 dataFullName,
@@ -60,7 +60,7 @@ if(is.na(c(siteName,
 						 dataDoiType,
 						 governanceTime,
 						 dataProvenance,
-						 refreshTime))) {
+						 refreshTime)))) {
 
 		# Site information ----------------------------------
 		svDialogs::dlgMessage(
@@ -189,6 +189,6 @@ if(is.na(c(siteName,
 
 }
 
-write.csv(metadata,paste0(outputFolder,"/",outputFileName,".csv"))
+write.csv(metadata,paste0(outputFolder,"/",outputFileName,".csv"), row.names = FALSE)
 }
 
