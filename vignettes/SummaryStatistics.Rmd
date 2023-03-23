@@ -20,21 +20,31 @@ date: "`r Sys.Date()`"
 - Number of persons by number of observation periods
 - Number of persons by length of observation period, in 30d increments
 - Number of persons with at least one visit occurrence, by visit_concept_id
-- Number of distinct patients that overlap between specific domains
+- Number of distinct patients that overlap between specific domains - including death
+- Number of persons with at least one concept_id, by measurement_concept_id
 - Number of measurement occurrence records, by measurement_concept_id
 - Number of measurement occurrence records, by measurement_source_concept_id
 - Number of measurement records with no value (numeric, string, or concept)
+- Number of persons with at least one concept_id, by condition_concept_id
 - Number of condition occurrence records, by condition_concept_id
 - Number of condition occurrence records, by condition_source_concept_id
+- Number of persons with at least one concept_id, by procedure_concept_id
 - Number of procedure occurrence records, by procedure_concept_id
 - Number of procedure occurrence records, by procedure_source_concept_id
+- Number of persons with at least one concept_id, by drug_concept_id
 - Number of drug exposure records, by drug_concept_id
 - Number of drug exposure records, by drug_source_concept_id
+- Number of persons with at least one concept_id, by observation_concept_id
 - Number of observation occurrence records, by observation_concept_id
 - Number of observation occurrence records, by observation_source_concept_id
+- Number of persons with at least one concept_id, by device_concept_id
 - Number of device exposure records, by device_concept_id
 - Number of device exposure records, by device_source_concept_id
 - Distribution of numeric values, by measurement_concept_id and unit_concept_id
+
+Later inclusions
+- condition_status? 
+- type concepts
 
 
 ### Data Quality Checks

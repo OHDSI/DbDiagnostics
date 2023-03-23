@@ -8,10 +8,11 @@ date: "`r Sys.Date()`"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+This document will take you through the steps on how to run the database profile functions and upload them to a location to be reference when running database diagnostics.
+
 ## Set the parameters to run executeDbProfile
 
 Call the `createConnectionDetails` function to create the object, inputting the information for how to connect to your database. Detailed instructions on how to do this can be found [here](http://ohdsi.github.io/DatabaseConnector/articles/Connecting.html). 
-
 
 ```r
 library(DbDiagnostics)
@@ -74,13 +75,25 @@ DbDiagnostics::executeDbProfile(connectionDetails = connectionDetails,
 
 ```
 
+Upon completion, the summary statistics results `*.csv` file, the CDM_SOURCE table, metadata.csv and the data quality dashboard JSON file (if specified) will be located in a zip file in the output location you set as part of the execute function. 
+
+## Upload dbProfile results to the OHDSI Network sftp site
 
 
+
+
+
+## Upload dbProfile results to a local schema
+
+Be sure to unzip the dbProfile results that are generated in the above. Then, set the location where you unzipped the results as the parameter `resultsLocation`. Any parameter below denoted as <cdmSourceName> should be replaced with the database key that was generated when `executeDbProfile` was run. You can find this in the file names. 
 
 ```r
 
-
+# set the location of the results that were generated from executeDbProfile
 resultsLocation <- ""
+
+# set a parameter detailing if the DQD was run
+addDQD <- FALSE
 
 # add dbId and prep output files for writing into the results schema
 db_profile_results <- read.csv(paste0(resultsLocation,"/db_profile_results.csv"), stringsAsFactors = F, colClasses = c("STRATUM_1"="character"))
@@ -100,9 +113,7 @@ db_metadata <- read.csv(paste0(resultsLocation,"/<cdmSourceName>_metadata.csv"),
 
 db_cdm_source <- read.csv(paste0(resultsLocation,"/<cdmSourceName>_cdm_source.csv"), stringsAsFactors = F)
 
-
-
-
+# determine which tables should be uploaded based on if the DQD was included
 if (addDQD) {
 
 	dqdJsonDf <- jsonlite::fromJSON(
@@ -119,6 +130,14 @@ if (addDQD) {
 	tablesToUpload <- c("db_profile_results","db_metadata","db_cdm_source")
 }
 
+# create the connectionDetails for the database where the results should be uploaded. It is likely this will be different than the database where the dbProfile was run
+
+connectionDetails <- DatabaseConnector::createConnectionDetails(
+	dbms = "postgresql",
+	server = "localhost/synthea",
+	user = "postgres",
+	password = "postgres"
+)
 
 conn <- DatabaseConnector::connect(connectionDetails)
 

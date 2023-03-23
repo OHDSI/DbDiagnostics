@@ -6,74 +6,22 @@ It works by connecting to a database through a connectionDetails object created 
 
 Once the results are generated they are then loaded to a separate results schema. The `executeDbDiagnostics` function will take in a list of analysis settings to compare against the dbProfile results to determine if a database is eligible to run a particular analysis.
 
-## How to run DbDiagnostics::executeDbProfile
+## 1. Run DbDiagnostics::executeDbProfile
 
-1. Create a connectionDetails object:
+Please see [this article](https://ohdsi.github.io/DbDiagnostics/articles/RunAndUploadDbProfile.html) for detailed instruction on running the database profile.
 
-  Call the `createConnectionDetails` function to create the object, inputting the information for how to connect to your database. Detailed instructions on how to do this can be found [here](http://ohdsi.github.io/DatabaseConnector/articles/Connecting.html). 
+## 1.1 Input the required metadata for the database profile
 
-  ```r 
-  library(DbProfile)
-  connectionDetails <- DatabaseConnector::createConnectionDetails(
-    dbms = Sys.getenv("dbms"),
-      server = Sys.getenv("server"),
-    user = Sys.getenv("user"),
-    password = Sys.getenv("password"),
-    pathToDriver = Sys.getenv("path_to_driver"))
-  ```
-  
-2. Call the executeDbProfile function with options:
+You can either include a metadata.csv file in the root output location, input the values as parameters to the `executeDbProfile` function or answer the pop-ups as the function is running. Information on these options can be found [here](https://ohdsi.github.io/DbDiagnostics/articles/Metadata.html)
 
-  ```r
-  # The schema where your CDM-structured data are housed
-  cdmDatabaseSchema <- "" 
-  
-  # The (writeable) schema where your achilles results are or will be housed
-  resultsDatabaseSchema <- ""
-  
-  # The schema where your vocabulary tables are housed, typically the same as the cdmDatabaseSchema
-  vocabDatabaseSchema <- cdmDatabaseSchema
-  
-  # A unique, identifiable name for your database
-  cdmSourceName <- ""
-  
-  # The folder where your results should be written
-  outputFolder <- ""
-  
-  # The version of the OMOP CDM you are currently on, v5.3 and v5.4 are supported.
-  cdmVersion <- "5.3"
-  
-  # Whether the function should overwrite existing Achilles tables and create new ones
-  overwriteAchilles <- FALSE
-  
-  # Whether to round to the 10s or 100s place. Valid inputs are 10 or 100, default is 10.
-  roundTo <- 10
-  
-  # Vector of concepts to exclude from the output. Note: No patient-level data is pulled as part of the package or included as part of the output
-  excludedConcepts <- c()
-  
-  # Whether the DQD should be run as part of the profile exercise
-  addDQD <- FALSE
-  
-  
-    
-  DbDiagnostics::executeDbProfile(connectionDetails = connectionDetails,
-                                   cdmDatabaseSchema = cdmDatabaseSchema,
-                                   resultsDatabaseSchema = resultsDatabaseSchema,
-                                   vocabDatabaseSchema = vocabDatabaseSchema,
-                                   cdmSourceName = cdmSourceName,
-                                   outputFolder = outputFolder,
-                                   cdmVersion = cdmVersion,
-                                   overwriteAchilles = overwriteAchilles,
-                                   roundTo = roundTo,
-                                   excludedConcepts = excludedConcepts,
-                                   addDQD = addDQD
-                                   )
-  ```
+## 2. Upload results to a local database and/or send to the OHDSI network central sftp server
 
-3. Email the file `DbProfileResults_<cdmSourceName>.zip` in the `outputFolder` directory to the data-quality study coordinator.
+## 3. Use DbDiagnostics to determine if your database(s) have the information required to answer particular clinical questions
 
+## 3.1 Create the DbDiagnostics settings objects
 
-4. Output:
+## 3.2 Run the `executeDbDiagnostics` function
 
-  The summary statistics results `*.csv` file, the CDM_SOURCE table, metadata.csv and the data quality dashboard JSON file will be located in the output location you specified in the execute function. 
+## 4. Investigate the dbDiagnostics results
+
+## 4.1 Set up a local instance of the shiny application to visualize the results
