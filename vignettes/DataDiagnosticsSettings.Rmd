@@ -1,0 +1,110 @@
+---
+title: "Data Diagnostics Settings"
+output: html_document
+date: "`r Sys.Date()`"
+---
+
+## Data Diagnostics Settings
+
+These instructions will go through how to use the `createDataDiagnosticsSettings` function to create your settings based on your clinical question of interest. These settings will then be passed to the `executeDbDiagnostics` function to determine which databases meet your needs. 
+
+### Inputs 
+
+These are all the available inputs for the settings function:
+
+- **analysisId**							  
+		- The identifier for the specific analysis.
+- **analysisName**							
+		- The name for the specific analysis.
+- **minAge**										
+		- The minimum age for patients included in the analysis. Default is the lowest age available in the database.
+- **maxAge**										
+		- The minimum age for patients included in the analysis. Default is the highest age available in the database.
+- **genderConceptIds**					
+		- The required sex(es) at birth for patients included in the analysis, expressed as a vector of concepts.List the standard OMOP concepts for the required values as found [here](https://athena.ohdsi.org/search-terms/terms?domain=Gender&standardConcept=Standard&page=1&pageSize=15&query=). Default is c(8507, 8532) for male and female.
+- **raceConceptIds**						
+		- The required races for patients included in the analysis, expressed as a vector of concepts, e.g. c(8515,8527). If no restriction leave blank, else list the standard OMOP concepts for the required values as found [here](https://athena.ohdsi.org/search-terms/terms?domain=Race&standardConcept=Standard&page=1&pageSize=15&query=).
+- **ethnicityConceptIds**				
+		- The required ethnicities for patients included in the analysis, expressed as a vector of concepts, e.g. c(38003564,38003563). If no restriction leave blank, else list the standard OMOP concepts for the required values as found [here](https://athena.ohdsi.org/search-terms/terms?domain=Ethnicity&standardConcept=Standard&page=1&pageSize=15&query=).
+- **studyStartDate**          
+		- The start date of the analysis. Date format it 'YYYYMM'. If no restriction leave blank.
+- **studyEndDate**              
+		- The end date of the analysis. Date format it 'YYYYMM'. If no restriction leave blank.
+- **requiredDurationDays**      
+		- The minimum required follow-up time in days for patients included in the analysis.
+- **requiredDomains**           
+		- The data domains required for ALL patients in the analysis, expressed as a character vector. Valid values are condition, drug, device, measurement, measurementValues, death, procedure, observation. Default is c("condition", "drug")
+- **desiredDomains**            
+		- The domains required for SOME patients in the analysis. Meaning you need the dataset to have these data but each person is not required to have a record. This is most often used to identify the presence of outcomes of interest. Valid values are condition, drug, device, measurement, measurementValues, death, procedure, observation. If no restriction leave blank.
+- **requiredVisits**					  
+		- The visits required for ALL patients in the study, expressed as a character vector, e.g. c("IP","OP"). Valid values are IP,OP,ER. If no restriction leave blank.
+- **desiredVisits**							
+		- The visits required for SOME patients in the study, expressed as a character vector, meaning you need the dataset to have these data but each person is not required to have a record. This is most often used to identify the presence of outcomes of interest. Valid values are IP, OP, ER.
+- **targetName**
+		- The name of the target of interest.
+- **targetConceptIds**
+		- A vector containing the required target concepts.
+- **comparatorName**
+		- The name of the comparator of interest.
+- **comparatorConceptIds**
+		- A vector containing the required comparator concepts.
+- **indicationName**
+		- The name of the indication of interest.
+- **indicationConceptIds**
+		- A vector containing the required indication concepts.
+- **includeIndicationInCalc**
+		- A T/F object indicating whether the proportion of people with the indication concepts should be included in the estimated sample size calculation. Default is FALSE.
+- **outcomeName**       
+		- The name of the outcome of interest.
+- **outcomeConceptIds**
+		- A vector containing the required outcome concepts.
+
+### Example Study
+
+We will be investigating whether patients exposed to lisinopril are at a higher risk for acute myocardial infarction compared with patients exposed to hydrochlorothiazide. 
+
+```r
+
+# first set your output location
+outputFolder <- "/Users/clairblacketer/dbDiagnosticsOutput/Example"
+
+# read in the csv files with the concepts that represent lisinopril and hydrocholorothiazide
+# these files can be found in the extras/example_study folder of the github repo
+
+lisinopril <- read.csv(file.path("extras/example_study/lisinoprilConcepts.csv"), stringsAsFactors = FALSE)
+hctz <- read.csv(file.path("extras/example_study/hydrocholorothiazideConcepts.csv"), stringsAsFactors = FALSE)
+
+# create the settings for the study
+
+analysisSettings1 <- DbDiagnostics::createDataDiagnosticsSettings(
+
+	analysisId = 1,
+	analysisName = "lisinopril v HCTZ for AMI",
+	minAge = 18,
+	maxAge = 100,
+	genderConceptIds = c(8507,8532),
+	raceConceptIds = NULL,
+	ethnicityConceptIds = NULL,
+	studyStartDate = "200501",
+	studyEndDate = "201901",
+	requiredDurationDays = 365,
+	requiredDomains = c("condition","drug"),
+	desiredDomains = NULL,
+	requiredVisits = NULL,
+	desiredVisits = c("IP"),
+	targetName = "lisinopril",
+	targetConceptIds = lisinopril$lisinopril,
+	comparatorName = "hydrochlorothiazide",
+	comparatorConceptIds = hzt$hydrocholorothiazide,
+	outcomeName = "acute myocardial infarction IP events",
+	outcomeConceptIds = c(312327,319039,434376,436706,438170,438438,438447,439693,441579,444406,761736,761737,765132,3189643,3654465,3654466,3654467,3655133,3661502,3661503,3661504,3661520,3661524,3661547,3661641,3661642,3661643,3661644,3661645,3661646,4030582,4051874,4108217,4108218,4108669,4108677,4119456,4119457,4119943,4119944,4119945,4119946,4119947,4119948,4121464,4121465,4121466,4124684,4124685,4124686,4126801,4145721,4151046,4170094,4173632,4178129,4200113,4206867,4207921,4209541,4215259,4243372,4267568,4270024,4275436,4296653,4303359,4323202,4324413,4329847,35610087,35610089,35610091,35610093,35611570,35611571,37309626,43020460,44782712,44782769,45766075,45766076,45766113,45766114,45766115,45766116,45766150,45766151,45766241,45771322,45773170,46270158,46270159,46270160,46270161,46270162,46270163,46270164,46273495,46274044)
+	)
+	
+# IMPORTANT! You need to pass a list of all settings to the executeDbDiagnostics function. It is common for this function to 
+# be used to evaluate multiple studies at one time so you need to add them all to one list like below, even if you only have
+# one analysis.
+
+settingsList <- list(analysisSettings1)
+
+
+```

@@ -47,7 +47,7 @@ executeDbDiagnostics <- function(connectionDetails,
 	on.exit(DatabaseConnector::disconnect(conn))
 
 	#TODO check the name of the column in the results schema -----------
-	sql <- "SELECT DISTINCT db_id, database_id
+	sql <- "SELECT DISTINCT CDM_SOURCE_NAME, RELEASE_KEY
         FROM @results_database_schema.@results_table_name"
 
 	rsql <- SqlRender::render(sql = sql,
@@ -99,7 +99,7 @@ executeDbDiagnostics <- function(connectionDetails,
 
 		# Loop through the databases -----------------------------------------------
 
-		for(i in 1:nrow(latestDbs)){
+		for(i in 1:nrow(dbNum)){
 
 			dbName <- latestDbs[i,1]
 

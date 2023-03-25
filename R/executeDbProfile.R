@@ -434,8 +434,13 @@ executeDbProfile <- function(connectionDetails,
 	achillesResultsRounded <- achillesResultsFinalExclusions %>%
 		mutate(COUNT_VALUE_ROUNDED = round(COUNT_VALUE,roundingInput))
 
+	achillesResultsRounded$CDM_SOURCE_NAME <- cdmSourceName
+	achillesResultsRounded$RELEASE_KEY <- paste(sourceKey,releaseDateKey,sep = "_")
+
 	achillesResultsFinal <- sqldf::sqldf(
-		"SELECT ANALYSIS_ID,
+		"SELECT CDM_SOURCE_NAME,
+						RELEASE_KEY,
+					  ANALYSIS_ID,
 						STRATUM_1,
 						STRATUM_2,
 						STRATUM_3,

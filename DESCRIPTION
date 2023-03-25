@@ -16,6 +16,7 @@ Depends:
 	DatabaseConnector (>= 4.0.0),
 Imports:
 	dplyr,
+	tidyr,
 	sqldf,
 	magrittr,
 	svDialogs,
