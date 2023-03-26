@@ -101,14 +101,14 @@ executeDbDiagnostics <- function(connectionDetails,
 
 		for(i in 1:nrow(dbNum)){
 
-			dbName <- latestDbs[i,1]
+			dbName <- dbNames[i,2]
 
-			message(paste0("  -- Database: ", dbName, " (", i, "/", nrow(latestDbs), ")"))
+			message(paste0("  -- Database: ", dbName, " (", i, "/", nrow(dbNames), ")"))
 
 			# Get the dbProfile information for the database
-			sql <- "SELECT * FROM @results_database_schema.@results_table_name WHERE db_id = '@databaseName'"
+			sql <- "SELECT * FROM @results_database_schema.@results_table_name WHERE RELEASE_KEY = '@databaseName'"
 
-			rsql <- SqlRender::render(sql, databaseName = latestDbs[i,1],
+			rsql <- SqlRender::render(sql, databaseName = dbNames[i,2],
 																results_database_schema = resultsDatabaseSchema,
 																results_table_name = resultsTableName)
 
@@ -885,7 +885,7 @@ executeDbDiagnostics <- function(connectionDetails,
 																filter(evaluateThreshold > 0) %>%
 																mutate(analysisId = analysisId,
 																			 analysisName = analysisName,
-																			 databaseId = dbName$DB_ID, .before = statistic)
+																			 releaseKey = dbName$RELEASE_KEY, .before = statistic)
 
     	if(i==1){
 				dataDiagnosticsResults <- dataDiagnosticsOutput
