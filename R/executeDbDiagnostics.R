@@ -294,7 +294,7 @@ executeDbDiagnostics <- function(connectionDetails,
 			personsWithAgeAtFirstObs <- dbProfile %>%
 				filter(ANALYSIS_ID == 101) %>%
 				filter(as.numeric(STRATUM_1) <= maxAge) %>%
-				filter(as.numeric(STARTUM_1) >= minAge) %>%
+				filter(as.numeric(STRATUM_1) >= minAge) %>%
 				select(COUNT_VALUE) %>%
 				mutate(statistic = 'propWithAgeAtFirstObs',
 							 spec = case_when(is.null(studySpecs$maxAge) && !is.null(studySpecs$minAge) ~ paste("> age",studySpecs$minAge),
