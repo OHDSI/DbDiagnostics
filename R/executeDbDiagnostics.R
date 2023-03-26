@@ -99,7 +99,7 @@ executeDbDiagnostics <- function(connectionDetails,
 
 		# Loop through the databases -----------------------------------------------
 
-		for(i in 1:nrow(dbNum)){
+		for(i in 1:dbNum){
 
 			dbName <- dbNames[i,2]
 
