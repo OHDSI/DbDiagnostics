@@ -77,11 +77,6 @@ DbDiagnostics::executeDbProfile(connectionDetails = connectionDetails,
 
 Upon completion, the summary statistics results `*.csv` file, the CDM_SOURCE table, metadata.csv and the data quality dashboard JSON file (if specified) will be located in a zip file in the output location you set as part of the execute function. 
 
-## Upload dbProfile results to the OHDSI Network sftp site
-
-
-
-
 
 ## Upload dbProfile results to a local schema
 

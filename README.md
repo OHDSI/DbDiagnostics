@@ -106,7 +106,7 @@ Once you have your profile data uploaded to a central location, you can now use 
 
 ### 3.1 Create the DbDiagnostics settings objects
 
-The first thing you will need to do is create a settings object with the specified inputs using the `createDataDiagnosticsSettings` function. This will put all the necessary items for the research question into a list to be used by the `executeDbDiagnostics` function. Please see [this article](ohdsi.github.io/DbDiagnostics/articles/DataDiagnosticsSettings.html) for how to put together the settings and what the options are. You should end with an object that is a list of settings lists, one for each analysis you want to perform. 
+The first thing you will need to do is create a settings object with the specified inputs using the `createDataDiagnosticsSettings` function. This will put all the necessary items for the research question into a list to be used by the `executeDbDiagnostics` function. Please see [this article](https://ohdsi.github.io/DbDiagnostics/articles/DataDiagnosticsSettings.html) for how to put together the settings and what the options are. You should end with an object that is a list of settings lists, one for each analysis you want to perform. 
 
 ### 3.2 Run the `executeDbDiagnostics` function
 
