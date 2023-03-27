@@ -2,8 +2,8 @@
 
 This package is built to do two things:
 
-	1. Create a profile of an individual database that has been converted to the OMOP Common Data Model. This profile consists of aggregated summary statistics and data quality results. 
-	2. Allow a user to use the profile of a database to determine if that database has the elements necessary required to answer clinical questions of interest.
+1. Create a profile of an individual database that has been converted to the OMOP Common Data Model. This profile consists of aggregated summary statistics and data quality results. 
+2. Allow a user to use the profile of a database to determine if that database has the elements necessary required to answer clinical questions of interest.
 	
 The instructions below contain an overview of how to generate the database profile and then run the data diagnostics on one or more databases.  
 
@@ -106,7 +106,7 @@ Once you have your profile data uploaded to a central location, you can now use 
 
 ### 3.1 Create the DbDiagnostics settings objects
 
-The first thing you will need to do is create a settings object with the specified inputs using the `createDataDiagnosticsSettings` function. This will put all the necessary items for the research question into a list to be used by the `executeDbDiagnostics` function. Please see this article for how to put together the settings and what the options are. You should end with an object that is a list of settings lists, one for each analysis you want to perform. 
+The first thing you will need to do is create a settings object with the specified inputs using the `createDataDiagnosticsSettings` function. This will put all the necessary items for the research question into a list to be used by the `executeDbDiagnostics` function. Please see [this article](ohdsi.github.io/DbDiagnostics/articles/DataDiagnosticsSettings.html) for how to put together the settings and what the options are. You should end with an object that is a list of settings lists, one for each analysis you want to perform. 
 
 ### 3.2 Run the `executeDbDiagnostics` function
 

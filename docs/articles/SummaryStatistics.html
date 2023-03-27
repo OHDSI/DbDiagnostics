@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">DbDiagnostics</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1</span>
       </span>
     </div>
 
@@ -59,6 +59,9 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="../articles/DataDiagnosticsSettings.html">Data Diagnostics Settings</a>
+    </li>
+    <li>
       <a href="../articles/Metadata.html">Metadata</a>
     </li>
     <li>
@@ -88,7 +91,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>DbProfile Summary Statistics</h1>
             
-            <h4 data-toc-skip class="date">2023-03-17</h4>
+            <h4 data-toc-skip class="date">2023-03-26</h4>
       
       
       <div class="hidden name"><code>SummaryStatistics.Rmd</code></div>
@@ -119,31 +122,44 @@ month</li>
 increments</li>
 <li>Number of persons with at least one visit occurrence, by
 visit_concept_id</li>
-<li>Number of distinct patients that overlap between specific
-domains</li>
+<li>Number of distinct patients that overlap between specific domains -
+including death</li>
+<li>Number of persons with at least one concept_id, by
+measurement_concept_id</li>
 <li>Number of measurement occurrence records, by
 measurement_concept_id</li>
 <li>Number of measurement occurrence records, by
 measurement_source_concept_id</li>
 <li>Number of measurement records with no value (numeric, string, or
 concept)</li>
+<li>Number of persons with at least one concept_id, by
+condition_concept_id</li>
 <li>Number of condition occurrence records, by condition_concept_id</li>
 <li>Number of condition occurrence records, by
 condition_source_concept_id</li>
+<li>Number of persons with at least one concept_id, by
+procedure_concept_id</li>
 <li>Number of procedure occurrence records, by procedure_concept_id</li>
 <li>Number of procedure occurrence records, by
 procedure_source_concept_id</li>
+<li>Number of persons with at least one concept_id, by
+drug_concept_id</li>
 <li>Number of drug exposure records, by drug_concept_id</li>
 <li>Number of drug exposure records, by drug_source_concept_id</li>
+<li>Number of persons with at least one concept_id, by
+observation_concept_id</li>
 <li>Number of observation occurrence records, by
 observation_concept_id</li>
 <li>Number of observation occurrence records, by
 observation_source_concept_id</li>
+<li>Number of persons with at least one concept_id, by
+device_concept_id</li>
 <li>Number of device exposure records, by device_concept_id</li>
 <li>Number of device exposure records, by device_source_concept_id</li>
 <li>Distribution of numeric values, by measurement_concept_id and
 unit_concept_id</li>
 </ul>
+<p>Later inclusions - condition_status? - type concepts</p>
 </div>
 <div class="section level3">
 <h3 id="data-quality-checks">Data Quality Checks<a class="anchor" aria-label="anchor" href="#data-quality-checks"></a>

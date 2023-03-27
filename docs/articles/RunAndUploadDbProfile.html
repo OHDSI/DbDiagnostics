@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">DbDiagnostics</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1</span>
       </span>
     </div>
 
@@ -59,6 +59,9 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="../articles/DataDiagnosticsSettings.html">Data Diagnostics Settings</a>
+    </li>
+    <li>
       <a href="../articles/Metadata.html">Metadata</a>
     </li>
     <li>
@@ -88,7 +91,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>How to Run and Upload dbProfile Results</h1>
             
-            <h4 data-toc-skip class="date">2023-03-17</h4>
+            <h4 data-toc-skip class="date">2023-03-26</h4>
       
       
       <div class="hidden name"><code>RunAndUploadDbProfile.Rmd</code></div>
@@ -97,6 +100,9 @@
 
     
     
+<p>This document will take you through the steps on how to run the
+database profile functions and upload them to a location to be reference
+when running database diagnostics.</p>
 <div class="section level2">
 <h2 id="set-the-parameters-to-run-executedbprofile">Set the parameters to run executeDbProfile<a class="anchor" aria-label="anchor" href="#set-the-parameters-to-run-executedbprofile"></a>
 </h2>
@@ -160,10 +166,31 @@ Detailed instructions on how to do this can be found <a href="http://ohdsi.githu
 <span>                                   excludedConcepts <span class="op">=</span> <span class="va">excludedConcepts</span>,</span>
 <span>                                   addDQD <span class="op">=</span> <span class="va">addDQD</span></span>
 <span>                                   <span class="op">)</span></span></code></pre></div>
+<p>Upon completion, the summary statistics results <code>*.csv</code>
+file, the CDM_SOURCE table, metadata.csv and the data quality dashboard
+JSON file (if specified) will be located in a zip file in the output
+location you set as part of the execute function.</p>
+</div>
+<div class="section level2">
+<h2 id="upload-dbprofile-results-to-the-ohdsi-network-sftp-site">Upload dbProfile results to the OHDSI Network sftp site<a class="anchor" aria-label="anchor" href="#upload-dbprofile-results-to-the-ohdsi-network-sftp-site"></a>
+</h2>
+</div>
+<div class="section level2">
+<h2 id="upload-dbprofile-results-to-a-local-schema">Upload dbProfile results to a local schema<a class="anchor" aria-label="anchor" href="#upload-dbprofile-results-to-a-local-schema"></a>
+</h2>
+<p>Be sure to unzip the dbProfile results that are generated in the
+above. Then, set the location where you unzipped the results as the
+parameter <code>resultsLocation</code>. Any parameter below denoted as
+<cdmsourcename> should be replaced with the database key that was
+generated when <code>executeDbProfile</code> was run. You can find this
+in the file names.</cdmsourcename></p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span></span>
+<span><span class="co"># set the location of the results that were generated from executeDbProfile</span></span>
 <span><span class="va">resultsLocation</span> <span class="op">&lt;-</span> <span class="st">""</span></span>
+<span></span>
+<span><span class="co"># set a parameter detailing if the DQD was run</span></span>
+<span><span class="va">addDQD</span> <span class="op">&lt;-</span> <span class="cn">FALSE</span></span>
 <span></span>
 <span><span class="co"># add dbId and prep output files for writing into the results schema</span></span>
 <span><span class="va">db_profile_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">resultsLocation</span>,<span class="st">"/db_profile_results.csv"</span><span class="op">)</span>, stringsAsFactors <span class="op">=</span> <span class="cn">F</span>, colClasses <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"STRATUM_1"</span><span class="op">=</span><span class="st">"character"</span><span class="op">)</span><span class="op">)</span></span>
@@ -183,9 +210,7 @@ Detailed instructions on how to do this can be found <a href="http://ohdsi.githu
 <span></span>
 <span><span class="va">db_cdm_source</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">resultsLocation</span>,<span class="st">"/&lt;cdmSourceName&gt;_cdm_source.csv"</span><span class="op">)</span>, stringsAsFactors <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span>
 <span></span>
-<span></span>
-<span></span>
-<span></span>
+<span><span class="co"># determine which tables should be uploaded based on if the DQD was included</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="va">addDQD</span><span class="op">)</span> <span class="op">{</span></span>
 <span></span>
 <span>    <span class="va">dqdJsonDf</span> <span class="op">&lt;-</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/fromJSON.html" class="external-link">fromJSON</a></span><span class="op">(</span></span>
@@ -202,6 +227,14 @@ Detailed instructions on how to do this can be found <a href="http://ohdsi.githu
 <span>    <span class="va">tablesToUpload</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"db_profile_results"</span>,<span class="st">"db_metadata"</span>,<span class="st">"db_cdm_source"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
+<span><span class="co"># create the connectionDetails for the database where the results should be uploaded. It is likely this will be different than the database where the dbProfile was run</span></span>
+<span></span>
+<span><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/createConnectionDetails.html" class="external-link">createConnectionDetails</a></span><span class="op">(</span></span>
+<span>    dbms <span class="op">=</span> <span class="st">"postgresql"</span>,</span>
+<span>    server <span class="op">=</span> <span class="st">"localhost/synthea"</span>,</span>
+<span>    user <span class="op">=</span> <span class="st">"postgres"</span>,</span>
+<span>    password <span class="op">=</span> <span class="st">"postgres"</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">conn</span> <span class="op">&lt;-</span> <span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/connect.html" class="external-link">connect</a></span><span class="op">(</span><span class="va">connectionDetails</span><span class="op">)</span></span>
 <span></span>

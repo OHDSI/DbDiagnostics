@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">DbDiagnostics</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1</span>
       </span>
     </div>
 
@@ -59,6 +59,9 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="articles/DataDiagnosticsSettings.html">Data Diagnostics Settings</a>
+    </li>
+    <li>
       <a href="articles/Metadata.html">Metadata</a>
     </li>
     <li>
@@ -88,77 +91,139 @@
 <div class="section level1">
 <div class="page-header"><h1 id="dbdiagnostics-readme">DbDiagnostics README<a class="anchor" aria-label="anchor" href="#dbdiagnostics-readme"></a>
 </h1></div>
-<p>The <code>executeDbProfile</code> function in this package relies on the <a href="https://github.com/ohdsi/Achilles" class="external-link">Achilles</a> and <a href="https://github.com/ohdsi/DataQualityDashboard" class="external-link">DataQualityDashboard</a> packages to run a subset of characterization and data quality analyses, along with metadata about the database. This information is collectively referred to as the database profile. This profile will be used to determine if a database has the necessary elements required to run a study.</p>
-<p>It works by connecting to a database through a connectionDetails object created by the <a href="http://ohdsi.github.io/DatabaseConnector/articles/Connecting.html" class="external-link">DatabaseConnector</a> package. It will first look for metadata about the database, either in the parameters of the function or in a csv file in the output folder. If neither are present the function will ask the user a series of questions in the form of pop-ups and save this information in a csv file to ship along with the output. It will then check to see if Achilles results are already present. If so, it will export those results. If not, it will run the required Achilles analyses and then export. Then, it will run a set of DataQualityDashboard checks and export those results as well.</p>
-<p>Once the results are generated they are then loaded to a separate results schema. The <code>executeDbDiagnostics</code> function will take in a list of analysis settings to compare against the dbProfile results to determine if a database is eligible to run a particular analysis.</p>
-<div class="section level2">
-<h2 id="how-to-run-dbdiagnosticsexecutedbprofile">How to run DbDiagnostics::executeDbProfile<a class="anchor" aria-label="anchor" href="#how-to-run-dbdiagnosticsexecutedbprofile"></a>
-</h2>
+<p>This package is built to do two things:</p>
 <ol style="list-style-type: decimal">
-<li>Create a connectionDetails object:</li>
+<li>Create a profile of an individual database that has been converted to the OMOP Common Data Model. This profile consists of aggregated summary statistics and data quality results.</li>
+<li>Allow a user to use the profile of a database to determine if that database has the elements necessary required to answer clinical questions of interest.</li>
 </ol>
-<p>Call the <code>createConnectionDetails</code> function to create the object, inputting the information for how to connect to your database. Detailed instructions on how to do this can be found <a href="http://ohdsi.github.io/DatabaseConnector/articles/Connecting.html" class="external-link">here</a>.</p>
+<p>The instructions below contain an overview of how to generate the database profile and then run the data diagnostics on one or more databases.</p>
+<div class="section level2">
+<h2 id="database-profile">Database Profile<a class="anchor" aria-label="anchor" href="#database-profile"></a>
+</h2>
+<p>The <code>executeDbProfile</code> function in this package relies on the <a href="https://github.com/ohdsi/Achilles" class="external-link">Achilles</a> and <a href="https://github.com/ohdsi/DataQualityDashboard" class="external-link">DataQualityDashboard</a> packages to run a subset of characterization and data quality analyses, along with metadata about the database. This information is collectively referred to as the database profile. It works by connecting to a database through a connectionDetails object created by the <a href="http://ohdsi.github.io/DatabaseConnector/articles/Connecting.html" class="external-link">DatabaseConnector</a> package. It will first look for metadata about the database, either in the parameters of the function or in a csv file in the output folder. If neither are present the function will ask the user a series of questions in the form of pop-ups and save this information in a csv file to ship along with the output. It will then check to see if Achilles results are already present. If so, it will export those results. If not, it will run the required Achilles analyses and then export. Then, it will run a set of DataQualityDashboard checks and export those results as well.</p>
+<p>Once the results are generated they are then loaded to a separate results schema. The <code>executeDbDiagnostics</code> function will take in a list of analysis settings to compare against the dbProfile results to determine if a database is eligible to run a particular analysis.</p>
+</div>
+<div class="section level2">
+<h2 id="id_1-run-dbdiagnosticsexecutedbprofile">1. Run DbDiagnostics::executeDbProfile<a class="anchor" aria-label="anchor" href="#id_1-run-dbdiagnosticsexecutedbprofile"></a>
+</h2>
+<p>Please see <a href="https://ohdsi.github.io/DbDiagnostics/articles/RunAndUploadDbProfile.html" class="external-link">this article</a> for detailed instruction on running the database profile.</p>
+<div class="section level3">
+<h3 id="id_11-input-the-required-metadata-for-the-database-profile">1.1 Input the required metadata for the database profile<a class="anchor" aria-label="anchor" href="#id_11-input-the-required-metadata-for-the-database-profile"></a>
+</h3>
+<p>You can either include a metadata.csv file in the root output location, input the values as parameters to the <code>executeDbProfile</code> function or answer the pop-ups as the function is running. Information on these options can be found <a href="https://ohdsi.github.io/DbDiagnostics/articles/Metadata.html" class="external-link">here</a></p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="id_2-upload-results-to-a-local-database">2. Upload results to a local database<a class="anchor" aria-label="anchor" href="#id_2-upload-results-to-a-local-database"></a>
+</h2>
+<p>Once you have your database profile, you will want to put it somewhere that everyone can access. In an institution with multiple databases, it is best to upload ALL profiles for ALL databases to one table on one central server. That way, when anyone wants to run data diagnostics for their questions it is easy to connect once and get all information. The output is automatically stratified on <code>cdmSourceName</code> so you don’t need to worry about collision. Below is an example for how you can read in the results generated by <code>executeDbProfile</code> and upload to a postgres instance.</p>
+<p>Be sure to unzip the dbProfile results that are generated in the above. Then, set the location where you unzipped the results as the parameter <code>resultsLocation</code>. Any parameter below denoted as <cdmsourcename> should be replaced with the database key that was generated when <code>executeDbProfile</code> was run. You can find this in the file names.</cdmsourcename></p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">DbProfile</span><span class="op">)</span></span>
-<span><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/createConnectionDetails.html" class="external-link">createConnectionDetails</a></span><span class="op">(</span></span>
-<span>  dbms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"dbms"</span><span class="op">)</span>,</span>
-<span>    server <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"server"</span><span class="op">)</span>,</span>
-<span>  user <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"user"</span><span class="op">)</span>,</span>
-<span>  password <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"password"</span><span class="op">)</span>,</span>
-<span>  pathToDriver <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"path_to_driver"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<ol start="2" style="list-style-type: decimal">
-<li>Call the executeDbProfile function with options:</li>
-</ol>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># The schema where your CDM-structured data are housed</span></span>
-<span><span class="va">cdmDatabaseSchema</span> <span class="op">&lt;-</span> <span class="st">""</span> </span>
+<code class="sourceCode R"><span></span>
+<span><span class="co"># set the location of the results that were generated from executeDbProfile</span></span>
+<span><span class="va">resultsLocation</span> <span class="op">&lt;-</span> <span class="st">""</span></span>
 <span></span>
-<span><span class="co"># The (writeable) schema where your achilles results are or will be housed</span></span>
-<span><span class="va">resultsDatabaseSchema</span> <span class="op">&lt;-</span> <span class="st">""</span></span>
-<span></span>
-<span><span class="co"># The schema where your vocabulary tables are housed, typically the same as the cdmDatabaseSchema</span></span>
-<span><span class="va">vocabDatabaseSchema</span> <span class="op">&lt;-</span> <span class="va">cdmDatabaseSchema</span></span>
-<span></span>
-<span><span class="co"># A unique, identifiable name for your database</span></span>
-<span><span class="va">cdmSourceName</span> <span class="op">&lt;-</span> <span class="st">""</span></span>
-<span></span>
-<span><span class="co"># The folder where your results should be written</span></span>
-<span><span class="va">outputFolder</span> <span class="op">&lt;-</span> <span class="st">""</span></span>
-<span></span>
-<span><span class="co"># The version of the OMOP CDM you are currently on, v5.3 and v5.4 are supported.</span></span>
-<span><span class="va">cdmVersion</span> <span class="op">&lt;-</span> <span class="st">"5.3"</span></span>
-<span></span>
-<span><span class="co"># Whether the function should overwrite existing Achilles tables and create new ones</span></span>
-<span><span class="va">overwriteAchilles</span> <span class="op">&lt;-</span> <span class="cn">FALSE</span></span>
-<span></span>
-<span><span class="co"># Whether to round to the 10s or 100s place. Valid inputs are 10 or 100, default is 10.</span></span>
-<span><span class="va">roundTo</span> <span class="op">&lt;-</span> <span class="fl">10</span></span>
-<span></span>
-<span><span class="co"># Vector of concepts to exclude from the output. Note: No patient-level data is pulled as part of the package or included as part of the output</span></span>
-<span><span class="va">excludedConcepts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Whether the DQD should be run as part of the profile exercise</span></span>
+<span><span class="co"># set a parameter detailing if the DQD was run</span></span>
 <span><span class="va">addDQD</span> <span class="op">&lt;-</span> <span class="cn">FALSE</span></span>
 <span></span>
+<span><span class="co"># prep output files for writing into the results schema</span></span>
+<span><span class="co"># it is important to make sure these values are characters because leading zeros are dropped which causes issues for one analysis</span></span>
 <span></span>
-<span>  </span>
-<span><span class="fu">DbDiagnostics</span><span class="fu">::</span><span class="fu"><a href="reference/executeDbProfile.html">executeDbProfile</a></span><span class="op">(</span>connectionDetails <span class="op">=</span> <span class="va">connectionDetails</span>,</span>
-<span>                                 cdmDatabaseSchema <span class="op">=</span> <span class="va">cdmDatabaseSchema</span>,</span>
-<span>                                 resultsDatabaseSchema <span class="op">=</span> <span class="va">resultsDatabaseSchema</span>,</span>
-<span>                                 vocabDatabaseSchema <span class="op">=</span> <span class="va">vocabDatabaseSchema</span>,</span>
-<span>                                 cdmSourceName <span class="op">=</span> <span class="va">cdmSourceName</span>,</span>
-<span>                                 outputFolder <span class="op">=</span> <span class="va">outputFolder</span>,</span>
-<span>                                 cdmVersion <span class="op">=</span> <span class="va">cdmVersion</span>,</span>
-<span>                                 overwriteAchilles <span class="op">=</span> <span class="va">overwriteAchilles</span>,</span>
-<span>                                 roundTo <span class="op">=</span> <span class="va">roundTo</span>,</span>
-<span>                                 excludedConcepts <span class="op">=</span> <span class="va">excludedConcepts</span>,</span>
-<span>                                 addDQD <span class="op">=</span> <span class="va">addDQD</span></span>
-<span>                                 <span class="op">)</span></span></code></pre></div>
-<ol start="3" style="list-style-type: decimal">
-<li><p>Email the file <code>DbProfileResults_&lt;cdmSourceName&gt;.zip</code> in the <code>outputFolder</code> directory to the data-quality study coordinator.</p></li>
-<li><p>Output:</p></li>
-</ol>
-<p>The summary statistics results <code>*.csv</code> file, the CDM_SOURCE table, metadata.csv and the data quality dashboard JSON file will be located in the output location you specified in the execute function.</p>
+<span><span class="va">db_profile_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">resultsLocation</span>,<span class="st">"/db_profile_results.csv"</span><span class="op">)</span>, stringsAsFactors <span class="op">=</span> <span class="cn">F</span>, colClasses <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"STRATUM_1"</span><span class="op">=</span><span class="st">"character"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># make sure the columns are read in as characters to facilitate dbDiagnostics execution</span></span>
+<span></span>
+<span><span class="va">db_profile_results</span><span class="op">$</span><span class="va">STRATUM_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">db_profile_results</span><span class="op">$</span><span class="va">STRATUM_1</span><span class="op">)</span></span>
+<span><span class="va">db_profile_results</span><span class="op">$</span><span class="va">STRATUM_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">db_profile_results</span><span class="op">$</span><span class="va">STRATUM_2</span><span class="op">)</span></span>
+<span><span class="va">db_profile_results</span><span class="op">$</span><span class="va">STRATUM_3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">db_profile_results</span><span class="op">$</span><span class="va">STRATUM_3</span><span class="op">)</span></span>
+<span><span class="va">db_profile_results</span><span class="op">$</span><span class="va">STRATUM_4</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">db_profile_results</span><span class="op">$</span><span class="va">STRATUM_4</span><span class="op">)</span></span>
+<span><span class="va">db_profile_results</span><span class="op">$</span><span class="va">STRATUM_5</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">db_profile_results</span><span class="op">$</span><span class="va">STRATUM_5</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># read in the metadata</span></span>
+<span><span class="co"># executeDbProfile automatically adds the cdmSourceName to the metadata and cdmSource files so be sure to update that value below</span></span>
+<span></span>
+<span><span class="va">db_metadata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">resultsLocation</span>,<span class="st">"/&lt;cdmSourceName&gt;_metadata.csv"</span><span class="op">)</span>, stringsAsFactors <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># read in the cdm_source table</span></span>
+<span></span>
+<span><span class="va">db_cdm_source</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">resultsLocation</span>,<span class="st">"/&lt;cdmSourceName&gt;_cdm_source.csv"</span><span class="op">)</span>, stringsAsFactors <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># determine which tables should be uploaded based on if the DQD was included</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="va">addDQD</span><span class="op">)</span> <span class="op">{</span></span>
+<span></span>
+<span>    <span class="va">dqdJsonDf</span> <span class="op">&lt;-</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/fromJSON.html" class="external-link">fromJSON</a></span><span class="op">(</span></span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">outputFolder</span>,<span class="st">"/"</span>,<span class="va">dbId</span>,<span class="st">"_DbProfile.json"</span><span class="op">)</span>,</span>
+<span>        simplifyDataFrame <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="va">dqd_overview</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">dqdJsonDf</span><span class="op">$</span><span class="va">Overview</span><span class="op">)</span></span>
+<span>    <span class="va">dqd_checkresults</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">dqdJsonDf</span><span class="op">$</span><span class="va">CheckResults</span><span class="op">)</span></span>
+<span>    </span>
+<span>    <span class="va">dqd_checkresults</span><span class="op">$</span><span class="va">THRESHOLD_VALUE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">dqd_checkresults</span><span class="op">$</span><span class="va">THRESHOLD_VALUE</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="va">tablesToUpload</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"db_profile_results"</span>,<span class="st">"db_metadata"</span>,<span class="st">"db_cdm_source"</span>,<span class="st">"dqd_checkresults"</span>,<span class="st">"dqd_overview"</span><span class="op">)</span></span>
+<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>    <span class="va">tablesToUpload</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"db_profile_results"</span>,<span class="st">"db_metadata"</span>,<span class="st">"db_cdm_source"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># create the connectionDetails for the database where the results should be uploaded. It is likely this will be different than the database where the dbProfile was run</span></span>
+<span></span>
+<span><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/createConnectionDetails.html" class="external-link">createConnectionDetails</a></span><span class="op">(</span></span>
+<span>    dbms <span class="op">=</span> <span class="st">"postgresql"</span>,</span>
+<span>    server <span class="op">=</span> <span class="st">"localhost/synthea"</span>,</span>
+<span>    user <span class="op">=</span> <span class="st">"postgres"</span>,</span>
+<span>    password <span class="op">=</span> <span class="st">"postgres"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">conn</span> <span class="op">&lt;-</span> <span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/connect.html" class="external-link">connect</a></span><span class="op">(</span><span class="va">connectionDetails</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># When the schema is empty, use createTable = TRUE</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">tableName</span> <span class="kw">in</span> <span class="va">tablesToUpload</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/insertTable.html" class="external-link">insertTable</a></span><span class="op">(</span></span>
+<span>        connection        <span class="op">=</span> <span class="va">conn</span>,</span>
+<span>        tableName         <span class="op">=</span> <span class="va">tableName</span>,</span>
+<span>        databaseSchema    <span class="op">=</span> <span class="st">"cdm_54_results"</span>,</span>
+<span>        data              <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/eval.html" class="external-link">eval</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/parse.html" class="external-link">parse</a></span><span class="op">(</span>text<span class="op">=</span><span class="va">tableName</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>        dropTableIfExists <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>        createTable       <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>        tempTable         <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>        progressBar       <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/disconnect.html" class="external-link">disconnect</a></span><span class="op">(</span><span class="va">conn</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="id_3-use-dbdiagnostics-to-determine-if-your-databases-have-the-information-required-to-answer-particular-clinical-questions">3. Use DbDiagnostics to determine if your database(s) have the information required to answer particular clinical questions<a class="anchor" aria-label="anchor" href="#id_3-use-dbdiagnostics-to-determine-if-your-databases-have-the-information-required-to-answer-particular-clinical-questions"></a>
+</h2>
+<p>Once you have your profile data uploaded to a central location, you can now use the <code>executeDbDiagnostics</code> function to determine if your database(s) satisfy the criteria for clinical research questions.</p>
+<div class="section level3">
+<h3 id="id_31-create-the-dbdiagnostics-settings-objects">3.1 Create the DbDiagnostics settings objects<a class="anchor" aria-label="anchor" href="#id_31-create-the-dbdiagnostics-settings-objects"></a>
+</h3>
+<p>The first thing you will need to do is create a settings object with the specified inputs using the <code>createDataDiagnosticsSettings</code> function. This will put all the necessary items for the research question into a list to be used by the <code>executeDbDiagnostics</code> function. Please see <a href="ohdsi.github.io/DbDiagnostics/articles/DataDiagnosticsSettings.html">this article</a> for how to put together the settings and what the options are. You should end with an object that is a list of settings lists, one for each analysis you want to perform.</p>
+</div>
+<div class="section level3">
+<h3 id="id_32-run-the-executedbdiagnostics-function">3.2 Run the <code>executeDbDiagnostics</code> function<a class="anchor" aria-label="anchor" href="#id_32-run-the-executedbdiagnostics-function"></a>
+</h3>
+<p>Call the function, passing in the list of analysis settings created in the above step.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">dbProfileConnectionDetails</span> <span class="op">&lt;-</span> <span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/createConnectionDetails.html" class="external-link">createConnectionDetails</a></span><span class="op">(</span>dbms <span class="op">=</span> <span class="st">""</span>,</span>
+<span>                                                                         user <span class="op">=</span> ,</span>
+<span>                                                                         password <span class="op">=</span> ,</span>
+<span>                                                                         server <span class="op">=</span> <span class="st">"your server"</span>,</span>
+<span>                                                                         port <span class="op">=</span> ,</span>
+<span>                                                                         extraSettings <span class="op">=</span> <span class="op">)</span></span>
+<span></span>
+<span><span class="va">dbDiagnosticResults</span> <span class="op">&lt;-</span> <span class="fu">DbDiagnostics</span><span class="fu">::</span><span class="fu"><a href="reference/executeDbDiagnostics.html">executeDbDiagnostics</a></span><span class="op">(</span>connectionDetails <span class="op">=</span> <span class="va">dbProfileConnectionDetails</span>,</span>
+<span>                                                                                                   resultsDatabaseSchema <span class="op">=</span> <span class="st">""</span>,</span>
+<span>                                                                                                   resultsTableName <span class="op">=</span> <span class="st">""</span>,</span>
+<span>                                                                                                   outputFolder <span class="op">=</span> <span class="va">outputFolder</span>,</span>
+<span>                                                                                                   dataDiagnosticsSettingsList <span class="op">=</span> <span class="va">settingsList</span><span class="op">)</span></span></code></pre></div>
+<p>This will write an output csv file and a summary csv file with all results.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="id_4-investigate-the-dbdiagnostics-results">4. Investigate the dbDiagnostics results<a class="anchor" aria-label="anchor" href="#id_4-investigate-the-dbdiagnostics-results"></a>
+</h2>
+<p>The summary csv file will show each analysis and each database available. The column ‘total_fails’ give a number of the total required elements for an analysis that are unavailable in each database. Any database with a ‘total_fails’ value of zero indicates that the database is a potential candidate to run the full study as specified in the analysis settings. Any value in the ‘total_fails’ column &gt;= 1 indicates that the database is not a good candidated to run the full study. The additional columns in the summary file detail the exact items in the settings list that did not pass diagnostics. The results csv file provides all information including the percentage of people in the database that meet each individual criteria in the settings list and what thresholds were used to determine failures.</p>
 </div>
 </div>
   </div>
