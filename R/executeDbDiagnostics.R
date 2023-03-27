@@ -29,8 +29,8 @@
 #' @export
 
 executeDbDiagnostics <- function(connectionDetails,
-																 resultsDatabaseSchema = "dp_temp",
-																 resultsTableName = "dp_achilles_results_augmented",
+																 resultsDatabaseSchema,
+																 resultsTableName,
 																 outputFolder = getwd(),
 																 dataDiagnosticsSettingsList) {
 
@@ -75,40 +75,18 @@ executeDbDiagnostics <- function(connectionDetails,
 
 	dbNum <- nrow(dbNames)
 
-	for(k in 1:length(dataDiagnosticsSettingsList)){
-	# Get the specifications ------------------
-
-	studySpecs <- dataDiagnosticsSettingsList[[k]]
-
-	# TODO ---------------
-	# evaluate the specs input
-	# look at data types and stop if target concept id is null
-
-
-	# Get the thresholds for the study -------------------------------------------
-
-	ddThresholds <- read.csv(system.file("csv", "ddThresholds.csv", package = "DbDiagnostics"), stringsAsFactors = FALSE)
-
-	# ID of this individual study
-		analysisId <- studySpecs$analysisId
-
-	# Name of this individual study
-		analysisName <- studySpecs$analysisName
-
-		message(paste0("Analysis #", analysisId, " - ", analysisName))
-
 		# Loop through the databases -----------------------------------------------
 
 		for(i in 1:dbNum){
 
 			dbName <- dbNames[i,2]
 
-			message(paste0("  -- Database: ", dbName, " (", i, "/", nrow(dbNames), ")"))
+			message(paste0("Database: ", dbName, " (", i, "/", nrow(dbNames), ")"))
 
 			# Get the dbProfile information for the database
 			sql <- "SELECT * FROM @results_database_schema.@results_table_name WHERE RELEASE_KEY = '@databaseName'"
 
-			rsql <- SqlRender::render(sql, databaseName = dbNames[i,2],
+			rsql <- SqlRender::render(sql, databaseName = dbName,
 																results_database_schema = resultsDatabaseSchema,
 																results_table_name = resultsTableName)
 
@@ -117,6 +95,29 @@ executeDbDiagnostics <- function(connectionDetails,
 
 			# Set up the specs for this study/db combination. This is done after getting the dbProfile information because NULL
 			# values in the specs get values from the database in order to evaluate them
+
+			for(k in 1:length(dataDiagnosticsSettingsList)){
+				# Get the specifications ------------------
+
+				studySpecs <- dataDiagnosticsSettingsList[[k]]
+
+				# TODO ---------------
+				# evaluate the specs input
+				# look at data types and stop if target concept id is null
+
+
+				# Get the thresholds for the study -------------------------------------------
+
+				ddThresholds <- read.csv(system.file("csv", "ddThresholds.csv", package = "DbDiagnostics"), stringsAsFactors = FALSE)
+
+				# ID of this individual study
+				analysisId <- studySpecs$analysisId
+
+				# Name of this individual study
+				analysisName <- studySpecs$analysisName
+
+				message(paste0("   -- Analysis #", analysisId, " - ", analysisName, " (", k, "/", length(dataDiagnosticsSettingsList), ")" ))
+
 
 			numCriteria <- 0
 
@@ -885,27 +886,29 @@ executeDbDiagnostics <- function(connectionDetails,
 																filter(evaluateThreshold > 0) %>%
 																mutate(analysisId = analysisId,
 																			 analysisName = analysisName,
-																			 releaseKey = dbName$RELEASE_KEY, .before = statistic)
+																			 releaseKey = dbName, .before = statistic)
 
-    	if(i==1){
+    	if(k==1){
 				dataDiagnosticsResults <- dataDiagnosticsOutput
 			}else{
 				dataDiagnosticsResultsNew <- rbind(dataDiagnosticsResults,dataDiagnosticsOutput)
 				dataDiagnosticsResults <- dataDiagnosticsResultsNew
 			}
-		}
+		} # end of for loop around analysis list
 
-		CohortGenerator::writeCsv(dataDiagnosticsResults, file.path(outputFolder,"data_diagnostics_output.csv"), append = (k != 1))
+		CohortGenerator::writeCsv(dataDiagnosticsResults, file.path(outputFolder,"data_diagnostics_output.csv"), append = (i != 1))
 
-		if(k==1){
+		if(i==1){
 			totalResults <- dataDiagnosticsResults
 		}else{
 			totalResultsNew <- rbind(dataDiagnosticsResults,totalResults)
 			totalResults <- totalResultsNew
 		}
 
-	} # end of for loop around analysis list
+	} # end of for loop around database list
 
+	dbDiagnosticsSummary <- DbDiagnostics::createDataDiagnosticsSummary(totalResults)
+	CohortGenerator::writeCsv(dbDiagnosticsSummary,file.path(outputFolder,"data_diagnostics_summary.csv"))
 
 	tempFileName <- tempfile()
 

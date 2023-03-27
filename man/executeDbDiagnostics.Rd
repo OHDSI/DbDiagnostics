@@ -6,8 +6,8 @@
 \usage{
 executeDbDiagnostics(
   connectionDetails,
-  resultsDatabaseSchema = "dp_temp",
-  resultsTableName = "dp_achilles_results_augmented",
+  resultsDatabaseSchema,
+  resultsTableName,
   outputFolder = getwd(),
   dataDiagnosticsSettingsList
 )

@@ -23,25 +23,25 @@
 
 createDataDiagnosticsSummary <- function(dbDiagnosticsResults) {
 
-	dbDiagnosticsFails <- dbDiagnosticResults %>%
-		group_by(analysisId, analysisName, databaseId) %>%
+	dbDiagnosticsFails <- dbDiagnosticsResults %>%
+		group_by(analysisId, analysisName, releaseKey) %>%
 		summarise(totalFails = sum(fail))
 
-	dbDiagnosticsSampleSize <- dbDiagnosticResults %>%
+	dbDiagnosticsSampleSize <- dbDiagnosticsResults %>%
 		mutate(valueRound = round(as.numeric(value), digits = 2)) %>%
-		select(analysisId, analysisName, databaseId, statistic, valueRound) %>%
+		select(analysisId, analysisName, releaseKey, statistic, valueRound) %>%
 		pivot_wider(names_from = statistic, values_from = valueRound) %>%
-		select(analysisId, analysisName, databaseId, minSampleSize, maxSampleSize)
+		select(analysisId, analysisName, releaseKey, minSampleSize, maxSampleSize)
 
-	dbDiagnosticsSummary <- dbDiagnosticResults %>%
+	dbDiagnosticsSummary <- dbDiagnosticsResults %>%
 		mutate(propRound = round(as.numeric(proportion), digits = 2)) %>%
-		select(analysisId, analysisName, databaseId, statistic, fail) %>%
+		select(analysisId, analysisName, releaseKey, statistic, fail) %>%
 		pivot_wider(names_from = statistic, values_from = fail) %>%
 		select(-minSampleSize, -maxSampleSize) %>%
 		left_join(dbDiagnosticsFails,
-							by = c("analysisId"="analysisId", "analysisName"="analysisName", "databaseId"="databaseId")) %>%
+							by = c("analysisId"="analysisId", "analysisName"="analysisName", "releaseKey"="releaseKey")) %>%
 		left_join(dbDiagnosticsSampleSize,
-							by = c("analysisId"="analysisId", "analysisName"="analysisName", "databaseId"="databaseId")) %>%
+							by = c("analysisId"="analysisId", "analysisName"="analysisName", "releaseKey"="releaseKey")) %>%
 		relocate(totalFails, minSampleSize, maxSampleSize, .before = propWithCalendarTime)
 
 	suppressMessages(attach(dbDiagnosticsSummary))

@@ -128,19 +128,9 @@ dbDiagnosticResults <- DbDiagnostics::executeDbDiagnostics(connectionDetails = d
 
 ```
 
-This will write an output file with all results. To summarize these into an easy to read format, run the summary function and then write to a csv file.
+This will write an output csv file and a summary csv file with all results. 
 
-
-### 3.3 Summarize the output
-
-```r
-dbDiagnosticSummary <- DbDiagnostics::createDataDiagnosticsSummary(dataDiagnosticResults)
-
-CohortGenerator::writeCsv(dbDiagnosticSummary, file.path(outputFolder,"data_diagnostics_summary.csv"))
-```
 
 ## 4. Investigate the dbDiagnostics results
 
-
-
-### 4.1 Set up a local instance of the shiny application to visualize the results
+The summary csv file will show each analysis and each database available. The column 'total_fails' give a number of the total required elements for an analysis that are unavailable in each database. Any database with a 'total_fails' value of zero indicates that the database is a potential candidate to run the full study as specified in the analysis settings. Any value in the 'total_fails' column >= 1 indicates that the database is not a good candidated to run the full study. The additional columns in the summary file detail the exact items in the settings list that did not pass diagnostics. The results csv file provides all information including the percentage of people in the database that meet each individual criteria in the settings list and what thresholds were used to determine failures. 
