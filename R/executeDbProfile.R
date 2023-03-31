@@ -138,7 +138,7 @@ executeDbProfile <- function(connectionDetails,
 			stop("Please check your vocabulary tables. The vocabulary version could not be determined")
 		}
 
-		DatabaseConnector::disconnect(connection)
+		on.exit(DatabaseConnector::disconnect(connection))
 
 	## Add vocab version from data to cdm_source
 		colnames(vocabVersion) <- "vocabularyVersionFromData"
@@ -276,8 +276,7 @@ executeDbProfile <- function(connectionDetails,
 
 					writeLines(paste("Running Analyses", analysesToRun$ANALYSIS_ID, "and attempting to append to existing results tables"))
 
-					Achilles::achilles(
-															connectionDetails,
+					Achilles::achilles( connectionDetails,
 															cdmDatabaseSchema = cdmDatabaseSchema,
 															vocabDatabaseSchema = vocabDatabaseSchema,
 															createTable = FALSE,
@@ -289,23 +288,52 @@ executeDbProfile <- function(connectionDetails,
 															outputFolder = outputFolder
 															)
 
-					achillesResults <- 	Achilles::exportResultsToCSV(
-																	connectionDetails,
-																	resultsDatabaseSchema = writeTo,
-																	analysisIds = analysisIds,
-																	minCellCount = minCellCount,
-																	exportFolder = outputCdmReleaseFolder
-																)
+					connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+
+					# get the achilles results
+					sql <- SqlRender::loadRenderTranslateSql("getAchillesResults.sql",
+																									 packageName = "DbDiagnostics",
+																									 dbms = connectionDetails$dbms,
+																									 resultsDatabaseSchema = resultsDatabaseSchema,
+																									 analysis_ids = analysisIds,
+																									 min_cell_count = minCellCount)
+
+					achillesResults <- DatabaseConnector::querySql(connection = connection, sql = sql, snakeCaseToCamelCase = TRUE)
+
+					# get the achilles results dist
+					sql <- SqlRender::loadRenderTranslateSql("getAchillesResultsDist.sql",
+																									 packageName = "DbDiagnostics",
+																									 dbms = connectionDetails$dbms,
+																									 resultsDatabaseSchema = resultsDatabaseSchema,
+																									 analysis_ids = analysisIds,
+																									 min_cell_count = minCellCount)
+
+					achillesResultsDist <- DatabaseConnector::querySql(connection = connection, sql = sql, snakeCaseToCamelCase = TRUE)
+
 
 				}else{
 
-					achillesResultsIncomplete <- 	Achilles::exportResultsToCSV(
-																					connectionDetails,
-																					resultsDatabaseSchema = resultsDatabaseSchema,
-																					analysisIds = analysisIds,
-																					minCellCount = minCellCount,
-																					exportFolder = outputCdmReleaseFolder
-																				)
+					connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+
+					# get the achilles results
+					sql <- SqlRender::loadRenderTranslateSql("getAchillesResults.sql",
+																									 packageName = "DbDiagnostics",
+																									 dbms = connectionDetails$dbms,
+																									 resultsDatabaseSchema = resultsDatabaseSchema,
+																									 analysis_ids = analysisIds,
+																									 min_cell_count = minCellCount)
+
+					achillesResultsIncomplete <- DatabaseConnector::querySql(connection = connection, sql = sql, snakeCaseToCamelCase = TRUE)
+
+					# get the achilles results dist
+					sql <- SqlRender::loadRenderTranslateSql("getAchillesResultsDist.sql",
+																									 packageName = "DbDiagnostics",
+																									 dbms = connectionDetails$dbms,
+																									 resultsDatabaseSchema = resultsDatabaseSchema,
+																									 analysis_ids = analysisIds,
+																									 min_cell_count = minCellCount)
+
+					achillesResultsDistIncomplete <- DatabaseConnector::querySql(connection = connection, sql = sql, snakeCaseToCamelCase = TRUE)
 
 					writeLines(paste("Running Analyses", analysesToRun$ANALYSIS_ID, "and writing to", writeTo))
 
@@ -322,28 +350,93 @@ executeDbProfile <- function(connectionDetails,
 									outputFolder = outputFolder
 								)
 
-					missingAnalysesResults <- 	Achilles::exportResultsToCSV(
-																					connectionDetails,
-																					resultsDatabaseSchema = writeTo,
-																					analysisIds = analysisIds,
-																					minCellCount = minCellCount,
-																					exportFolder = outputCdmReleaseFolder
-																				)
+					# get the missing achilles results
+					sql <- SqlRender::loadRenderTranslateSql("getAchillesResults.sql",
+																									 packageName = "DbDiagnostics",
+																									 dbms = connectionDetails$dbms,
+																									 resultsDatabaseSchema = writeTo,
+																									 analysis_ids = analysisIds,
+																									 min_cell_count = minCellCount)
 
-					achillesResults <- rbind(achillesResultsIncomplete,missingAnalysesResults)
+					achillesResultsMissing <-	tryCatch(
+																			expr = {
+																				DatabaseConnector::querySql(connection = connection, sql = sql, snakeCaseToCamelCase = TRUE)
+																			},
+																			error = function(e) {
+																				achillesResultsMissing <- data.frame(analysisId  = NA,
+																																						 stratum1 = NA,
+																																						 stratum2 = NA,
+																																						 stratum3 = NA,
+																																						 stratum4 = NA,
+																																						 stratum5 = NA,
+																																						 countValue = NA)
+																				return(achillesResultsMissing)
+																			}
+																		)
+
+					# get the missing achilles results dist
+					sql <- SqlRender::loadRenderTranslateSql("getAchillesResultsDist.sql",
+																									 packageName = "DbDiagnostics",
+																									 dbms = connectionDetails$dbms,
+																									 resultsDatabaseSchema = writeTo,
+																									 analysis_ids = analysisIds,
+																									 min_cell_count = minCellCount)
+
+					achillesResultsDistMissing <- 	tryCatch(
+																						expr = {
+																							DatabaseConnector::querySql(connection = connection, sql = sql, snakeCaseToCamelCase = TRUE)
+																						},
+																						error = function(e) {
+																							achillesResultsDistMissing <- data.frame(analysisId  = NA,
+																																												 stratum1 = NA,
+																																												 stratum2 = NA,
+																																												 stratum3 = NA,
+																																												 stratum4 = NA,
+																																												 stratum5 = NA,
+																																												 countValue = NA,
+																																											   minValue = NA,
+																																											   maxValue = NA,
+																																											   avgValue = NA,
+																																											   stdevValue = NA,
+																																											   medianValue = NA,
+																																											   p10Value = NA,
+																																											   p25Value = NA,
+																																											   p75Value = NA,
+																																											   p90Value = NA)
+																							return(achillesResultsDistMissing)
+																						}
+																					)
+
+					achillesResults <- rbind(achillesResultsIncomplete,achillesResultsMissing)
+
+					achillesResultsDist <- rbind(achillesResultsDistIncomplete,achillesResultsDistMissing)
 
 				}
 			} else {
 
 			writeLines("All tables and analyses are present, grabbing all results")
 
-			achillesResults <- 	Achilles::exportResultsToCSV(
-															connectionDetails,
-															resultsDatabaseSchema = resultsDatabaseSchema,
-															analysisIds = analysisIds,
-															minCellCount = minCellCount,
-															exportFolder = outputCdmReleaseFolder
-														)
+				connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+
+				# get the achilles results
+				sql <- SqlRender::loadRenderTranslateSql("getAchillesResults.sql",
+																								 packageName = "DbDiagnostics",
+																								 dbms = connectionDetails$dbms,
+																								 resultsDatabaseSchema = resultsDatabaseSchema,
+																								 analysis_ids = analysisIds,
+																								 min_cell_count = minCellCount)
+
+				achillesResults <- DatabaseConnector::querySql(connection = connection, sql = sql, snakeCaseToCamelCase = TRUE)
+
+				# get the achilles results dist
+				sql <- SqlRender::loadRenderTranslateSql("getAchillesResultsDist.sql",
+																								 packageName = "DbDiagnostics",
+																								 dbms = connectionDetails$dbms,
+																								 resultsDatabaseSchema = resultsDatabaseSchema,
+																								 analysis_ids = analysisIds,
+																								 min_cell_count = minCellCount)
+
+				achillesResultsDist <- DatabaseConnector::querySql(connection = connection, sql = sql, snakeCaseToCamelCase = TRUE)
 
 			}
 
@@ -363,13 +456,64 @@ executeDbProfile <- function(connectionDetails,
 														outputFolder = outputFolder
 													)
 
-				achillesResults <- 	Achilles::exportResultsToCSV(
-																			connectionDetails,
-																			resultsDatabaseSchema = writeTo,
-																			analysisIds = analysisIds,
-																			minCellCount = minCellCount,
-																			exportFolder = outputCdmReleaseFolder
-																		)
+				connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+
+				# get the achilles results
+				sql <- SqlRender::loadRenderTranslateSql("getAchillesResults.sql",
+																								 packageName = "DbDiagnostics",
+																								 dbms = connectionDetails$dbms,
+																								 resultsDatabaseSchema = writeTo,
+																								 analysis_ids = analysisIds,
+																								 min_cell_count = minCellCount)
+
+				achillesResults <-	tryCatch(
+					expr = {
+						DatabaseConnector::querySql(connection = connection, sql = sql, snakeCaseToCamelCase = TRUE)
+					},
+					error = function(e) {
+						achillesResults <- data.frame(analysisId  = NA,
+																								 stratum1 = NA,
+																								 stratum2 = NA,
+																								 stratum3 = NA,
+																								 stratum4 = NA,
+																								 stratum5 = NA,
+																								 countValue = NA)
+						return(achillesResults)
+					}
+				)
+
+				# get the achilles results dist
+				sql <- SqlRender::loadRenderTranslateSql("getAchillesResultsDist.sql",
+																								 packageName = "DbDiagnostics",
+																								 dbms = connectionDetails$dbms,
+																								 resultsDatabaseSchema = writeTo,
+																								 analysis_ids = analysisIds,
+																								 min_cell_count = minCellCount)
+
+				achillesResultsDist <- 	tryCatch(
+					expr = {
+						DatabaseConnector::querySql(connection = connection, sql = sql, snakeCaseToCamelCase = TRUE)
+					},
+					error = function(e) {
+						achillesResultsDist <- data.frame(analysisId  = NA,
+																										 stratum1 = NA,
+																										 stratum2 = NA,
+																										 stratum3 = NA,
+																										 stratum4 = NA,
+																										 stratum5 = NA,
+																										 countValue = NA,
+																										 minValue = NA,
+																										 maxValue = NA,
+																										 avgValue = NA,
+																										 stdevValue = NA,
+																										 medianValue = NA,
+																										 p10Value = NA,
+																										 p25Value = NA,
+																										 p75Value = NA,
+																										 p90Value = NA)
+						return(achillesResultsDist)
+					}
+				)
 
 		}
 	} else {
@@ -386,19 +530,70 @@ executeDbProfile <- function(connectionDetails,
 												outputFolder = outputFolder
 											)
 
-		achillesResults <- 	Achilles::exportResultsToCSV(
-																	connectionDetails,
-																	resultsDatabaseSchema = writeTo,
-																	analysisIds = analysisIds,
-																	minCellCount = minCellCount,
-																	exportFolder = outputCdmReleaseFolder
-																)
+		connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+
+		# get the achilles results
+		sql <- SqlRender::loadRenderTranslateSql("getAchillesResults.sql",
+																						 packageName = "DbDiagnostics",
+																						 dbms = connectionDetails$dbms,
+																						 resultsDatabaseSchema = writeTo,
+																						 analysis_ids = analysisIds,
+																						 min_cell_count = minCellCount)
+
+		achillesResults <-	tryCatch(
+			expr = {
+				DatabaseConnector::querySql(connection = connection, sql = sql, snakeCaseToCamelCase = TRUE)
+			},
+			error = function(e) {
+				achillesResults <- data.frame(analysisId  = NA,
+																			stratum1 = NA,
+																			stratum2 = NA,
+																			stratum3 = NA,
+																			stratum4 = NA,
+																			stratum5 = NA,
+																			countValue = NA)
+				return(achillesResults)
+			}
+		)
+
+		# get the achilles results dist
+		sql <- SqlRender::loadRenderTranslateSql("getAchillesResultsDist.sql",
+																						 packageName = "DbDiagnostics",
+																						 dbms = connectionDetails$dbms,
+																						 resultsDatabaseSchema = writeTo,
+																						 analysis_ids = analysisIds,
+																						 min_cell_count = minCellCount)
+
+		achillesResultsDist <- 	tryCatch(
+			expr = {
+				DatabaseConnector::querySql(connection = connection, sql = sql, snakeCaseToCamelCase = TRUE)
+			},
+			error = function(e) {
+				achillesResultsDist <- data.frame(analysisId  = NA,
+																					stratum1 = NA,
+																					stratum2 = NA,
+																					stratum3 = NA,
+																					stratum4 = NA,
+																					stratum5 = NA,
+																					countValue = NA,
+																					minValue = NA,
+																					maxValue = NA,
+																					avgValue = NA,
+																					stdevValue = NA,
+																					medianValue = NA,
+																					p10Value = NA,
+																					p25Value = NA,
+																					p75Value = NA,
+																					p90Value = NA)
+				return(achillesResultsDist)
+			}
+		)
 
 	}
 
 	## Add back any missing analyses since achilles will not write zero results to the database
 
-	achillesAnalysesIncluded <- unique(achillesResults$ANALYSIS_ID)
+	achillesAnalysesIncluded <- unique(c(achillesResults$analysisId, achillesResultsDist$analysisId))
 
 	requiredAnalyses <- as.data.frame(analysisIds)
 
@@ -410,20 +605,35 @@ executeDbProfile <- function(connectionDetails,
 	if (nrow(analysesToAdd) > 0){
 
 		for(i in 1:nrow(analysesToAdd)){
-			 ANALYSIS_ID <- c(analysesToAdd$analysisIds[i])
-			 STRATUM_1 <- c(0)
-			 STRATUM_2 <- c(NA)
-			 STRATUM_3 <- c(NA)
-			 STRATUM_4 <- c(NA)
-			 STRATUM_5 <- c(NA)
-			 COUNT_VALUE <- c(0)
+			 analysisId <- c(analysesToAdd$analysisIds[i])
+			 stratum1 <- c(0)
+			 stratum2 <- c(NA)
+			 stratum3 <- c(NA)
+			 stratum4 <- c(NA)
+			 stratum5 <- c(NA)
+			 countValue <- c(0)
+			 minValue <- c(NA)
+			 maxValue <- c(NA)
+			 avgValue <- c(NA)
+			 stdevValue <- c(NA)
+			 medianValue <- c(NA)
+			 p10Value <- c(NA)
+			 p25Value <- c(NA)
+			 p75Value <- c(NA)
+			 p90Value <- c(NA)
 
-			 addAnalyses <- data.frame(ANALYSIS_ID, STRATUM_1, STRATUM_2, STRATUM_3, STRATUM_4, STRATUM_5, COUNT_VALUE)
+			 addAnalysesResults <- data.frame(analysisId, stratum1, stratum2, stratum3, stratum4, stratum5, countValue)
 
-			 achillesResults <- rbind(achillesResults,addAnalyses)
+			 achillesResults <- rbind(achillesResults,addAnalysesResults)
+
+			 addAnalysesResultsDist <- data.frame(analysisId, stratum1, stratum2, stratum3, stratum4, stratum5, countValue, minValue, maxValue, avgValue,
+			 																		 stdevValue, medianValue, p10Value, p25Value, p75Value, p90Value)
+
+			 achillesResultsDist <- rbind(achillesResultsDist,addAnalysesResultsDist)
 		}
 
-	 rm(ANALYSIS_ID, STRATUM_1, STRATUM_2, STRATUM_3, STRATUM_4, STRATUM_5, COUNT_VALUE)
+	 rm(analysisId, stratum1, stratum2, stratum3, stratum4, stratum5, countValue, minValue, maxValue, avgValue,
+	 	 stdevValue, medianValue, p10Value, p25Value, p75Value, p90Value)
 	}
 
 	# Add vocabulary ancestor information for later processing
@@ -443,10 +653,10 @@ executeDbProfile <- function(connectionDetails,
 
 	if(!is.null(excludedConcepts)){
 		achillesResultsExclusions <- achillesResults %>%
-			filter(STRATUM_1 %in% as.character(excludedConcepts))
+			filter(stratum1 %in% as.character(excludedConcepts))
 
 		achillesResultsWithExclusions <- achillesResults %>%
-			filter(!STRATUM_1 %in% as.character(excludedConcepts))
+			filter(!stratum1 %in% as.character(excludedConcepts))
 
 		achillesResultsToAddBack <- achillesResultsExclusions %>%
 			filter(ANALYSIS_ID == 2004)
@@ -456,35 +666,79 @@ executeDbProfile <- function(connectionDetails,
 		achillesResultsFinalExclusions <- achillesResults
 	}
 
+	if(!is.null(excludedConcepts)){
+		achillesResultsDistExclusions <- achillesResultsDist %>%
+			filter(stratum1 %in% as.character(excludedConcepts))
+
+		achillesResultsDistWithExclusions <- achillesResultsDist %>%
+			filter(!stratum1 %in% as.character(excludedConcepts))
+
+		achillesResultsDistFinalExclusions <- achillesResultsDistWithExclusions
+	}else{
+		achillesResultsDistFinalExclusions <- achillesResultsDist
+	}
+
 	roundingInput <- roundTo/10*-1
 
 	achillesResultsRounded <- achillesResultsFinalExclusions %>%
-		mutate(COUNT_VALUE_ROUNDED = round(COUNT_VALUE,roundingInput))
+		mutate(countValueRounded = round(countValue,roundingInput))
 
-	achillesResultsRounded$CDM_SOURCE_NAME <- cdmSourceName
-	achillesResultsRounded$RELEASE_KEY <- paste(sourceKey,releaseDateKey,sep = "_")
+	achillesResultsDistRounded <- achillesResultsDistFinalExclusions %>%
+		mutate(countValueRounded = round(countValue,roundingInput)) %>%
+		mutate(avgValueRounded = round(avgValue,2)) %>%
+		mutate(stdevValueRounded = round(stdevValue,2))
+
+	achillesResultsRounded$cdmSourceName <- cdmSourceName
+	achillesResultsRounded$releaseKey <- paste(sourceKey,releaseDateKey,sep = "_")
+
+	achillesResultsDistRounded$cdmSourceName <- cdmSourceName
+	achillesResultsDistRounded$releaseKey <- paste(sourceKey,releaseDateKey,sep = "_")
+
 
 	achillesResultsFinal <- sqldf::sqldf(
-		"SELECT CDM_SOURCE_NAME,
-						RELEASE_KEY,
-					  ANALYSIS_ID,
-						STRATUM_1,
-						STRATUM_2,
-						STRATUM_3,
-						STRATUM_4,
-						STRATUM_5,
-						COUNT_VALUE_ROUNDED	as COUNT_VALUE,
-						DESCENDANT_CONCEPT_NAME AS VISIT_CONCEPT_NAME,
-						VISIT_ANCESTOR_CONCEPT_ID,
-						VISIT_ANCESTOR_CONCEPT_NAME
+		"SELECT cdmSourceName,
+						releaseKey,
+					  analysisId,
+						stratum1,
+						stratum2,
+						stratum3,
+						stratum4,
+						stratum5,
+						countValueRounded	as countValue,
+						DESCENDANT_CONCEPT_NAME AS visitConceptName,
+						VISIT_ANCESTOR_CONCEPT_ID AS visitAncestorConceptId,
+						VISIT_ANCESTOR_CONCEPT_NAME as visitAncestorConceptName
 			FROM achillesResultsRounded ar
 			LEFT JOIN visitAncestors va
-				ON ar.STRATUM_1 = va.DESCENDANT_CONCEPT_ID
-				AND ar.ANALYSIS_ID = 200"
+				ON ar.stratum1 = va.DESCENDANT_CONCEPT_ID
+				AND ar.analysisId = 200"
 	)
 
-	# export the new achilles analysis
+	achillesResultsDistFinal <- sqldf::sqldf(
+		"SELECT cdmSourceName,
+		        releaseKey,
+		        analysisId,
+		        stratum1,
+						stratum2,
+						stratum3,
+						stratum4,
+						stratum5,
+						countValueRounded	as countValue,
+		        minValue,
+		        maxValue,
+		        avgValueRounded as avgValue,
+		        stdevValueRounded as stdevValue,
+		        medianValue,
+		        p10Value,
+		        p25Value,
+		        p75Value,
+		        p90Value
+		 FROM achillesResultsDistRounded"
+	)
+
+	# export the new achilles analysis and dist results
 	write.csv(x = achillesResultsFinal, file = paste(outputCdmReleaseFolder,"db_profile_results.csv", sep="/"), quote = TRUE, row.names = FALSE)
+	write.csv(x = achillesResultsDistFinal, file = paste(outputCdmReleaseFolder,"db_profile_results_dist.csv", sep="/"), quote = TRUE, row.names = FALSE)
 
 	# start of DQD analysis
 	# DQD ----------------------------------
@@ -551,6 +805,7 @@ executeDbProfile <- function(connectionDetails,
 	zip(zipfile = outputFile,
 			c(#paste(outputCdmReleaseFolder,"achilles_results.csv",sep = "/"), #####removing for now so there is a choice to filter down the achilles results
 				paste(outputCdmReleaseFolder,"db_profile_results.csv", sep = "/"),
+				paste(outputCdmReleaseFolder,"db_profile_results_dist.csv", sep = "/"),
 			  paste(outputCdmReleaseFolder,paste(sourceKey,releaseDateKey,"DbProfile.json",sep = "_"), sep="/"),
 				paste0(outputCdmFolder,"/",sourceKey,"_metadata.csv"),
 				paste0(outputCdmReleaseFolder,"/",sourceKey,"_",releaseDateKey,"_cdm_source.csv")),
@@ -560,6 +815,7 @@ executeDbProfile <- function(connectionDetails,
 		zip(zipfile = outputFile,
 				c(#paste(outputCdmReleaseFolder,"achilles_results.csv",sep = "/"),
 					paste(outputCdmReleaseFolder,"db_profile_results.csv", sep = "/"),
+					paste(outputCdmReleaseFolder,"db_profile_results_dist.csv", sep = "/"),
 					paste0(outputCdmFolder,"/",sourceKey,"_metadata.csv"),
 					paste0(outputCdmReleaseFolder,"/",sourceKey,"_",releaseDateKey,"_cdm_source.csv")),
 				extras = '-j')
