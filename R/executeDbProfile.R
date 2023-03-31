@@ -20,7 +20,8 @@
 #'
 #' @param connectionDetails         A connectionDetails object for connecting to the CDM database
 #' @param cdmDatabaseSchema         The fully qualified database name of the CDM schema
-#' @param resultsDatabaseSchema     The fully qualified database name of the results schema
+#' @param resultsDatabaseSchema     The fully qualified database name of the results schema where achilles results are help
+#' @param writeTo										The fully qualified schema you have write access to. This will be used to store any missing analyses that need to be run.
 #' @param vocabDatabaseSchema       The fully qualified database name of the vocabulary schema
 #' @param cdmSourceName             A string containing the name of the database
 #' @param siteName									The name of the site or institution that owns or licenses the data.
@@ -36,7 +37,7 @@
 #' @param refreshTime 							How often the data are refreshed
 #' @param outputFolder              Results will be written to this directory, Default = getwd()
 #' @param cdmVersion                The CDM version to target for the data source. Default = "5.3"
-#' @param overwriteAchilles         Specify if existing achilles results tables should be overwritten, Default=FALSE
+#' @param appendAchilles            Specify if any missing achilles analyses should be appended to existing achilles results tables. This requires write access to the schema specified in the `resultsDatabaseSchema`. Default is FALSE meaning any missing analyses will be written to the schema specified in the `writeTo` parameter.
 #' @param minCellCount              Minimum cell count to allow in analyses. Default = 0
 #' @param roundTo										Specify whether to round to the 10s or 100s place. Valid inputs are 10 or 100, default is 10.
 #' @param excludedConcepts					A vector of concepts that should not be included in the final file "achilles_results_augmented.csv".
@@ -52,6 +53,7 @@
 executeDbProfile <- function(connectionDetails,
 														 cdmDatabaseSchema,
 														 resultsDatabaseSchema,
+														 writeTo,
 														 vocabDatabaseSchema,
 														 cdmSourceName = NA,
 														 siteName = NA,
@@ -67,7 +69,7 @@ executeDbProfile <- function(connectionDetails,
 														 refreshTime = NA,
 														 outputFolder = getwd(),
 														 cdmVersion = "5.3",
-														 overwriteAchilles = FALSE,
+														 appendAchilles = FALSE,
 														 minCellCount = 5,
 														 roundTo = 10,
 														 excludedConcepts = c(),
@@ -250,13 +252,13 @@ executeDbProfile <- function(connectionDetails,
 	colnames(resultsTables) <- "resultsTables"
 
 	resultsTables$achillesTables <-
-		ifelse(resultsTables$resultsTables %in% achillesTables, 1, 0)
+		ifelse(tolower(resultsTables$resultsTables) %in% tolower(achillesTables), 1, 0)
 
 	if (!is.na(resultsTables[1, 1])) {
-		if (sum(resultsTables$achillesTables) == length(achillesTables) && !overwriteAchilles) {
+		if (sum(resultsTables$achillesTables) == length(achillesTables)) {
 			#check for both results tables
 
-			writeLines("All achilles tables present, now checking required analyses and running only missing analyses")
+			writeLines("All results tables present, now checking required analyses and running only missing analyses")
 
 			missingAnalyses <-
 				Achilles::listMissingAnalyses(connectionDetails,
@@ -269,121 +271,145 @@ executeDbProfile <- function(connectionDetails,
 
 			if (nrow(analysesToRun) > 0 ){
 
-				writeLines(paste("Running Analyses", analysesToRun$ANALYSIS_ID))
+				if (appendAchilles){
+
+					writeLines(paste("Running Analyses", analysesToRun$ANALYSIS_ID, "and attempting to append to existing results tables"))
+
+					Achilles::achilles(
+															connectionDetails,
+															cdmDatabaseSchema = cdmDatabaseSchema,
+															vocabDatabaseSchema = vocabDatabaseSchema,
+															createTable = FALSE,
+															resultsDatabaseSchema = resultsDatabaseSchema,
+															sourceName = cdmSourceName,
+															updateGivenAnalysesOnly = TRUE,
+															analysisIds = analysesToRun$ANALYSIS_ID,
+															cdmVersion = cdmVersion,
+															outputFolder = outputFolder
+															)
+
+					achillesResults <- 	Achilles::exportResultsToCSV(
+																	connectionDetails,
+																	resultsDatabaseSchema = writeTo,
+																	analysisIds = analysisIds,
+																	minCellCount = minCellCount,
+																	exportFolder = outputCdmReleaseFolder
+																)
+
+				}else{
+
+					achillesResultsIncomplete <- 	Achilles::exportResultsToCSV(
+																					connectionDetails,
+																					resultsDatabaseSchema = resultsDatabaseSchema,
+																					analysisIds = analysisIds,
+																					minCellCount = minCellCount,
+																					exportFolder = outputCdmReleaseFolder
+																				)
+
+					writeLines(paste("Running Analyses", analysesToRun$ANALYSIS_ID, "and writing to", writeTo))
+
+					Achilles::achilles(
+									connectionDetails,
+									cdmDatabaseSchema = cdmDatabaseSchema,
+									vocabDatabaseSchema = vocabDatabaseSchema,
+									createTable = TRUE,
+									resultsDatabaseSchema = writeTo,
+									sourceName = cdmSourceName,
+									updateGivenAnalysesOnly = TRUE,
+									analysisIds = analysesToRun$ANALYSIS_ID,
+									cdmVersion = cdmVersion,
+									outputFolder = outputFolder
+								)
+
+					missingAnalysesResults <- 	Achilles::exportResultsToCSV(
+																					connectionDetails,
+																					resultsDatabaseSchema = writeTo,
+																					analysisIds = analysisIds,
+																					minCellCount = minCellCount,
+																					exportFolder = outputCdmReleaseFolder
+																				)
+
+					achillesResults <- rbind(achillesResultsIncomplete,missingAnalysesResults)
+
+				}
+			} else {
+
+			writeLines("All tables and analyses are present, grabbing all results")
+
+			achillesResults <- 	Achilles::exportResultsToCSV(
+															connectionDetails,
+															resultsDatabaseSchema = resultsDatabaseSchema,
+															analysisIds = analysisIds,
+															minCellCount = minCellCount,
+															exportFolder = outputCdmReleaseFolder
+														)
+
+			}
+
+		} else {
+			writeLines(
+				paste0("One or more achilles tables are missing, running entire package for the required analyses and regenerating tables. Results will be written to the schema ",writeTo)
+			)
 
 				Achilles::achilles(
-					connectionDetails,
-					cdmDatabaseSchema = cdmDatabaseSchema,
-					vocabDatabaseSchema = vocabDatabaseSchema,
-					createTable = FALSE,
-					resultsDatabaseSchema = resultsDatabaseSchema,
-					sourceName = cdmSourceName,
-					updateGivenAnalysesOnly = TRUE,
-					analysisIds = analysesToRun$ANALYSIS_ID,
-					cdmVersion = cdmVersion,
-					outputFolder = outputFolder
-				)
-			}
-		} else if (sum(resultsTables$achillesTables) != length(achillesTables) && overwriteAchilles) {
-			writeLines(
-				"One or more achilles tables are missing, running entire package for the required analyses and regenerating tables"
-			)
+														connectionDetails,
+														cdmDatabaseSchema = cdmDatabaseSchema,
+														vocabDatabaseSchema = vocabDatabaseSchema,
+														resultsDatabaseSchema = writeTo,
+														sourceName = cdmSourceName,
+														analysisIds = analysisIds,
+														cdmVersion = cdmVersion,
+														outputFolder = outputFolder
+													)
 
-			Achilles::achilles(
-				connectionDetails,
-				cdmDatabaseSchema = cdmDatabaseSchema,
-				vocabDatabaseSchema = vocabDatabaseSchema,
-				resultsDatabaseSchema = resultsDatabaseSchema,
-				sourceName = cdmSourceName,
-				analysisIds = analysisIds,
-				cdmVersion = cdmVersion,
-				outputFolder = outputFolder
-			)
+				achillesResults <- 	Achilles::exportResultsToCSV(
+																			connectionDetails,
+																			resultsDatabaseSchema = writeTo,
+																			analysisIds = analysisIds,
+																			minCellCount = minCellCount,
+																			exportFolder = outputCdmReleaseFolder
+																		)
 
-		} else if (sum(resultsTables$achillesTables) != length(achillesTables) && !overwriteAchilles) {
-			tryCatch(
-				expr = {
-					writeLines(
-						"One or more achilles tables are missing, attempting to update analyses without regenerating tables"
-					)
-
-					missingAnalyses <-
-						Achilles::listMissingAnalyses(connectionDetails,
-																					resultsDatabaseSchema)
-
-					missingAnalyses$requiredAnalyses <-
-						ifelse(missingAnalyses$ANALYSIS_ID %in% analysisIds, 1, 0)
-
-					analysesToRun <- subset(missingAnalyses, requiredAnalyses == 1)
-
-					if (nrow(analysesToRun) > 0){
-
-						writeLines(paste("Running Analyses", analysesToRun$ANALYSIS_ID))
-
-						Achilles::achilles(
-							connectionDetails,
-							cdmDatabaseSchema = cdmDatabaseSchema,
-							vocabDatabaseSchema = vocabDatabaseSchema,
-							createTable = FALSE,
-							resultsDatabaseSchema = resultsDatabaseSchema,
-							sourceName = cdmSourceName,
-							updateGivenAnalysesOnly = TRUE,
-							analysisIds = analysesToRun$ANALYSIS_ID,
-							cdmVersion = cdmVersion,
-							outputFolder = outputFolder
-						)
-					}
-				},
-				error = function(e) {
-					message(
-						paste(
-							"An attempt was made to update missing analyses but the table could not be overwritten. Try setting overwriteAchilles = TRUE. Any results exported are most likely incomplete."
-						)
-					)
-					message(e)
-				}
-			)
 		}
 	} else {
-		writeLines("No Achilles tables detected, running entire package for the required analyses")
+		writeLines(paste0("No Achilles tables detected, running entire package for the required analyses. Results will be written to schema ",writeTo))
 
 		Achilles::achilles(
-			connectionDetails,
-			cdmDatabaseSchema = cdmDatabaseSchema,
-			vocabDatabaseSchema = vocabDatabaseSchema,
-			resultsDatabaseSchema = resultsDatabaseSchema,
-			sourceName = cdmSourceName,
-			analysisIds = analysisIds,
-			cdmVersion = cdmVersion,
-			outputFolder = outputFolder
-		)
+												connectionDetails,
+												cdmDatabaseSchema = cdmDatabaseSchema,
+												vocabDatabaseSchema = vocabDatabaseSchema,
+												resultsDatabaseSchema = writeTo,
+												sourceName = cdmSourceName,
+												analysisIds = analysisIds,
+												cdmVersion = cdmVersion,
+												outputFolder = outputFolder
+											)
+
+		achillesResults <- 	Achilles::exportResultsToCSV(
+																	connectionDetails,
+																	resultsDatabaseSchema = writeTo,
+																	analysisIds = analysisIds,
+																	minCellCount = minCellCount,
+																	exportFolder = outputCdmReleaseFolder
+																)
+
 	}
 
-	Achilles::exportResultsToCSV(
-		connectionDetails,
-		resultsDatabaseSchema = resultsDatabaseSchema,
-		analysisIds = analysisIds,
-		minCellCount = minCellCount,
-		exportFolder = outputCdmReleaseFolder
-	)
+	## Add back any missing analyses since achilles will not write zero results to the database
 
-	#Need to list the missing results again as anything still missing should have a count_value of 0
+	achillesAnalysesIncluded <- unique(achillesResults$ANALYSIS_ID)
 
-	missingAnalyses <-
-		Achilles::listMissingAnalyses(connectionDetails,
-																	resultsDatabaseSchema)
+	requiredAnalyses <- as.data.frame(analysisIds)
 
-	missingAnalyses$requiredAnalyses <-
-		ifelse(missingAnalyses$ANALYSIS_ID %in% analysisIds, 1, 0)
+	requiredAnalyses$missingAnalyses <-
+		ifelse(requiredAnalyses[,1] %in% achillesAnalysesIncluded, 0, 1)
 
-	analysesToAdd <- subset(missingAnalyses, requiredAnalyses == 1)
-
-	achillesResults <- read.csv(paste(outputCdmReleaseFolder, "achilles_results.csv", sep="/"), colClasses = c("STRATUM_1"="character"))
+	analysesToAdd <- subset(requiredAnalyses, missingAnalyses == 1)
 
 	if (nrow(analysesToAdd) > 0){
 
 		for(i in 1:nrow(analysesToAdd)){
-			 ANALYSIS_ID <- c(analysesToAdd$ANALYSIS_ID[i])
+			 ANALYSIS_ID <- c(analysesToAdd$analysisIds[i])
 			 STRATUM_1 <- c(0)
 			 STRATUM_2 <- c(NA)
 			 STRATUM_3 <- c(NA)

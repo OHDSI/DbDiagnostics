@@ -8,6 +8,7 @@ executeDbProfile(
   connectionDetails,
   cdmDatabaseSchema,
   resultsDatabaseSchema,
+  writeTo,
   vocabDatabaseSchema,
   cdmSourceName = NA,
   siteName = NA,
@@ -23,7 +24,7 @@ executeDbProfile(
   refreshTime = NA,
   outputFolder = getwd(),
   cdmVersion = "5.3",
-  overwriteAchilles = FALSE,
+  appendAchilles = FALSE,
   minCellCount = 5,
   roundTo = 10,
   excludedConcepts = c(),
@@ -38,7 +39,9 @@ executeDbProfile(
 
 \item{cdmDatabaseSchema}{The fully qualified database name of the CDM schema}
 
-\item{resultsDatabaseSchema}{The fully qualified database name of the results schema}
+\item{resultsDatabaseSchema}{The fully qualified database name of the results schema where achilles results are help}
+
+\item{writeTo}{The fully qualified schema you have write access to. This will be used to store any missing analyses that need to be run.}
 
 \item{vocabDatabaseSchema}{The fully qualified database name of the vocabulary schema}
 
@@ -68,7 +71,7 @@ executeDbProfile(
 
 \item{cdmVersion}{The CDM version to target for the data source. Default = "5.3"}
 
-\item{overwriteAchilles}{Specify if existing achilles results tables should be overwritten, Default=FALSE}
+\item{appendAchilles}{Specify if any missing achilles analyses should be appended to existing achilles results tables. This requires write access to the schema specified in the \code{resultsDatabaseSchema}. Default is FALSE meaning any missing analyses will be written to the schema specified in the \code{writeTo} parameter.}
 
 \item{minCellCount}{Minimum cell count to allow in analyses. Default = 0}
 

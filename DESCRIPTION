@@ -14,6 +14,9 @@ VignetteBuilder: knitr
 Depends:
 	R (>= 3.5.0),
 	DatabaseConnector (>= 4.0.0),
+	testthat,
+	rmarkdown,
+	Eunomia
 Imports:
 	dplyr,
 	tidyr,
@@ -25,10 +28,7 @@ Imports:
 	DataQualityDashboard (>= 1.4.0),
 	CohortGenerator
 Suggests:
-	testthat,
-	knitr,
-	rmarkdown,
-	Eunomia,
+  knitr
 Remotes:
 	ohdsi/Eunomia,
 	ohdsi/Achilles,
