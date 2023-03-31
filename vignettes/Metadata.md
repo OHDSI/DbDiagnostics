@@ -1,7 +1,7 @@
 ---
 title: "Metadata"
 output: html_document
-date: "`r Sys.Date()`"
+date: "2023-03-31"
 vignette: >
   %\VignetteEngine{knitr::knitr}
   %\VignetteIndexEntry{Metadata}

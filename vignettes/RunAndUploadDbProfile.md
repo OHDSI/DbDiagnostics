@@ -1,16 +1,14 @@
 ---
 title: "How to Run and Upload dbProfile Results"
 output: html_document
-date: "`r Sys.Date()`"
+date: "2023-03-31"
 vignette: >
   %\VignetteEngine{knitr::knitr}
   %\VignetteIndexEntry{How to Run and Upload dbProfile Results}
   %\usepackage[UTF-8]{inputenc}
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 This document will take you through the steps on how to run the database profile functions and upload them to a location to be reference when running database diagnostics.
 

@@ -79,6 +79,7 @@
 <span>  <span class="va">connectionDetails</span>,</span>
 <span>  <span class="va">cdmDatabaseSchema</span>,</span>
 <span>  <span class="va">resultsDatabaseSchema</span>,</span>
+<span>  <span class="va">writeTo</span>,</span>
 <span>  <span class="va">vocabDatabaseSchema</span>,</span>
 <span>  cdmSourceName <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  siteName <span class="op">=</span> <span class="cn">NA</span>,</span>
@@ -94,7 +95,7 @@
 <span>  refreshTime <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  outputFolder <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  cdmVersion <span class="op">=</span> <span class="st">"5.3"</span>,</span>
-<span>  overwriteAchilles <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  appendAchilles <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  minCellCount <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  roundTo <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  excludedConcepts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span>,</span>
@@ -116,7 +117,11 @@
 
 
 <dt>resultsDatabaseSchema</dt>
-<dd><p>The fully qualified database name of the results schema</p></dd>
+<dd><p>The fully qualified database name of the results schema where achilles results are help</p></dd>
+
+
+<dt>writeTo</dt>
+<dd><p>The fully qualified schema you have write access to. This will be used to store any missing analyses that need to be run.</p></dd>
 
 
 <dt>vocabDatabaseSchema</dt>
@@ -148,7 +153,11 @@
 
 
 <dt>dataContactName</dt>
-<dd><p>The <em>name</em> of the person who should be contacted in the event this database is identified as a good candidate for a study</p></dd>
+<dd><p>The name of the person who should be contacted in the event this database is identified as a good candidate for a study</p></dd>
+
+
+<dt>dataContactEmail</dt>
+<dd><p>The email address of the person who should be contacted in the event this database is identified as a good candidate for a study</p></dd>
 
 
 <dt>dataDoiType</dt>
@@ -175,8 +184,8 @@
 <dd><p>The CDM version to target for the data source. Default = "5.3"</p></dd>
 
 
-<dt>overwriteAchilles</dt>
-<dd><p>Specify if existing achilles results tables should be overwritten, Default=FALSE</p></dd>
+<dt>appendAchilles</dt>
+<dd><p>Specify if any missing achilles analyses should be appended to existing achilles results tables. This requires write access to the schema specified in the <code>resultsDatabaseSchema</code>. Default is FALSE meaning any missing analyses will be written to the schema specified in the <code>writeTo</code> parameter.</p></dd>
 
 
 <dt>minCellCount</dt>
@@ -206,10 +215,6 @@ This is the file that is shared with as part of the OHDSI network initiative.</p
 
 <dt>conceptCheckThresholds</dt>
 <dd><p>OPTIONAL Location of the custom threshold file for the DQD concept checks. In absence of this parameter the default thresholds are used.</p></dd>
-
-
-<dt>dataContactemail</dt>
-<dd><p>The <em>email address</em> of the person who should be contacted in the event this database is identified as a good candidate for a study</p></dd>
 
 </dl></div>
 

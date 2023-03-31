@@ -25,6 +25,7 @@
 #' @param dataDiagnosticsSettingsList		A list of settings objects, each created from DataDiagnostics::createDataDiagnosticsSettings() function and each representing one analysis.
 #'
 #' @import DataQualityDashboard Achilles DatabaseConnector SqlRender dplyr magrittr
+#' @importFrom ParallelLogger saveSettingsToJson
 #'
 #' @export
 

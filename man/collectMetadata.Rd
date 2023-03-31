@@ -35,7 +35,9 @@ collectMetadata(
 
 \item{dataShortName}{The short name or nickname of the database}
 
-\item{dataContactName}{The \emph{name} of the person who should be contacted in the event this database is identified as a good candidate for a study}
+\item{dataContactName}{The name of the person who should be contacted in the event this database is identified as a good candidate for a study}
+
+\item{dataContactEmail}{The email address of the person who should be contacted in the event this database is identified as a good candidate for a study}
 
 \item{dataDoiType}{The type of data object identifier (DOI) the database has. Options are "DOI", "CURIE", "ARK", "Other",}
 
@@ -44,8 +46,6 @@ collectMetadata(
 \item{dataProvenance}{The type(s) of data that are present in your database. Options are "Electronic Health Records", "Administrative Claims", "Disease-specific Registry", "Wearable or Sensor Data", "Other".}
 
 \item{refreshTime}{How often the data are refreshed}
-
-\item{dataContactemail}{The \emph{email address} of the person who should be contacted in the event this database is identified as a good candidate for a study}
 }
 \description{
 collectMetadata

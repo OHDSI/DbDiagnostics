@@ -57,7 +57,9 @@ executeDbProfile(
 
 \item{dataShortName}{The short name or nickname of the database}
 
-\item{dataContactName}{The \emph{name} of the person who should be contacted in the event this database is identified as a good candidate for a study}
+\item{dataContactName}{The name of the person who should be contacted in the event this database is identified as a good candidate for a study}
+
+\item{dataContactEmail}{The email address of the person who should be contacted in the event this database is identified as a good candidate for a study}
 
 \item{dataDoiType}{The type of data object identifier (DOI) the database has. Options are "DOI", "CURIE", "ARK", "Other",}
 
@@ -87,8 +89,6 @@ This is the file that is shared with as part of the OHDSI network initiative.}
 \item{fieldCheckThresholds}{OPTIONAL Location of the custom threshold file for the DQD field checks. In absence of this parameter the default thresholds are used.}
 
 \item{conceptCheckThresholds}{OPTIONAL Location of the custom threshold file for the DQD concept checks. In absence of this parameter the default thresholds are used.}
-
-\item{dataContactemail}{The \emph{email address} of the person who should be contacted in the event this database is identified as a good candidate for a study}
 }
 \description{
 executeDbProfile

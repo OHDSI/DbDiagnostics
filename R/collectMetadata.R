@@ -25,8 +25,8 @@
 #' @param siteOHDSIRunPackage Yes/No if site has someone who can run and/or debug an OHDSI study package
 #' @param dataFullName The full name of the database
 #' @param dataShortName The short name or nickname of the database
-#' @param dataContactName The *name* of the person who should be contacted in the event this database is identified as a good candidate for a study
-#' @param dataContactemail The *email address* of the person who should be contacted in the event this database is identified as a good candidate for a study
+#' @param dataContactName The name of the person who should be contacted in the event this database is identified as a good candidate for a study
+#' @param dataContactEmail The email address of the person who should be contacted in the event this database is identified as a good candidate for a study
 #' @param dataDoiType The type of data object identifier (DOI) the database has. Options are "DOI", "CURIE", "ARK", "Other",
 #' @param governanceTime How long (in weeks) it typically takes to receive approval to run a study on this database
 #' @param dataProvenance The type(s) of data that are present in your database. Options are "Electronic Health Records", "Administrative Claims", "Disease-specific Registry", "Wearable or Sensor Data", "Other".
