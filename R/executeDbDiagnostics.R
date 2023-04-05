@@ -887,7 +887,7 @@ executeDbDiagnostics <- function(connectionDetails,
 																filter(evaluateThreshold > 0) %>%
 																mutate(analysisId = analysisId,
 																			 analysisName = analysisName,
-																			 releaseKey = dbName, .before = statistic)
+																			 databaseId = dbName, .before = statistic)
 
     	if(k==1){
 				dataDiagnosticsResults <- dataDiagnosticsOutput

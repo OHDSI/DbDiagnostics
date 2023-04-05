@@ -20,7 +20,7 @@
 #'
 #' @param connectionDetails         A connectionDetails object for connecting to the CDM database
 #' @param cdmDatabaseSchema         The fully qualified database name of the CDM schema
-#' @param resultsDatabaseSchema     The fully qualified database name of the results schema where achilles results are help
+#' @param resultsDatabaseSchema     The fully qualified database name of the results schema where achilles results are held
 #' @param writeTo										The fully qualified schema you have write access to. This will be used to store any missing analyses that need to be run.
 #' @param vocabDatabaseSchema       The fully qualified database name of the vocabulary schema
 #' @param cdmSourceName             A string containing the name of the database

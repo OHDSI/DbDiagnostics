@@ -1,7 +1,7 @@
 ---
 title: "How to Run and Upload dbProfile Results"
 output: html_document
-date: "2023-03-31"
+date: "2023-04-02"
 vignette: >
   %\VignetteEngine{knitr::knitr}
   %\VignetteIndexEntry{How to Run and Upload dbProfile Results}
@@ -29,8 +29,11 @@ connectionDetails <- DatabaseConnector::createConnectionDetails(
 	# The schema where your CDM-structured data are housed
   cdmDatabaseSchema <- "cdm_54_test" 
   
-  # The (writeable) schema where your achilles results are or will be housed
+  # The schema where your achilles results are or will be housed
   resultsDatabaseSchema <- "cdm_54_results"
+  
+  # The schema where any missing achilles analyses should be written. 
+  writeTo <- "cdm_54_results"
   
   # The schema where your vocabulary tables are housed, typically the same as the cdmDatabaseSchema
   vocabDatabaseSchema <- cdmDatabaseSchema
@@ -44,8 +47,8 @@ connectionDetails <- DatabaseConnector::createConnectionDetails(
   # The version of the OMOP CDM you are currently on, v5.3 and v5.4 are supported.
   cdmVersion <- "5.4"
   
-  # Whether the function should overwrite existing Achilles tables and create new ones
-  overwriteAchilles <- FALSE
+  # Whether the function should append existing Achilles tables or create new ones
+  appendAchilles <- FALSE
   
   # Whether to round to the 10s or 100s place. Valid inputs are 10 or 100, default is 10.
   roundTo <- 10
@@ -54,7 +57,7 @@ connectionDetails <- DatabaseConnector::createConnectionDetails(
   excludedConcepts <- c()
   
   # Whether the DQD should be run as part of the profile exercise
-  addDQD <- TRUE
+  addDQD <- FALSE
   
 ```
 
@@ -65,11 +68,12 @@ connectionDetails <- DatabaseConnector::createConnectionDetails(
 DbDiagnostics::executeDbProfile(connectionDetails = connectionDetails,
                                    cdmDatabaseSchema = cdmDatabaseSchema,
                                    resultsDatabaseSchema = resultsDatabaseSchema,
+                                   writeTo = writeTo,
                                    vocabDatabaseSchema = vocabDatabaseSchema,
                                    cdmSourceName = cdmSourceName,
                                    outputFolder = outputFolder,
                                    cdmVersion = cdmVersion,
-                                   overwriteAchilles = overwriteAchilles,
+                                   appendAchilles = appendAchilles,
                                    roundTo = roundTo,
                                    excludedConcepts = excludedConcepts,
                                    addDQD = addDQD

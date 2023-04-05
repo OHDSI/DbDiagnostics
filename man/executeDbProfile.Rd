@@ -39,7 +39,7 @@ executeDbProfile(
 
 \item{cdmDatabaseSchema}{The fully qualified database name of the CDM schema}
 
-\item{resultsDatabaseSchema}{The fully qualified database name of the results schema where achilles results are help}
+\item{resultsDatabaseSchema}{The fully qualified database name of the results schema where achilles results are held}
 
 \item{writeTo}{The fully qualified schema you have write access to. This will be used to store any missing analyses that need to be run.}
 

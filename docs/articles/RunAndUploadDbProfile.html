@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">DbDiagnostics</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2</span>
       </span>
     </div>
 
@@ -91,7 +91,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>How to Run and Upload dbProfile Results</h1>
             
-            <h4 data-toc-skip class="date">2023-03-31</h4>
+            <h4 data-toc-skip class="date">2023-04-02</h4>
       
       
       <div class="hidden name"><code>RunAndUploadDbProfile.Rmd</code></div>
@@ -121,33 +121,36 @@ Detailed instructions on how to do this can be found <a href="http://ohdsi.githu
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># The schema where your CDM-structured data are housed</span></span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  cdmDatabaseSchema <span class="ot">&lt;-</span> <span class="st">"cdm_54_test"</span> </span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># The (writeable) schema where your achilles results are or will be housed</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># The schema where your achilles results are or will be housed</span></span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  resultsDatabaseSchema <span class="ot">&lt;-</span> <span class="st">"cdm_54_results"</span></span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># The schema where your vocabulary tables are housed, typically the same as the cdmDatabaseSchema</span></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  vocabDatabaseSchema <span class="ot">&lt;-</span> cdmDatabaseSchema</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># The schema where any missing achilles analyses should be written. </span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  writeTo <span class="ot">&lt;-</span> <span class="st">"cdm_54_results"</span></span>
 <span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># A unique, identifiable name for your database</span></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  cdmSourceName <span class="ot">&lt;-</span> <span class="st">"Synthea_v54"</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># The schema where your vocabulary tables are housed, typically the same as the cdmDatabaseSchema</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  vocabDatabaseSchema <span class="ot">&lt;-</span> cdmDatabaseSchema</span>
 <span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># The folder where your results should be written</span></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  outputFolder <span class="ot">&lt;-</span> folder where output is stored</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># A unique, identifiable name for your database</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  cdmSourceName <span class="ot">&lt;-</span> <span class="st">"Synthea_v54"</span></span>
 <span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># The version of the OMOP CDM you are currently on, v5.3 and v5.4 are supported.</span></span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>  cdmVersion <span class="ot">&lt;-</span> <span class="st">"5.4"</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># The folder where your results should be written</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>  outputFolder <span class="ot">&lt;-</span> folder where output is stored</span>
 <span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Whether the function should overwrite existing Achilles tables and create new ones</span></span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  overwriteAchilles <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  <span class="co"># The version of the OMOP CDM you are currently on, v5.3 and v5.4 are supported.</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  cdmVersion <span class="ot">&lt;-</span> <span class="st">"5.4"</span></span>
 <span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Whether to round to the 10s or 100s place. Valid inputs are 10 or 100, default is 10.</span></span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>  roundTo <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Whether the function should append existing Achilles tables or create new ones</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>  appendAchilles <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
 <span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Vector of concepts to exclude from the output. Note: No patient-level data is pulled as part of the package or included as part of the output</span></span>
-<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  excludedConcepts <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Whether to round to the 10s or 100s place. Valid inputs are 10 or 100, default is 10.</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  roundTo <span class="ot">&lt;-</span> <span class="dv">10</span></span>
 <span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Whether the DQD should be run as part of the profile exercise</span></span>
-<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>  addDQD <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
-<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>  </span></code></pre></div>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Vector of concepts to exclude from the output. Note: No patient-level data is pulled as part of the package or included as part of the output</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>  excludedConcepts <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Whether the DQD should be run as part of the profile exercise</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>  addDQD <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>  </span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="run-the-executedbprofile-function">Run the executeDbProfile function<a class="anchor" aria-label="anchor" href="#run-the-executedbprofile-function"></a>
@@ -157,11 +160,12 @@ Detailed instructions on how to do this can be found <a href="http://ohdsi.githu
 <span><span class="fu">DbDiagnostics</span><span class="fu">::</span><span class="fu"><a href="../reference/executeDbProfile.html">executeDbProfile</a></span><span class="op">(</span>connectionDetails <span class="op">=</span> <span class="va">connectionDetails</span>,</span>
 <span>                                   cdmDatabaseSchema <span class="op">=</span> <span class="va">cdmDatabaseSchema</span>,</span>
 <span>                                   resultsDatabaseSchema <span class="op">=</span> <span class="va">resultsDatabaseSchema</span>,</span>
+<span>                                   writeTo <span class="op">=</span> <span class="va">writeTo</span>,</span>
 <span>                                   vocabDatabaseSchema <span class="op">=</span> <span class="va">vocabDatabaseSchema</span>,</span>
 <span>                                   cdmSourceName <span class="op">=</span> <span class="va">cdmSourceName</span>,</span>
 <span>                                   outputFolder <span class="op">=</span> <span class="va">outputFolder</span>,</span>
 <span>                                   cdmVersion <span class="op">=</span> <span class="va">cdmVersion</span>,</span>
-<span>                                   overwriteAchilles <span class="op">=</span> <span class="va">overwriteAchilles</span>,</span>
+<span>                                   appendAchilles <span class="op">=</span> <span class="va">appendAchilles</span>,</span>
 <span>                                   roundTo <span class="op">=</span> <span class="va">roundTo</span>,</span>
 <span>                                   excludedConcepts <span class="op">=</span> <span class="va">excludedConcepts</span>,</span>
 <span>                                   addDQD <span class="op">=</span> <span class="va">addDQD</span></span>
