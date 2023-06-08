@@ -420,7 +420,7 @@ executeDbDiagnostics <- function(connectionDetails,
 			if(nrow(personsWithConditionCriteria) == 0){
 				personsWithConditionCriteria[1,]$COUNT_VALUE <- 0
 				personsWithConditionCriteria[1,]$statistic <- 'propWithConditionCriteria'
-				personsWithConditionCriteria <- personsWithConditionCritera %>%
+				personsWithConditionCriteria <- personsWithConditionCriteria %>%
 					mutate(spec = case_when(desiredCondition == 1 ~ 'Conditions desired',
 																	desiredCondition == 0 ~ 'Conditions not desired'),
 								 evaluateThreshold = desiredCondition)
