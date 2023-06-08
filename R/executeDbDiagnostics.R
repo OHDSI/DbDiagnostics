@@ -532,7 +532,7 @@ executeDbDiagnostics <- function(connectionDetails,
 				personsWithProcedureCriteria[1,]$COUNT_VALUE <- 0
 				personsWithProcedureCriteria[1,]$statistic <- 'propWithProcedureCriteria'
 				personsWithProcedureCriteria <- personsWithProcedureCriteria %>%
-					mutate(spec = case_when(desiredprocedure == 1 ~ 'Procedures desired',
+					mutate(spec = case_when(desiredProcedure == 1 ~ 'Procedures desired',
 																	desiredProcedure == 0 ~ 'Procedures not desired'),
 								 evaluateThreshold = desiredProcedure)
 			}
