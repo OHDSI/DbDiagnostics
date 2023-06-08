@@ -19,6 +19,8 @@
 #' createDataDiagnosticsSummary
 #'
 #' @param dbDiagnosticsResults			  A dataframe with the full data diagnostics output from the `executeDbDiagnostics` function.
+#' @import dplyr magrittr
+#' @importFrom tidyr pivot_wider
 #' @export
 
 createDataDiagnosticsSummary <- function(dbDiagnosticsResults) {
