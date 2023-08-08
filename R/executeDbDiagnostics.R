@@ -567,7 +567,12 @@ executeDbDiagnostics <- function(connectionDetails,
 
 			numMeasRecordsWithValues <- dbProfile[which(dbProfile$ANALYSIS_ID == 1814),]$COUNT_VALUE
 
-			propMeasRecordsWithValues <- numMeasRecordsWithValues/numMeasRecords
+			if(length(numMeasRecordsWithValues) == 0){
+				propMeasRecordsWithValues <- 0
+				numMeasRecordsWithValues <- 0
+			}else{
+				propMeasRecordsWithValues <- numMeasRecordsWithValues/numMeasRecords
+			}
 
 			measRecordsWithValues <- as.data.frame(cbind("propMeasRecordsWithValues", numMeasRecordsWithValues, propMeasRecordsWithValues)) %>%
 				rename("statistic" = "V1",
