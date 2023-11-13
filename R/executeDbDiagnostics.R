@@ -174,7 +174,7 @@ executeDbDiagnostics <- function(connectionDetails,
 
 			#Study End Date
 			if(is.null(studySpecs$studyEndDate)){
-				studyEndDate <- max(dbProfile[which(dbProfile$ANALYSIS_ID == 111),]$STRATUM_1)
+				studyEndDate <- max(dbProfile[which(dbProfile$ANALYSIS_ID == 112),]$STRATUM_1)
 
 			}else{
 				studyEndDate <- min(as.numeric(studySpecs$studyEndDate), max(dbProfile[which(dbProfile$ANALYSIS_ID == 111),]$STRATUM_1))
