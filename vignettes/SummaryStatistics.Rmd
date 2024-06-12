@@ -29,6 +29,7 @@ vignette: >
 - Number of measurement occurrence records, by measurement_concept_id
 - Number of measurement occurrence records, by measurement_source_concept_id
 - Number of measurement records with no value (numeric, string, or concept)
+- Number of measurement records, by measurement_concept_id and value_as_concept_id
 - Number of persons with at least one concept_id, by condition_concept_id
 - Number of condition occurrence records, by condition_concept_id
 - Number of condition occurrence records, by condition_source_concept_id
@@ -38,9 +39,12 @@ vignette: >
 - Number of persons with at least one concept_id, by drug_concept_id
 - Number of drug exposure records, by drug_concept_id
 - Number of drug exposure records, by drug_source_concept_id
+- Number of persons with at least one drug era, by drug_concept_id
+- Number of drug era records, by drug_concept_id
 - Number of persons with at least one concept_id, by observation_concept_id
 - Number of observation occurrence records, by observation_concept_id
 - Number of observation occurrence records, by observation_source_concept_id
+- Number of observation records, by observation_concept_id and value_as_concept_id
 - Number of persons with at least one concept_id, by device_concept_id
 - Number of device exposure records, by device_concept_id
 - Number of device exposure records, by device_source_concept_id
