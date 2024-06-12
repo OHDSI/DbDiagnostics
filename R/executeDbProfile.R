@@ -223,9 +223,11 @@ executeDbProfile <- function(connectionDetails,
 			725,
 			800,
 			801,
+			822,
 			825,
 			900,
 			901,
+			1822,
 			2100,
 			2101,
 			2125,
@@ -736,8 +738,11 @@ executeDbProfile <- function(connectionDetails,
 		 FROM achillesResultsDistRounded"
 	)
 
-	# export the new achilles analysis and dist results
+		# export the new achilles analysis and dist results
+	colnames(achillesResultsFinal) <- SqlRender::camelCaseToSnakeCase(colnames(achillesResultsFinal))
 	write.csv(x = achillesResultsFinal, file = paste(outputCdmReleaseFolder,"db_profile_results.csv", sep="/"), quote = TRUE, row.names = FALSE)
+
+	colnames(achillesResultsDistFinal) <- SqlRender::camelCaseToSnakeCase(colnames(achillesResultsDistFinal))
 	write.csv(x = achillesResultsDistFinal, file = paste(outputCdmReleaseFolder,"db_profile_results_dist.csv", sep="/"), quote = TRUE, row.names = FALSE)
 
 	# start of DQD analysis
