@@ -19,6 +19,8 @@ This document will take you through the steps on how to run the database profile
 Call the `createConnectionDetails` function to create the object, inputting the information for how to connect to your database. Detailed instructions on how to do this can be found [here](http://ohdsi.github.io/DatabaseConnector/articles/Connecting.html). 
 
 ```r
+devtools::install_github("OHDSI/DbDiagnostics")
+
 library(DbDiagnostics)
 
 connectionDetails <- DatabaseConnector::createConnectionDetails(
