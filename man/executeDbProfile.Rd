@@ -14,6 +14,7 @@ executeDbProfile(
   siteName = NA,
   siteOHDSIParticipation = NA,
   siteOHDSIRunPackage = NA,
+  siteSponsoredStudy = NA,
   dataFullName = NA,
   dataShortName = NA,
   dataContactName = NA,
@@ -52,6 +53,8 @@ executeDbProfile(
 \item{siteOHDSIParticipation}{Yes/No if the site contributed to an OHDSI study in the past}
 
 \item{siteOHDSIRunPackage}{Yes/No if site has someone who can run and/or debug an OHDSI study package}
+
+\item{siteSponsoredStudy}{Yes/No if site is interested in participating in sponsored studies}
 
 \item{dataFullName}{The full name of the database}
 
