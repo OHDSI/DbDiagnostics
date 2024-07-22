@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">DbDiagnostics</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.5</span>
       </span>
     </div>
 
@@ -91,7 +91,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>How to Run and Upload dbProfile Results</h1>
             
-            <h4 data-toc-skip class="date">2024-07-08</h4>
+            <h4 data-toc-skip class="date">2024-07-22</h4>
       
       
       <div class="hidden name"><code>RunAndUploadDbProfile.Rmd</code></div>
@@ -109,50 +109,59 @@ when running database diagnostics.</p>
 <p>Call the <code>createConnectionDetails</code> function to create the
 object, inputting the information for how to connect to your database.
 Detailed instructions on how to do this can be found <a href="http://ohdsi.github.io/DatabaseConnector/articles/Connecting.html" class="external-link">here</a>.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"OHDSI/DbDiagnostics"</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(DbDiagnostics)</span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>connectionDetails <span class="ot">&lt;-</span> DatabaseConnector<span class="sc">::</span><span class="fu">createConnectionDetails</span>(</span>
-<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>    <span class="at">dbms =</span> <span class="st">"postgresql"</span>,</span>
-<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>    <span class="at">server =</span> <span class="st">"localhost/synthea"</span>,</span>
-<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>    <span class="at">user =</span> <span class="st">"postgres"</span>,</span>
-<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>    <span class="at">password =</span> <span class="st">"postgres"</span></span>
-<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>)</span>
-<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a></span>
-<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a>    <span class="co"># The schema where your CDM-structured data are housed</span></span>
-<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a>  cdmDatabaseSchema <span class="ot">&lt;-</span> <span class="st">"cdm_54_test"</span> </span>
-<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a>  </span>
-<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a>  <span class="co"># The schema where your achilles results are or will be housed</span></span>
-<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a>  resultsDatabaseSchema <span class="ot">&lt;-</span> <span class="st">"cdm_54_results"</span></span>
-<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a>  </span>
-<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a>  <span class="co"># The schema where any missing achilles analyses should be written. </span></span>
-<span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a>  writeTo <span class="ot">&lt;-</span> <span class="st">"cdm_54_results"</span></span>
-<span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a>  </span>
-<span id="cb1-21"><a href="#cb1-21" tabindex="-1"></a>  <span class="co"># The schema where your vocabulary tables are housed, typically the same as the cdmDatabaseSchema</span></span>
-<span id="cb1-22"><a href="#cb1-22" tabindex="-1"></a>  vocabDatabaseSchema <span class="ot">&lt;-</span> cdmDatabaseSchema</span>
-<span id="cb1-23"><a href="#cb1-23" tabindex="-1"></a>  </span>
-<span id="cb1-24"><a href="#cb1-24" tabindex="-1"></a>  <span class="co"># A unique, identifiable name for your database</span></span>
-<span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a>  cdmSourceName <span class="ot">&lt;-</span> <span class="st">"Synthea_v54"</span></span>
-<span id="cb1-26"><a href="#cb1-26" tabindex="-1"></a>  </span>
-<span id="cb1-27"><a href="#cb1-27" tabindex="-1"></a>  <span class="co"># The folder where your results should be written</span></span>
-<span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a>  outputFolder <span class="ot">&lt;-</span> folder where output is stored</span>
-<span id="cb1-29"><a href="#cb1-29" tabindex="-1"></a>  </span>
-<span id="cb1-30"><a href="#cb1-30" tabindex="-1"></a>  <span class="co"># The version of the OMOP CDM you are currently on, v5.3 and v5.4 are supported.</span></span>
-<span id="cb1-31"><a href="#cb1-31" tabindex="-1"></a>  cdmVersion <span class="ot">&lt;-</span> <span class="st">"5.4"</span></span>
-<span id="cb1-32"><a href="#cb1-32" tabindex="-1"></a>  </span>
-<span id="cb1-33"><a href="#cb1-33" tabindex="-1"></a>  <span class="co"># Whether the function should append existing Achilles tables or create new ones</span></span>
-<span id="cb1-34"><a href="#cb1-34" tabindex="-1"></a>  appendAchilles <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
-<span id="cb1-35"><a href="#cb1-35" tabindex="-1"></a>  </span>
-<span id="cb1-36"><a href="#cb1-36" tabindex="-1"></a>  <span class="co"># Whether to round to the 10s or 100s place. Valid inputs are 10 or 100, default is 10.</span></span>
-<span id="cb1-37"><a href="#cb1-37" tabindex="-1"></a>  roundTo <span class="ot">&lt;-</span> <span class="dv">10</span></span>
-<span id="cb1-38"><a href="#cb1-38" tabindex="-1"></a>  </span>
-<span id="cb1-39"><a href="#cb1-39" tabindex="-1"></a>  <span class="co"># Vector of concepts to exclude from the output. Note: No patient-level data is pulled as part of the package or included as part of the output</span></span>
-<span id="cb1-40"><a href="#cb1-40" tabindex="-1"></a>  excludedConcepts <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
-<span id="cb1-41"><a href="#cb1-41" tabindex="-1"></a>  </span>
-<span id="cb1-42"><a href="#cb1-42" tabindex="-1"></a>  <span class="co"># Whether the DQD should be run as part of the profile exercise</span></span>
-<span id="cb1-43"><a href="#cb1-43" tabindex="-1"></a>  addDQD <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
-<span id="cb1-44"><a href="#cb1-44" tabindex="-1"></a>  </span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">##### --------- Install the package</span></span>
+<span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"OHDSI/DbDiagnostics"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Call the library</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">DbDiagnostics</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Turn off the connection pane to speed up run time</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>connectionObserver <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Set up connectionDetails to connect to the database</span></span>
+<span><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/createConnectionDetails.html" class="external-link">createConnectionDetails</a></span><span class="op">(</span></span>
+<span>    dbms <span class="op">=</span> <span class="st">"postgresql"</span>,</span>
+<span>    server <span class="op">=</span> <span class="st">"localhost/synthea"</span>,</span>
+<span>    user <span class="op">=</span> <span class="st">"postgres"</span>,</span>
+<span>    password <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"POSTGRES_PW"</span><span class="op">)</span>,</span>
+<span>    pathToDriver <span class="op">=</span> <span class="st">"/Users/clairblacketer/Documents/DatabaseConnector_Jars"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># The schema where your CDM-structured data are housed</span></span>
+<span><span class="va">cdmDatabaseSchema</span> <span class="op">&lt;-</span> <span class="st">"cdm_54_test"</span></span>
+<span></span>
+<span><span class="co"># The schema where your achilles results are or will be housed</span></span>
+<span><span class="va">resultsDatabaseSchema</span> <span class="op">&lt;-</span> <span class="st">"cdm_54_results"</span></span>
+<span></span>
+<span><span class="co"># The schema where your vocabulary tables are housed, typically the same as the cdmDatabaseSchema</span></span>
+<span><span class="va">vocabDatabaseSchema</span> <span class="op">&lt;-</span> <span class="va">cdmDatabaseSchema</span></span>
+<span></span>
+<span><span class="co"># A unique, identifiable name for your database</span></span>
+<span><span class="va">cdmSourceName</span> <span class="op">&lt;-</span> <span class="st">"Synthea_v54_OHDSI_Example"</span></span>
+<span></span>
+<span><span class="co"># The folder where your results should be written</span></span>
+<span><span class="va">outputFolder</span> <span class="op">&lt;-</span> <span class="st">"/Users/clairblacketer/Documents/Output/DbProfiles"</span></span>
+<span></span>
+<span><span class="co"># The version of the OMOP CDM you are currently on, v5.3 and v5.4 are supported.</span></span>
+<span><span class="va">cdmVersion</span> <span class="op">&lt;-</span> <span class="st">"5.4"</span></span>
+<span></span>
+<span><span class="co"># Whether the function should append existing Achilles tables or create new ones</span></span>
+<span><span class="va">appendAchilles</span> <span class="op">&lt;-</span> <span class="cn">FALSE</span></span>
+<span></span>
+<span><span class="co"># The schema where any missing achilles analyses should be written. Only set if appendAchilles = FALSE</span></span>
+<span><span class="va">writeTo</span> <span class="op">&lt;-</span> <span class="st">"synthea_achilles"</span></span>
+<span></span>
+<span><span class="co"># Whether to round to the 10s or 100s place. Valid inputs are 10 or 100, default is 10.</span></span>
+<span><span class="va">roundTo</span> <span class="op">&lt;-</span> <span class="fl">10</span></span>
+<span></span>
+<span><span class="co"># Vector of concepts to exclude from the output. Note: No patient-level data is pulled as part of the package or included as part of the output</span></span>
+<span><span class="va">excludedConcepts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Whether the DQD should be run as part of the profile exercise</span></span>
+<span><span class="va">addDQD</span> <span class="op">&lt;-</span> <span class="cn">FALSE</span></span>
+<span>  </span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="run-the-executedbprofile-function">Run the executeDbProfile function<a class="anchor" aria-label="anchor" href="#run-the-executedbprofile-function"></a>
@@ -160,18 +169,18 @@ Detailed instructions on how to do this can be found <a href="http://ohdsi.githu
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu">DbDiagnostics</span><span class="fu">::</span><span class="fu"><a href="../reference/executeDbProfile.html">executeDbProfile</a></span><span class="op">(</span>connectionDetails <span class="op">=</span> <span class="va">connectionDetails</span>,</span>
-<span>                                   cdmDatabaseSchema <span class="op">=</span> <span class="va">cdmDatabaseSchema</span>,</span>
-<span>                                   resultsDatabaseSchema <span class="op">=</span> <span class="va">resultsDatabaseSchema</span>,</span>
-<span>                                   writeTo <span class="op">=</span> <span class="va">writeTo</span>,</span>
-<span>                                   vocabDatabaseSchema <span class="op">=</span> <span class="va">vocabDatabaseSchema</span>,</span>
-<span>                                   cdmSourceName <span class="op">=</span> <span class="va">cdmSourceName</span>,</span>
-<span>                                   outputFolder <span class="op">=</span> <span class="va">outputFolder</span>,</span>
-<span>                                   cdmVersion <span class="op">=</span> <span class="va">cdmVersion</span>,</span>
-<span>                                   appendAchilles <span class="op">=</span> <span class="va">appendAchilles</span>,</span>
-<span>                                   roundTo <span class="op">=</span> <span class="va">roundTo</span>,</span>
-<span>                                   excludedConcepts <span class="op">=</span> <span class="va">excludedConcepts</span>,</span>
-<span>                                   addDQD <span class="op">=</span> <span class="va">addDQD</span></span>
-<span>                                   <span class="op">)</span></span></code></pre></div>
+<span>                                                                cdmDatabaseSchema <span class="op">=</span> <span class="va">cdmDatabaseSchema</span>,</span>
+<span>                                                                resultsDatabaseSchema <span class="op">=</span> <span class="va">resultsDatabaseSchema</span>,</span>
+<span>                                                                writeTo <span class="op">=</span> <span class="va">writeTo</span>,</span>
+<span>                                                                vocabDatabaseSchema <span class="op">=</span> <span class="va">vocabDatabaseSchema</span>,</span>
+<span>                                                                cdmSourceName <span class="op">=</span> <span class="va">cdmSourceName</span>,</span>
+<span>                                                                outputFolder <span class="op">=</span> <span class="va">outputFolder</span>,</span>
+<span>                                                                cdmVersion <span class="op">=</span> <span class="va">cdmVersion</span>,</span>
+<span>                                                                appendAchilles <span class="op">=</span> <span class="va">appendAchilles</span>,</span>
+<span>                                                                roundTo <span class="op">=</span> <span class="va">roundTo</span>,</span>
+<span>                                                                excludedConcepts <span class="op">=</span> <span class="va">excludedConcepts</span>,</span>
+<span>                                                                addDQD <span class="op">=</span> <span class="va">addDQD</span></span>
+<span>                                                                <span class="op">)</span></span></code></pre></div>
 <p>Upon completion, the summary statistics results <code>*.csv</code>
 file, the CDM_SOURCE table, metadata.csv and the data quality dashboard
 JSON file (if specified) will be located in a zip file in the output
@@ -182,75 +191,77 @@ location you set as part of the execute function.</p>
 </h2>
 <p>Be sure to unzip the dbProfile results that are generated in the
 above. Then, set the location where you unzipped the results as the
-parameter <code>resultsLocation</code>. Any parameter below denoted as
-<cdmsourcename> should be replaced with the database key that was
-generated when <code>executeDbProfile</code> was run. You can find this
-in the file names.</cdmsourcename></p>
+parameter <code>resultsLocation</code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="co"># set the location of the results that were generated from executeDbProfile</span></span>
-<span><span class="va">resultsLocation</span> <span class="op">&lt;-</span> <span class="st">""</span></span>
+<span><span class="co"># set the location of the unzipped results that were generated from executeDbProfile</span></span>
+<span><span class="va">resultsLocation</span> <span class="op">&lt;-</span> <span class="st">"/Users/clairblacketer/Documents/Output/DbProfiles/Synthea_v54_OHDSI_Example/20220329/DbProfileResults_Synthea_v54_OHDSI_Example_20220329_20240718083009"</span></span>
 <span></span>
 <span><span class="co"># set a parameter detailing if the DQD was run</span></span>
 <span><span class="va">addDQD</span> <span class="op">&lt;-</span> <span class="cn">FALSE</span></span>
 <span></span>
-<span><span class="co"># add dbId and prep output files for writing into the results schema</span></span>
-<span><span class="va">db_profile_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">resultsLocation</span>,<span class="st">"/db_profile_results.csv"</span><span class="op">)</span>, stringsAsFactors <span class="op">=</span> <span class="cn">F</span>, colClasses <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"STRATUM_1"</span><span class="op">=</span><span class="st">"character"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># set the schema name in your database where you want the files uploaded </span></span>
+<span><span class="va">databaseSchema</span> <span class="op">&lt;-</span> <span class="st">"db_profile"</span></span>
 <span></span>
-<span><span class="co"># make sure the columns are read in as characters to facilitate dbDiagnostics execution</span></span>
-<span><span class="va">db_profile_results</span><span class="op">$</span><span class="va">STRATUM_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">db_profile_results</span><span class="op">$</span><span class="va">STRATUM_1</span><span class="op">)</span></span>
-<span><span class="va">db_profile_results</span><span class="op">$</span><span class="va">STRATUM_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">db_profile_results</span><span class="op">$</span><span class="va">STRATUM_2</span><span class="op">)</span></span>
-<span><span class="va">db_profile_results</span><span class="op">$</span><span class="va">STRATUM_3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">db_profile_results</span><span class="op">$</span><span class="va">STRATUM_3</span><span class="op">)</span></span>
-<span><span class="va">db_profile_results</span><span class="op">$</span><span class="va">STRATUM_4</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">db_profile_results</span><span class="op">$</span><span class="va">STRATUM_4</span><span class="op">)</span></span>
-<span><span class="va">db_profile_results</span><span class="op">$</span><span class="va">STRATUM_5</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">db_profile_results</span><span class="op">$</span><span class="va">STRATUM_5</span><span class="op">)</span></span>
+<span><span class="co"># Read in the results and make sure the columns are characters to facilitate dbDiagnostics execution</span></span>
+<span><span class="va">db_profile_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">resultsLocation</span>,<span class="st">"/db_profile_results.csv"</span><span class="op">)</span>, stringsAsFactors <span class="op">=</span> <span class="cn">F</span>, colClasses <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"stratum_1"</span><span class="op">=</span><span class="st">"character"</span>,</span>
+<span>                                                                                                                       <span class="st">"stratum_2"</span><span class="op">=</span><span class="st">"character"</span>,</span>
+<span>                                                                                                                       <span class="st">"stratum_3"</span><span class="op">=</span><span class="st">"character"</span>,</span>
+<span>                                                                                                                       <span class="st">"stratum_4"</span><span class="op">=</span><span class="st">"character"</span>,</span>
+<span>                                                                                                                       <span class="st">"stratum_5"</span><span class="op">=</span><span class="st">"character"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
+<span><span class="va">db_profile_results_dist</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">resultsLocation</span>,<span class="st">"/db_profile_results_dist.csv"</span><span class="op">)</span>, stringsAsFactors <span class="op">=</span> <span class="cn">F</span>, colClasses <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"stratum_1"</span><span class="op">=</span><span class="st">"character"</span>,</span>
+<span>                                                                                                                                 <span class="st">"stratum_2"</span><span class="op">=</span><span class="st">"character"</span>,</span>
+<span>                                                                                                                                 <span class="st">"stratum_3"</span><span class="op">=</span><span class="st">"character"</span>,</span>
+<span>                                                                                                                                 <span class="st">"stratum_4"</span><span class="op">=</span><span class="st">"character"</span>,</span>
+<span>                                                                                                                                 <span class="st">"stratum_5"</span><span class="op">=</span><span class="st">"character"</span><span class="op">)</span><span class="op">)</span></span>
+<span>                                                                                                                                 </span>
 <span><span class="co"># read in the metadata</span></span>
-<span></span>
-<span><span class="va">db_metadata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">resultsLocation</span>,<span class="st">"/&lt;cdmSourceName&gt;_metadata.csv"</span><span class="op">)</span>, stringsAsFactors <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span>
-<span></span>
+<span><span class="va">metadataFile</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">resultsLocation</span>, pattern <span class="op">=</span> <span class="st">"\\metadata.csv$"</span><span class="op">)</span></span>
+<span><span class="va">db_metadata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">resultsLocation</span>,<span class="st">"/"</span>,<span class="va">metadataFile</span><span class="op">)</span>, stringsAsFactors <span class="op">=</span> <span class="cn">F</span>, colClasses <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"dataDoiType"</span><span class="op">=</span><span class="st">"character"</span>,</span>
+<span>                                                                                                       <span class="st">"dataShortName"</span><span class="op">=</span><span class="st">"character"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co"># read in the cdm_source table</span></span>
-<span></span>
-<span><span class="va">db_cdm_source</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">resultsLocation</span>,<span class="st">"/&lt;cdmSourceName&gt;_cdm_source.csv"</span><span class="op">)</span>, stringsAsFactors <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span>
+<span><span class="va">cdmSourceFile</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">resultsLocation</span>, pattern <span class="op">=</span> <span class="st">"\\cdm_source.csv$"</span><span class="op">)</span></span>
+<span><span class="va">db_cdm_source</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">resultsLocation</span>,<span class="st">"/"</span>,<span class="va">cdmSourceFile</span><span class="op">)</span>, stringsAsFactors <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># determine which tables should be uploaded based on if the DQD was included</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="va">addDQD</span><span class="op">)</span> <span class="op">{</span></span>
-<span></span>
-<span>    <span class="va">dqdJsonDf</span> <span class="op">&lt;-</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/fromJSON.html" class="external-link">fromJSON</a></span><span class="op">(</span></span>
-<span>        <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">outputFolder</span>,<span class="st">"/"</span>,<span class="va">dbId</span>,<span class="st">"_DbProfile.json"</span><span class="op">)</span>,</span>
-<span>        simplifyDataFrame <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span></span>
-<span>    <span class="va">dqd_overview</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">dqdJsonDf</span><span class="op">$</span><span class="va">Overview</span><span class="op">)</span></span>
-<span>    <span class="va">dqd_checkresults</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">dqdJsonDf</span><span class="op">$</span><span class="va">CheckResults</span><span class="op">)</span></span>
-<span>    </span>
-<span>    <span class="va">dqd_checkresults</span><span class="op">$</span><span class="va">THRESHOLD_VALUE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">dqd_checkresults</span><span class="op">$</span><span class="va">THRESHOLD_VALUE</span><span class="op">)</span></span>
-<span></span>
-<span>    <span class="va">tablesToUpload</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"db_profile_results"</span>,<span class="st">"db_metadata"</span>,<span class="st">"db_cdm_source"</span>,<span class="st">"dqd_checkresults"</span>,<span class="st">"dqd_overview"</span><span class="op">)</span></span>
+<span>  </span>
+<span>  <span class="va">dqdJsonDf</span> <span class="op">&lt;-</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/fromJSON.html" class="external-link">fromJSON</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">outputFolder</span>,<span class="st">"/"</span>,<span class="va">dbId</span>,<span class="st">"_DbProfile.json"</span><span class="op">)</span>,</span>
+<span>    simplifyDataFrame <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  </span>
+<span>  <span class="va">dqd_overview</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">dqdJsonDf</span><span class="op">$</span><span class="va">Overview</span><span class="op">)</span></span>
+<span>  <span class="va">dqd_checkresults</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">dqdJsonDf</span><span class="op">$</span><span class="va">CheckResults</span><span class="op">)</span></span>
+<span>  </span>
+<span>  <span class="va">dqd_checkresults</span><span class="op">$</span><span class="va">THRESHOLD_VALUE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">dqd_checkresults</span><span class="op">$</span><span class="va">THRESHOLD_VALUE</span><span class="op">)</span></span>
+<span>  </span>
+<span>  <span class="va">tablesToUpload</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"db_profile_results"</span>,<span class="st">"db_profile_results_dist"</span>,<span class="st">"db_metadata"</span>,<span class="st">"db_cdm_source"</span>,<span class="st">"dqd_checkresults"</span>,<span class="st">"dqd_overview"</span><span class="op">)</span></span>
 <span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
-<span>    <span class="va">tablesToUpload</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"db_profile_results"</span>,<span class="st">"db_metadata"</span>,<span class="st">"db_cdm_source"</span><span class="op">)</span></span>
+<span>  <span class="va">tablesToUpload</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"db_profile_results"</span>,<span class="st">"db_profile_results_dist"</span>,<span class="st">"db_metadata"</span>,<span class="st">"db_cdm_source"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="co"># create the connectionDetails for the database where the results should be uploaded. It is likely this will be different than the database where the dbProfile was run</span></span>
-<span></span>
 <span><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/createConnectionDetails.html" class="external-link">createConnectionDetails</a></span><span class="op">(</span></span>
-<span>    dbms <span class="op">=</span> <span class="st">"postgresql"</span>,</span>
-<span>    server <span class="op">=</span> <span class="st">"localhost/synthea"</span>,</span>
-<span>    user <span class="op">=</span> <span class="st">"postgres"</span>,</span>
-<span>    password <span class="op">=</span> <span class="st">"postgres"</span></span>
+<span>  dbms <span class="op">=</span> <span class="st">"postgresql"</span>,</span>
+<span>  server <span class="op">=</span> <span class="st">"localhost/synthea"</span>,</span>
+<span>  user <span class="op">=</span> <span class="st">"postgres"</span>,</span>
+<span>  password <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"POSTGRES_PW"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">conn</span> <span class="op">&lt;-</span> <span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/connect.html" class="external-link">connect</a></span><span class="op">(</span><span class="va">connectionDetails</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># When the schema is empty, use createTable = TRUE</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">tableName</span> <span class="kw">in</span> <span class="va">tablesToUpload</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/insertTable.html" class="external-link">insertTable</a></span><span class="op">(</span></span>
-<span>        connection        <span class="op">=</span> <span class="va">conn</span>,</span>
-<span>        tableName         <span class="op">=</span> <span class="va">tableName</span>,</span>
-<span>        databaseSchema    <span class="op">=</span> <span class="st">"cdm_54_results"</span>,</span>
-<span>        data              <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/eval.html" class="external-link">eval</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/parse.html" class="external-link">parse</a></span><span class="op">(</span>text<span class="op">=</span><span class="va">tableName</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>        dropTableIfExists <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>        createTable       <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>        tempTable         <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>        progressBar       <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/insertTable.html" class="external-link">insertTable</a></span><span class="op">(</span></span>
+<span>    connection        <span class="op">=</span> <span class="va">conn</span>,</span>
+<span>    tableName         <span class="op">=</span> <span class="va">tableName</span>,</span>
+<span>    databaseSchema    <span class="op">=</span> <span class="va">databaseSchema</span>,</span>
+<span>    data              <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/eval.html" class="external-link">eval</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/parse.html" class="external-link">parse</a></span><span class="op">(</span>text<span class="op">=</span><span class="va">tableName</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    dropTableIfExists <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    createTable       <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    tempTable         <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    progressBar       <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/disconnect.html" class="external-link">disconnect</a></span><span class="op">(</span><span class="va">conn</span><span class="op">)</span></span></code></pre></div>
