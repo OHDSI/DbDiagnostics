@@ -1,174 +1,90 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-
-<title>List of Summary Statistics Included in executeDbProfile</title>
-
-<script type="text/javascript">
-window.onload = function() {
-  var imgs = document.getElementsByTagName('img'), i, img;
-  for (i = 0; i < imgs.length; i++) {
-    img = imgs[i];
-    // center an image if it is the only element of its parent
-    if (img.parentElement.childElementCount === 1)
-      img.parentElement.style.textAlign = 'center';
-  }
-};
-</script>
-
-
-
-
-
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>DbProfile Summary Statistics</title>
 <style type="text/css">
-body, td {
-   font-family: sans-serif;
-   background-color: white;
-   font-size: 13px;
-}
-
 body {
+  font-family: sans-serif;
   max-width: 800px;
   margin: auto;
   padding: 1em;
-  line-height: 20px;
+  line-height: 1.5;
+  box-sizing: border-box;
 }
-
-tt, code, pre {
-   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+body, .footnotes, code { font-size: .9em; }
+li li { font-size: .95em; }
+*, *:before, *:after {
+  box-sizing: inherit;
 }
-
-h1 {
-   font-size:2.2em;
-}
-
-h2 {
-   font-size:1.8em;
-}
-
-h3 {
-   font-size:1.4em;
-}
-
-h4 {
-   font-size:1.0em;
-}
-
-h5 {
-   font-size:0.9em;
-}
-
-h6 {
-   font-size:0.8em;
-}
-
-a:visited {
-   color: rgb(50%, 0%, 50%);
-}
-
-pre, img {
-  max-width: 100%;
-}
-pre {
-  overflow-x: auto;
+pre, img { max-width: 100%; }
+pre, pre:hover {
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 pre code {
-   display: block; padding: 0.5em;
+  display: block;
+  overflow-x: auto;
 }
-
-code {
-  font-size: 92%;
-  border: 1px solid #ccc;
+code { font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace; }
+:not(pre) > code, code[class] { background-color: #F8F8F8; }
+code.language-undefined, pre > code:not([class]) {
+  background-color: inherit;
+  border: 1px solid #eee;
 }
-
-code[class] {
-  background-color: #F8F8F8;
+table {
+  margin: auto;
+  border-top: 1px solid #666;
 }
-
-table, td, th {
-  border: none;
-}
-
+table thead th { border-bottom: 1px solid #ddd; }
+th, td { padding: 5px; }
+thead, tfoot, tr:nth-child(even) { background: #eee; }
 blockquote {
-   color:#666666;
-   margin:0;
-   padding-left: 1em;
-   border-left: 0.5em #EEE solid;
+  color: #666;
+  margin: 0;
+  padding-left: 1em;
+  border-left: 0.5em solid #eee;
 }
-
-hr {
-   height: 0px;
-   border-bottom: none;
-   border-top-width: thin;
-   border-top-style: dotted;
-   border-top-color: #999999;
+hr, .footnotes::before { border: 1px dashed #ddd; }
+.frontmatter { text-align: center; }
+#TOC .numbered li { list-style: none; }
+#TOC .numbered { padding-left: 0; }
+#TOC .numbered ul { padding-left: 1em; }
+table, .body h2 { border-bottom: 1px solid #666; }
+.body .appendix, .appendix ~ h2 { border-bottom-style: dashed; }
+.footnote-ref a::before { content: "["; }
+.footnote-ref a::after { content: "]"; }
+section.footnotes::before {
+  content: "";
+  display: block;
+  max-width: 20em;
 }
 
 @media print {
-   * {
-      background: transparent !important;
-      color: black !important;
-      filter:none !important;
-      -ms-filter: none !important;
-   }
-
-   body {
-      font-size:12pt;
-      max-width:100%;
-   }
-
-   a, a:visited {
-      text-decoration: underline;
-   }
-
-   hr {
-      visibility: hidden;
-      page-break-before: always;
-   }
-
-   pre, blockquote {
-      padding-right: 1em;
-      page-break-inside: avoid;
-   }
-
-   tr, img {
-      page-break-inside: avoid;
-   }
-
-   img {
-      max-width: 100% !important;
-   }
-
-   @page :left {
-      margin: 15mm 20mm 15mm 10mm;
-   }
-
-   @page :right {
-      margin: 15mm 10mm 15mm 20mm;
-   }
-
-   p, h2, h3 {
-      orphans: 3; widows: 3;
-   }
-
-   h2, h3 {
-      page-break-after: avoid;
-   }
+  body {
+    font-size: 12pt;
+    max-width: 100%;
+  }
+  tr, img { page-break-inside: avoid; }
+}
+@media only screen and (min-width: 992px) {
+  pre { white-space: pre; }
 }
 </style>
-
-
-
 </head>
-
 <body>
-<h2>List of Summary Statistics Included in executeDbProfile</h2>
-
+<div class="include-before">
+</div>
+<div class="frontmatter">
+<div class="title"><h1>DbProfile Summary Statistics</h1></div>
+<div class="author"><h2></h2></div>
+<div class="date"><h3>2024-07-22</h3></div>
+</div>
+<div class="body">
+<h2 id="list-of-summary-statistics-included-in-executedbprofile">List of Summary Statistics Included in executeDbProfile</h2>
 <p><strong>The executeDbProfile function will execute and/or export the following aggregate summary statistics and DQD checks:</strong></p>
-
-<h3>Statistics</h3>
-
+<h3 id="statistics">Statistics</h3>
 <ul>
 <li>Number of persons</li>
 <li>Number of persons by gender</li>
@@ -185,6 +101,7 @@ hr {
 <li>Number of measurement occurrence records, by measurement_concept_id</li>
 <li>Number of measurement occurrence records, by measurement_source_concept_id</li>
 <li>Number of measurement records with no value (numeric, string, or concept)</li>
+<li>Number of measurement records, by measurement_concept_id and value_as_concept_id</li>
 <li>Number of persons with at least one concept_id, by condition_concept_id</li>
 <li>Number of condition occurrence records, by condition_concept_id</li>
 <li>Number of condition occurrence records, by condition_source_concept_id</li>
@@ -194,24 +111,23 @@ hr {
 <li>Number of persons with at least one concept_id, by drug_concept_id</li>
 <li>Number of drug exposure records, by drug_concept_id</li>
 <li>Number of drug exposure records, by drug_source_concept_id</li>
+<li>Number of persons with at least one drug era, by drug_concept_id</li>
+<li>Number of drug era records, by drug_concept_id</li>
 <li>Number of persons with at least one concept_id, by observation_concept_id</li>
 <li>Number of observation occurrence records, by observation_concept_id</li>
 <li>Number of observation occurrence records, by observation_source_concept_id</li>
+<li>Number of observation records, by observation_concept_id and value_as_concept_id</li>
 <li>Number of persons with at least one concept_id, by device_concept_id</li>
 <li>Number of device exposure records, by device_concept_id</li>
 <li>Number of device exposure records, by device_source_concept_id</li>
 <li>Distribution of numeric values, by measurement_concept_id and unit_concept_id</li>
 </ul>
-
 <p>Later inclusions</p>
-
 <ul>
-<li>condition_status? </li>
+<li>condition_status?</li>
 <li>type concepts</li>
 </ul>
-
-<h3>Data Quality Checks</h3>
-
+<h3 id="data-quality-checks">Data Quality Checks</h3>
 <ul>
 <li><a href="https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#measurepersoncompleteness-1">measurePersonCompleteness</a></li>
 <li><a href="https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#measurevaluecompleteness-1">measureValueCompleteness</a></li>
@@ -231,7 +147,8 @@ hr {
 <li><a href="https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#plausibletemporalafter-1">plausibleTemporalAfter</a></li>
 <li><a href="https://ohdsi.github.io/DataQualityDashboard/articles/CheckTypeDescriptions.html#plausibleduringlife-1">plausibleDuringLife</a></li>
 </ul>
-
+</div>
+<div class="include-after">
+</div>
 </body>
-
 </html>

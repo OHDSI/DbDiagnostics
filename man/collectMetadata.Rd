@@ -10,6 +10,7 @@ collectMetadata(
   siteName = NA,
   siteOHDSIParticipation = NA,
   siteOHDSIRunPackage = NA,
+  siteSponsoredStudy = NA,
   dataFullName = NA,
   dataShortName = NA,
   dataContactName = NA,
