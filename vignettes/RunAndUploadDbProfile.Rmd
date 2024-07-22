@@ -78,18 +78,18 @@ addDQD <- FALSE
 ```r
 
 DbDiagnostics::executeDbProfile(connectionDetails = connectionDetails,
-																cdmDatabaseSchema = cdmDatabaseSchema,
-																resultsDatabaseSchema = resultsDatabaseSchema,
-																writeTo = writeTo,
-																vocabDatabaseSchema = vocabDatabaseSchema,
-																cdmSourceName = cdmSourceName,
-																outputFolder = outputFolder,
-																cdmVersion = cdmVersion,
-																appendAchilles = appendAchilles,
-																roundTo = roundTo,
-																excludedConcepts = excludedConcepts,
-																addDQD = addDQD
-																)
+								cdmDatabaseSchema = cdmDatabaseSchema,
+								resultsDatabaseSchema = resultsDatabaseSchema,
+								writeTo = writeTo,
+								vocabDatabaseSchema = vocabDatabaseSchema,
+								cdmSourceName = cdmSourceName,
+								outputFolder = outputFolder,
+								cdmVersion = cdmVersion,
+								appendAchilles = appendAchilles,
+								roundTo = roundTo,
+								excludedConcepts = excludedConcepts,
+								addDQD = addDQD
+								)
 
 ```
 
@@ -102,7 +102,7 @@ Be sure to unzip the dbProfile results that are generated in the above. Then, se
 ```r
 
 # set the location of the unzipped results that were generated from executeDbProfile
-resultsLocation <- "/Users/clairblacketer/Documents/Output/DbProfiles/Synthea_v54_OHDSI_Example/20220329/DbProfileResults_Synthea_v54_OHDSI_Example_20220329_20240718083009"
+resultsLocation <- "<location of unzipped results>"
 
 # set a parameter detailing if the DQD was run
 addDQD <- FALSE
@@ -111,25 +111,33 @@ addDQD <- FALSE
 databaseSchema <- "db_profile"
 
 # Read in the results and make sure the columns are characters to facilitate dbDiagnostics execution
-db_profile_results <- read.csv(paste0(resultsLocation,"/db_profile_results.csv"), stringsAsFactors = F, colClasses = c("stratum_1"="character",
-                                                                                                                       "stratum_2"="character",
-                                                                                                                       "stratum_3"="character",
-                                                                                                                       "stratum_4"="character",
-                                                                                                                       "stratum_5"="character"))
+db_profile_results <- read.csv(paste0(resultsLocation,"/db_profile_results.csv"), 
+												stringsAsFactors = F, 
+												colClasses = c("stratum_1"="character",
+                               "stratum_2"="character",
+                               "stratum_3"="character",
+                               "stratum_4"="character",
+                               "stratum_5"="character"))
 
-db_profile_results_dist <- read.csv(paste0(resultsLocation,"/db_profile_results_dist.csv"), stringsAsFactors = F, colClasses = c("stratum_1"="character",
-                                                                                                                                 "stratum_2"="character",
-                                                                                                                                 "stratum_3"="character",
-                                                                                                                                 "stratum_4"="character",
-                                                                                                                                 "stratum_5"="character"))
+db_profile_results_dist <- read.csv(paste0(resultsLocation,"/db_profile_results_dist.csv"), 
+														stringsAsFactors = F, 
+														colClasses = c("stratum_1"="character",
+                              "stratum_2"="character",
+                              "stratum_3"="character",
+                              "stratum_4"="character",
+                              "stratum_5"="character"))
                                                                                                                                  
 # read in the metadata
 metadataFile <- list.files(path = resultsLocation, pattern = "\\metadata.csv$")
-db_metadata <- read.csv(paste0(resultsLocation,"/",metadataFile), stringsAsFactors = F, colClasses = c("dataDoiType"="character",
-                                                                                                       "dataShortName"="character"))
+db_metadata <- read.csv(paste0(resultsLocation,"/",metadataFile), 
+                        stringsAsFactors = F, 
+                        colClasses = c("dataDoiType"="character",
+                                       "dataShortName"="character"))
+                                       
 # read in the cdm_source table
 cdmSourceFile <- list.files(path = resultsLocation, pattern = "\\cdm_source.csv$")
-db_cdm_source <- read.csv(paste0(resultsLocation,"/",cdmSourceFile), stringsAsFactors = F)
+db_cdm_source <- read.csv(paste0(resultsLocation,"/",cdmSourceFile), 
+													stringsAsFactors = F)
 
 # determine which tables should be uploaded based on if the DQD was included
 if (addDQD) {
@@ -143,9 +151,17 @@ if (addDQD) {
   
   dqd_checkresults$THRESHOLD_VALUE <- as.character(dqd_checkresults$THRESHOLD_VALUE)
   
-  tablesToUpload <- c("db_profile_results","db_profile_results_dist","db_metadata","db_cdm_source","dqd_checkresults","dqd_overview")
+  tablesToUpload <- c("db_profile_results",
+  									  "db_profile_results_dist",
+  									  "db_metadata",
+  									  "db_cdm_source",
+  									  "dqd_checkresults",
+  									  "dqd_overview")
 } else {
-  tablesToUpload <- c("db_profile_results","db_profile_results_dist","db_metadata","db_cdm_source")
+  tablesToUpload <- c("db_profile_results",
+  							      "db_profile_results_dist",
+  							      "db_metadata",
+  							      "db_cdm_source")
 }
 
 # create the connectionDetails for the database where the results should be uploaded. It is likely this will be different than the database where the dbProfile was run

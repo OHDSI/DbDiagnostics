@@ -21,6 +21,7 @@ If the user does not pass any values to the metadata parameters and if the metad
 - What is the name of the site or institution that owns or licenses the data?
 - Has your site contributed to an OHDSI study in the past?
 - Is there someone at your site who can run and/or debug an OHDSI study package?
+- Is your site interested in participating in sponsored studies?
 - What is the full name of the database?
 - What is the short name or nickname of the database?
 - What is the *name* of the person who should be contacted in the event this database is identified as a good candidate for a study?
@@ -45,6 +46,8 @@ There are parameters in the function that allow you to pass in the metadata prog
 **siteOHDSIParticipation**: Yes/No if the site contributed to an OHDSI study in the past
 
 **siteOHDSIRunPackage**: Yes/No if site has someone who can run and/or debug an OHDSI study package
+
+**siteSponsoredStudy**: Yes/No if site is interested in participating in sponsored studies
 
 **dataFullName**: The full name of the database
 
