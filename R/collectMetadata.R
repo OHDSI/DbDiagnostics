@@ -41,6 +41,7 @@ collectMetadata <- function(outputFolder,
 														siteName = NA,
 														siteOHDSIParticipation = NA,
 														siteOHDSIRunPackage = NA,
+														siteSponsoredStudy = NA,
 														dataFullName = NA,
 														dataShortName = NA,
 														dataContactName = NA,
@@ -53,6 +54,7 @@ collectMetadata <- function(outputFolder,
 if(all(is.na(c(siteName,
 						 siteOHDSIParticipation,
 						 siteOHDSIRunPackage,
+						 siteSponsoredStudy,
 						 dataFullName,
 						 dataShortName,
 						 dataContactName,
@@ -83,7 +85,12 @@ if(all(is.na(c(siteName,
 			type = c("yesno")
 		)$res
 
-		metadata <- cbind(siteName,siteOHDSIParticipation,siteOHDSIRunPackage)
+		siteSponsoredStudy <- svDialogs::dlgMessage(
+			message = "Is your site interested in participating in sponsored studies?",
+			type = c("yesno")
+		)$res
+
+		metadata <- cbind(siteName,siteOHDSIParticipation,siteOHDSIRunPackage,siteSponsoredStudy)
 		# Database Information --------------------------------
 
 		svDialogs::dlgMessage(
@@ -176,6 +183,7 @@ if(all(is.na(c(siteName,
 	metadata <- cbind(siteName,
 										siteOHDSIParticipation,
 										siteOHDSIRunPackage,
+										siteSponsoredStudy,
 										dataFullName,
 										dataShortName,
 										dataContactName,

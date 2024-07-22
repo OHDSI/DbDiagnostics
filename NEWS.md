@@ -1,3 +1,7 @@
+DbDiagnostics 1.5
+===========================
+This release adds a question to the metadata collection about sponsored studies and corrects the instructional pages on how to run and upload the DbProfile information.
+
 DbDiagnostics 1.4
 ===========================
 This release adds two more summary statistics to the DbProfile; record counts by measurement_concept_id and 

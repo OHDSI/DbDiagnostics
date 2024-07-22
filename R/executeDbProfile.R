@@ -27,6 +27,7 @@
 #' @param siteName									The name of the site or institution that owns or licenses the data.
 #' @param siteOHDSIParticipation		Yes/No if the site contributed to an OHDSI study in the past
 #' @param siteOHDSIRunPackage 			Yes/No if site has someone who can run and/or debug an OHDSI study package
+#' @param siteSponsoredStudy				Yes/No if site is interested in participating in sponsored studies
 #' @param dataFullName							The full name of the database
 #' @param dataShortName 						The short name or nickname of the database
 #' @param dataContactName 					The name of the person who should be contacted in the event this database is identified as a good candidate for a study
@@ -60,6 +61,7 @@ executeDbProfile <- function(connectionDetails,
 														 siteName = NA,
 														 siteOHDSIParticipation = NA,
 														 siteOHDSIRunPackage = NA,
+														 siteSponsoredStudy = NA,
 														 dataFullName = NA,
 														 dataShortName = NA,
 														 dataContactName = NA,
@@ -168,6 +170,7 @@ executeDbProfile <- function(connectionDetails,
 											siteName,
 											siteOHDSIParticipation,
 											siteOHDSIRunPackage,
+											siteSponsoredStudy,
 											dataFullName,
 											dataShortName,
 											dataContactName,
