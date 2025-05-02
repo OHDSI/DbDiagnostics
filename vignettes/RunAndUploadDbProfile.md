@@ -1,7 +1,7 @@
 ---
 title: "How to Run and Upload dbProfile Results"
 output: html_document
-date: "2024-07-22"
+date: "2025-03-21"
 vignette: >
   %\VignetteEngine{knitr::knitr}
   %\VignetteIndexEntry{How to Run and Upload dbProfile Results}
@@ -96,73 +96,77 @@ Upon completion, the summary statistics results `*.csv` file, the CDM_SOURCE tab
 
 ## Upload dbProfile results to a local schema
 
-Be sure to unzip the dbProfile results that are generated in the above. Then, set the location where you unzipped the results as the parameter `resultsLocation`. Any parameter below denoted as <cdmSourceName> should be replaced with the database key that was generated when `executeDbProfile` was run. You can find this in the file names. 
-
+Be sure to unzip the dbProfile results that are generated in the above. Then, set the location where you unzipped the results as the parameter `resultsLocation`. 
 ```r
 
-# set the location of the results that were generated from executeDbProfile
-resultsLocation <- ""
+# set the location of the unzipped results that were generated from executeDbProfile
+resultsLocation <- "/Users/clairblacketer/Documents/Output/DbProfiles/Synthea_v54_OHDSI_Example/20220329/DbProfileResults_Synthea_v54_OHDSI_Example_20220329_20240718083009"
 
 # set a parameter detailing if the DQD was run
 addDQD <- FALSE
 
-# add dbId and prep output files for writing into the results schema
-db_profile_results <- read.csv(paste0(resultsLocation,"/db_profile_results.csv"), stringsAsFactors = F, colClasses = c("STRATUM_1"="character"))
+# set the schema name in your database where you want the files uploaded 
+databaseSchema <- "db_profile"
 
-# make sure the columns are read in as characters to facilitate dbDiagnostics execution
-db_profile_results$STRATUM_1 <- as.character(db_profile_results$STRATUM_1)
-db_profile_results$STRATUM_2 <- as.character(db_profile_results$STRATUM_2)
-db_profile_results$STRATUM_3 <- as.character(db_profile_results$STRATUM_3)
-db_profile_results$STRATUM_4 <- as.character(db_profile_results$STRATUM_4)
-db_profile_results$STRATUM_5 <- as.character(db_profile_results$STRATUM_5)
+# Read in the results and make sure the columns are characters to facilitate dbDiagnostics execution
+db_profile_results <- read.csv(paste0(resultsLocation,"/db_profile_results.csv"), stringsAsFactors = F, colClasses = c("stratum_1"="character",
+                                                                                                                       "stratum_2"="character",
+                                                                                                                       "stratum_3"="character",
+                                                                                                                       "stratum_4"="character",
+                                                                                                                       "stratum_5"="character"))
 
+db_profile_results_dist <- read.csv(paste0(resultsLocation,"/db_profile_results_dist.csv"), stringsAsFactors = F, colClasses = c("stratum_1"="character",
+                                                                                                                                 "stratum_2"="character",
+                                                                                                                                 "stratum_3"="character",
+                                                                                                                                 "stratum_4"="character",
+                                                                                                                                 "stratum_5"="character"))
+                                                                                                                                 
 # read in the metadata
-
-db_metadata <- read.csv(paste0(resultsLocation,"/<cdmSourceName>_metadata.csv"), stringsAsFactors = F)
-
+metadataFile <- list.files(path = resultsLocation, pattern = "\\metadata.csv$")
+db_metadata <- read.csv(paste0(resultsLocation,"/",metadataFile), stringsAsFactors = F, colClasses = c("dataDoiType"="character",
+                                                                                                       "dataShortName"="character"))
 # read in the cdm_source table
-
-db_cdm_source <- read.csv(paste0(resultsLocation,"/<cdmSourceName>_cdm_source.csv"), stringsAsFactors = F)
+cdmSourceFile <- list.files(path = resultsLocation, pattern = "\\cdm_source.csv$")
+db_cdm_source <- read.csv(paste0(resultsLocation,"/",cdmSourceFile), stringsAsFactors = F)
 
 # determine which tables should be uploaded based on if the DQD was included
 if (addDQD) {
-
-	dqdJsonDf <- jsonlite::fromJSON(
-		paste0(outputFolder,"/",dbId,"_DbProfile.json"),
-		simplifyDataFrame = TRUE)
-
-	dqd_overview     <- as.data.frame(dqdJsonDf$Overview)
-	dqd_checkresults <- as.data.frame(dqdJsonDf$CheckResults)
-	
-	dqd_checkresults$THRESHOLD_VALUE <- as.character(dqd_checkresults$THRESHOLD_VALUE)
-
-	tablesToUpload <- c("db_profile_results","db_metadata","db_cdm_source","dqd_checkresults","dqd_overview")
+  
+  dqdJsonDf <- jsonlite::fromJSON(
+    paste0(outputFolder,"/",dbId,"_DbProfile.json"),
+    simplifyDataFrame = TRUE)
+  
+  dqd_overview     <- as.data.frame(dqdJsonDf$Overview)
+  dqd_checkresults <- as.data.frame(dqdJsonDf$CheckResults)
+  
+  dqd_checkresults$THRESHOLD_VALUE <- as.character(dqd_checkresults$THRESHOLD_VALUE)
+  
+  tablesToUpload <- c("db_profile_results","db_profile_results_dist","db_metadata","db_cdm_source","dqd_checkresults","dqd_overview")
 } else {
-	tablesToUpload <- c("db_profile_results","db_metadata","db_cdm_source")
+  tablesToUpload <- c("db_profile_results","db_profile_results_dist","db_metadata","db_cdm_source")
 }
 
 # create the connectionDetails for the database where the results should be uploaded. It is likely this will be different than the database where the dbProfile was run
-
 connectionDetails <- DatabaseConnector::createConnectionDetails(
-	dbms = "postgresql",
-	server = "localhost/synthea",
-	user = "postgres",
-	password = Sys.getenv("POSTGRES_PW")
+  dbms = "postgresql",
+  server = "localhost/synthea",
+  user = "postgres",
+  password = Sys.getenv("POSTGRES_PW")
 )
 
 conn <- DatabaseConnector::connect(connectionDetails)
 
 # When the schema is empty, use createTable = TRUE
 for (tableName in tablesToUpload) {
-	DatabaseConnector::insertTable(
-		connection        = conn,
-		tableName         = tableName,
-		databaseSchema    = "cdm_54_results",
-		data              = eval(parse(text=tableName)),
-		dropTableIfExists = FALSE,
-		createTable       = TRUE,
-		tempTable         = FALSE,
-		progressBar       = TRUE)
+  DatabaseConnector::insertTable(
+    connection        = conn,
+    tableName         = tableName,
+    databaseSchema    = databaseSchema,
+    data              = eval(parse(text=tableName)),
+    dropTableIfExists = TRUE,
+    createTable       = TRUE,
+    tempTable         = FALSE,
+    progressBar       = TRUE)
 }
 
 DatabaseConnector::disconnect(conn)

@@ -234,9 +234,13 @@ executeDbDiagnostics <- function(connectionDetails,
 			numCriteria <- numCriteria + 1}else{desiredER <- 0}
 
 			#target
-			target <- studySpecs$targetName
-			requiredTargetConcepts <- studySpecs$targetConceptIds
-			numCriteria <- numCriteria + 1
+			if(!is.null(studySpecs$targetConceptIds)){
+				target <- studySpecs$targetName
+				requiredTargetConcepts <- studySpecs$targetConceptIds
+				numCriteria <- numCriteria + 1
+			}else{
+				requiredTargetConcepts <- NULL
+			}
 
 			#comparator
 			if(!is.null(studySpecs$comparatorConceptIds)){
@@ -682,24 +686,38 @@ executeDbDiagnostics <- function(connectionDetails,
 
 			#Required Concepts ------
 
-			personsWithRequiredTargetConcepts <- dbProfile %>%
-				filter(ANALYSIS_ID %in% c(1800, 400, 600, 700, 800, 2100)) %>%
-				filter(STRATUM_1 %in% requiredTargetConcepts) %>%
-				select(COUNT_VALUE) %>%
-				mutate(statistic = "propWithRequiredTargetConcepts",
-							 spec = target,
-							 evaluateThreshold = 2)
+			if(studySpecs$targetUseDrugEra == T){target_analysis_ids <- c(1800, 400, 600, 700, 800, 2100, 900)}else{
+				target_analysis_ids <- c(1800, 400, 600, 700, 800, 2100)
+			}
 
-			if(nrow(personsWithRequiredTargetConcepts) == 0){
-				personsWithRequiredTargetConcepts[1,]$statistic <- 'propWithRequiredTargetConcepts'
-				personsWithRequiredTargetConcepts[1,]$COUNT_VALUE <- 0
-				personsWithRequiredTargetConcepts <- personsWithRequiredTargetConcepts %>%
-					mutate(spec = target,
+			if(is.null(studySpecs$targetConceptIds)){
+				personsWithRequiredTargetConcepts <- data.frame(statistic = 'propWithRequiredTargetConcepts',
+																														COUNT_VALUE = NA,
+																														spec = NA, # Revised from NULL to NA since you cannot declare a column with a NULL value as the only value in the data frame.
+																														evaluateThreshold = 0)
+			}else{
+				personsWithRequiredTargetConcepts <- dbProfile %>%
+					filter(ANALYSIS_ID %in% target_analysis_ids) %>%
+					filter(STRATUM_1 %in% requiredTargetConcepts) %>%
+					select(COUNT_VALUE) %>%
+					mutate(statistic = "propWithRequiredTargetConcepts",
+								 spec = target,
 								 evaluateThreshold = 2)
+
+				if(nrow(personsWithRequiredTargetConcepts) == 0){
+					personsWithRequiredTargetConcepts[1,]$statistic <- 'propWithRequiredTargetConcepts'
+					personsWithRequiredTargetConcepts[1,]$COUNT_VALUE <- 0
+					personsWithRequiredTargetConcepts <- personsWithRequiredTargetConcepts %>%
+						mutate(spec = target,
+									 evaluateThreshold = 2)
+				}
 			}
 
 			personOutput <- rbind(personOutput, personsWithRequiredTargetConcepts)
 
+			if(studySpecs$comparatorUseDrugEra == T){comparator_analysis_ids <- c(1800, 400, 600, 700, 800, 2100, 900)}else{
+				comparator_analysis_ids <- c(1800, 400, 600, 700, 800, 2100)
+			}
 
 			if(is.null(studySpecs$comparatorConceptIds)){
 				personsWithRequiredComparatorConcepts <- data.frame(statistic = 'propWithRequiredComparatorConcepts',
@@ -708,7 +726,7 @@ executeDbDiagnostics <- function(connectionDetails,
 																														evaluateThreshold = 0)
 			}else{
 				personsWithRequiredComparatorConcepts <- dbProfile %>%
-					filter(ANALYSIS_ID %in% c(1800, 400, 600, 700, 800, 2100)) %>%
+					filter(ANALYSIS_ID %in% comparator_analysis_ids) %>%
 					filter(STRATUM_1 %in% requiredComparatorConcepts) %>%
 					select(COUNT_VALUE) %>%
 					mutate(statistic = "propWithRequiredComparatorConcepts",
@@ -727,6 +745,10 @@ executeDbDiagnostics <- function(connectionDetails,
 
 			personOutput <- rbind(personOutput, personsWithRequiredComparatorConcepts)
 
+			if(studySpecs$indicationUseDrugEra == T){indication_analysis_ids <- c(1800, 400, 600, 700, 800, 2100, 900)}else{
+				indication_analysis_ids <- c(1800, 400, 600, 700, 800, 2100)
+			}
+
 			if(is.null(studySpecs$indicationConceptIds)){
 				personsWithRequiredIndicationConcepts <- data.frame(statistic = 'propWithRequiredIndicationConcepts',
 																														COUNT_VALUE = NA,
@@ -734,7 +756,7 @@ executeDbDiagnostics <- function(connectionDetails,
 																														evaluateThreshold = 0)
 			}else{
 				personsWithRequiredIndicationConcepts <- dbProfile %>%
-					filter(ANALYSIS_ID %in% c(1800, 400, 600, 700, 800, 2100)) %>%
+					filter(ANALYSIS_ID %in% indication_analysis_ids) %>%
 					filter(STRATUM_1 %in% requiredIndicationConcepts) %>%
 					select(COUNT_VALUE) %>%
 					mutate(statistic = "propWithRequiredIndicationConcepts",
@@ -752,6 +774,10 @@ executeDbDiagnostics <- function(connectionDetails,
 			}
 
 
+			if(studySpecs$outcomeUseDrugEra == T){outcome_analysis_ids <- c(1800, 400, 600, 700, 800, 2100, 900)}else{
+				outcome_analysis_ids <- c(1800, 400, 600, 700, 800, 2100)
+			}
+
 			if(is.null(studySpecs$outcomeConceptIds)){
 				personsWithRequiredOutcomeConcepts <- data.frame(statistic = 'propWithRequiredOutcomeConcepts',
 																												 COUNT_VALUE = NA,
@@ -759,7 +785,7 @@ executeDbDiagnostics <- function(connectionDetails,
 																												 evaluateThreshold = 0)
 			}else{
 				personsWithRequiredOutcomeConcepts <- dbProfile %>%
-					filter(ANALYSIS_ID %in% c(1800, 400, 600, 700, 800, 2100)) %>%
+					filter(ANALYSIS_ID %in% outcome_analysis_ids) %>%
 					filter(STRATUM_1 %in% requiredOutcomeConcepts) %>%
 					select(COUNT_VALUE) %>%
 					mutate(statistic = "propWithRequiredOutcomeConcepts",
@@ -832,11 +858,13 @@ executeDbDiagnostics <- function(connectionDetails,
 			if(studySpecs$includeIndicationInCalc){
 				minSampleSizeProp <- min(as.numeric(personOutputSum[which(personOutputSum$statistic == 'propWithRequiredTargetConcepts'),]$proportion),
 																 as.numeric(personOutputSum[which(personOutputSum$statistic == 'propWithRequiredComparatorConcepts'),]$proportion),
+																 1,
 																 na.rm = TRUE)*prod(as.numeric(sampleSizeValues[,1]))*as.numeric(personOutputSum[which(personOutputSum$statistic == 'propWithRequiredIndicationConcepts'),]$proportion)
 
 			}else{
 				minSampleSizeProp <- min(as.numeric(personOutputSum[which(personOutputSum$statistic == 'propWithRequiredTargetConcepts'),]$proportion),
 																 as.numeric(personOutputSum[which(personOutputSum$statistic == 'propWithRequiredComparatorConcepts'),]$proportion),
+																 1,
 																 na.rm = TRUE)*prod(as.numeric(sampleSizeValues[,1]))
 
 			}

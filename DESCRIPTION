@@ -35,6 +35,6 @@ Remotes:
 	ohdsi/Eunomia,
 	ohdsi/Achilles,
 	ohdsi/DataQualityDashboard
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
 Encoding: UTF-8
