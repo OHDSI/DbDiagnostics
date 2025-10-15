@@ -28,7 +28,8 @@ Imports:
 	CohortGenerator,
 	testthat,
 	rmarkdown,
-	Eunomia
+	Eunomia,
+	stringr
 Suggests:
   knitr
 Remotes:

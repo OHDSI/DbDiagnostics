@@ -98,7 +98,6 @@ executeDbDiagnostics <- function(connectionDetails,
 			# values in the specs get values from the database in order to evaluate them
 
 			for(k in 1:length(dataDiagnosticsSettingsList)){
-				# Get the specifications ------------------
 
 				studySpecs <- dataDiagnosticsSettingsList[[k]]
 
@@ -278,25 +277,7 @@ executeDbDiagnostics <- function(connectionDetails,
 			#Demographics ---------
 
 			 ##Age -----------
-			maxYearInDb <- as.integer(substr(max(dbProfile[which(dbProfile$ANALYSIS_ID == 111),]$STRATUM_1),1,4))
-			minYearInDb <- as.integer(substr(min(dbProfile[which(dbProfile$ANALYSIS_ID == 111),]$STRATUM_1),1,4))
 
-			minBirthYearNeeded <- minYearInDb - maxAge
-			maxBirthYearNeeded <- maxYearInDb - minAge
-
-			personsInBirthYearRange <- dbProfile %>%
-				filter(ANALYSIS_ID == 3) %>%
-				filter(as.numeric(STRATUM_1) <= maxBirthYearNeeded & as.numeric(STRATUM_1) >= minBirthYearNeeded) %>%
-				select(COUNT_VALUE) %>%
-				mutate(statistic = 'propInAgeRange',
-							 spec = case_when(is.null(studySpecs$maxAge) && !is.null(studySpecs$minAge) ~ paste("> age",studySpecs$minAge),
-							 								  !is.null(studySpecs$maxAge) && is.null(studySpecs$minAge) ~ paste("< age",studySpecs$maxAge),
-							 								  !is.null(studySpecs$maxAge) && !is.null(studySpecs$minAge) ~ paste("age",studySpecs$minAge,"- age",studySpecs$maxAge)),
-							 evaluateThreshold = 1)
-
-			personOutput <- personsInBirthYearRange
-
-			# age at First Obs # did people less than maxAge
 			personsWithAgeAtFirstObs <- dbProfile %>%
 				filter(ANALYSIS_ID == 101) %>%
 				filter(as.numeric(STRATUM_1) <= maxAge) %>%
@@ -308,7 +289,52 @@ executeDbDiagnostics <- function(connectionDetails,
 							 								 !is.null(studySpecs$maxAge) && !is.null(studySpecs$minAge) ~ paste("age",studySpecs$minAge,"- age",studySpecs$maxAge)),
 							 evaluateThreshold = 1)
 
-			personOutput <- rbind(personOutput, personsWithAgeAtFirstObs)
+			if(nrow(personsWithAgeAtFirstObs) == 0){
+				personsWithAgeAtFirstObs[1,]$COUNT_VALUE <- 0
+				personsWithAgeAtFirstObs[1,]$statistic <- 'propWithAgeAtFirstObs'
+				personsWithAgeAtFirstObs[1,]$spec <- paste0("Patients with age at first observation between ",minAge," and ",maxAge)
+				personsWithAgeAtFirstObs[1,]$evaluateThreshold <- 1
+			}
+
+			personOutput <- personsWithAgeAtFirstObs
+
+			# maxYearInDb <- as.integer(substr(max(dbProfile[which(dbProfile$ANALYSIS_ID == 111),]$STRATUM_1),1,4))
+			# minYearInDb <- as.integer(substr(min(dbProfile[which(dbProfile$ANALYSIS_ID == 111),]$STRATUM_1),1,4))
+
+			# Persons in age range
+
+			obs_length <- dbProfile %>%
+				filter(ANALYSIS_ID == 108, !is.na(COUNT_VALUE)) %>%
+				mutate(
+					bin_index = as.integer(STRATUM_1),
+					midpoint_months = ((bin_index * 30 + 15) / 30)  # midpoint of each 30-day bin in months
+				)
+
+			avg_years_per_person <- (sum(obs_length$midpoint_months * obs_length$COUNT_VALUE) /
+				sum(obs_length$COUNT_VALUE) / 12 )%>%
+				floor()
+
+			if((minAge - avg_years_per_person) < 0){
+				lowestAge <- 0
+			}else{lowestAge <- minAge - avg_years_per_person}
+
+			personsInBirthYearRange <- dbProfile %>%
+				filter(ANALYSIS_ID == 101) %>%
+				filter(as.numeric(STRATUM_1) <= maxAge) %>%
+				filter(as.numeric(STRATUM_1) >= lowestAge) %>%
+				select(COUNT_VALUE) %>%
+				mutate(statistic = 'propInAgeRange',
+							 spec = paste0("estimated persons in the database aged ", minAge, " - ", maxAge),
+							 evaluateThreshold = 1)
+
+			if(nrow(personsInBirthYearRange) == 0){
+				personsInBirthYearRange[1,]$COUNT_VALUE <- 0
+				personsInBirthYearRange[1,]$statistic <- 'propInAgeRange'
+				personsInBirthYearRange[1,]$spec <- paste0("estimated persons in the database aged ", minAge, " - ", maxAge)
+				personsInBirthYearRange[1,]$evaluateThreshold <- 1
+			}
+
+			personOutput <- rbind(personOutput, personsInBirthYearRange)
 
 			##Gender ----------
 			personsWithGenderCriteria <- dbProfile %>%
@@ -318,6 +344,13 @@ executeDbDiagnostics <- function(connectionDetails,
 				mutate(statistic = 'propWithGenderCriteria',
 							 spec = paste(genderConceptIds, collapse = ", "),
 							 evaluateThreshold = 1)
+
+			if(nrow(personsWithGenderCriteria) == 0){
+				personsWithGenderCriteria[1,]$COUNT_VALUE <- 0
+				personsWithGenderCriteria[1,]$statistic <- 'propWithGenderCriteria'
+				personsWithGenderCriteria[1,]$spec <- paste(genderConceptIds, collapse = ", ")
+				personsWithGenderCriteria[1,]$evaluateThreshold <- 1
+			}
 
 			personOutput <- rbind(personOutput, personsWithGenderCriteria)
 
@@ -330,6 +363,13 @@ executeDbDiagnostics <- function(connectionDetails,
 							 spec = paste(raceConceptIds, collapse = ", "),
 							 evaluateThreshold = 1)
 
+			if(nrow(personsWithRaceCriteria) == 0){
+				personsWithRaceCriteria[1,]$COUNT_VALUE <- 0
+				personsWithRaceCriteria[1,]$statistic <- 'propWithRaceCriteria'
+				personsWithRaceCriteria[1,]$spec <- paste(raceConceptIds, collapse = ", ")
+				personsWithRaceCriteria[1,]$evaluateThreshold <- 1
+			}
+
 			personOutput <- rbind(personOutput, personsWithRaceCriteria)
 
 			##Ethnicity ----------
@@ -340,6 +380,13 @@ executeDbDiagnostics <- function(connectionDetails,
 				mutate(statistic = 'propWithEthnicityCriteria',
 							 spec = paste(ethnicityConceptIds, collapse = ", "),
 							 evaluateThreshold = 1)
+
+			if(nrow(personsWithEthnicityCriteria) == 0){
+				personsWithEthnicityCriteria[1,]$COUNT_VALUE <- 0
+				personsWithEthnicityCriteria[1,]$statistic <- 'propWithEthnicityCriteria'
+				personsWithEthnicityCriteria[1,]$spec <- paste(ethnicityConceptIds, collapse = ", ")
+				personsWithEthnicityCriteria[1,]$evaluateThreshold <- 1
+			}
 
 			personOutput <- rbind(personOutput, personsWithEthnicityCriteria)
 
@@ -372,6 +419,14 @@ executeDbDiagnostics <- function(connectionDetails,
 																 			  "proportion" = "calendarTime") %>%
 																 mutate(spec = paste(studyStartDate, studyEndDate, sep = "-"),
 																 			  evaluateThreshold = 1)
+
+			if(nrow(personsWithCalendarTime) == 0){
+				personsWithCalendarTime[1,]$statistic <- 'propWithEthnicityCriteria'
+				personsWithCalendarTime[1,]$value <- 0
+				personsWithCalendarTime[1,]$proportion <- 0
+				personsWithCalendarTime[1,]$spec <- paste(studyStartDate, studyEndDate, sep = "-")
+				personsWithCalendarTime[1,]$evaluateThreshold <- 1
+			}
 
 			finalOutput <- personsWithCalendarTime # since this output has the final proportion, it cannot be combined with the person output
 
@@ -410,11 +465,13 @@ executeDbDiagnostics <- function(connectionDetails,
 
 			personOutput <- rbind(personOutput, personsWithRequiredDomain)
 
-			bitString <- '1000000'
+			# Condition domain
+
+			bitString <- c('1000000')
 
 			personsWithConditionCriteria <- dbProfile %>%
 				filter(ANALYSIS_ID == 2004) %>%
-				filter(STRATUM_1 == bitString) %>%
+				filter(STRATUM_1 %in% bitString) %>%
 				select(COUNT_VALUE) %>%
 				mutate(statistic = 'propWithConditionCriteria',
 							 spec = case_when(desiredCondition == 1 ~ 'Conditions desired',
@@ -433,11 +490,11 @@ executeDbDiagnostics <- function(connectionDetails,
 
 			personOutput <- rbind(personOutput, personsWithConditionCriteria)
 
-			bitString <- '0100000'
+			bitString <- c('0100000','100000')
 
 			personsWithDrugCriteria <- dbProfile %>%
-				filter(ANALYSIS_ID == 2004) %>%
-				filter(STRATUM_1 == bitString) %>%
+				filter(ANALYSIS_ID %in% 2004) %>%
+				filter(STRATUM_1 %in% bitString) %>%
 				select(COUNT_VALUE) %>%
 				mutate(statistic = 'propWithDrugCriteria',
 							 spec = case_when(desiredDrug == 1 ~ 'Drugs desired',
@@ -455,11 +512,11 @@ executeDbDiagnostics <- function(connectionDetails,
 
 			personOutput <- rbind(personOutput, personsWithDrugCriteria)
 
-			bitString <- '0010000'
+			bitString <- c('0010000','10000')
 
 			personsWithDeviceCriteria <- dbProfile %>%
 				filter(ANALYSIS_ID == 2004) %>%
-				filter(STRATUM_1 == bitString) %>%
+				filter(STRATUM_1 %in% bitString) %>%
 				select(COUNT_VALUE) %>%
 				mutate(statistic = 'propWithDeviceCriteria',
 							 spec = case_when(desiredDevice == 1 ~ 'Devices desired',
@@ -477,11 +534,11 @@ executeDbDiagnostics <- function(connectionDetails,
 
 			personOutput <- rbind(personOutput, personsWithDeviceCriteria)
 
-			bitString <- '0001000'
+			bitString <- c('0001000','1000')
 
 			personsWithMeasurementCriteria <- dbProfile %>%
 				filter(ANALYSIS_ID == 2004) %>%
-				filter(STRATUM_1 == bitString) %>%
+				filter(STRATUM_1 %in% bitString) %>%
 				select(COUNT_VALUE) %>%
 				mutate(statistic = 'propWithMeasurementCriteria',
 							 spec = case_when(desiredMeasurement == 1 ~ 'Measurements desired',
@@ -499,11 +556,11 @@ executeDbDiagnostics <- function(connectionDetails,
 
 			personOutput <- rbind(personOutput, personsWithMeasurementCriteria)
 
-			bitString <- '0000100'
+			bitString <- c('0000100','100')
 
 			personsWithDeathCriteria <- dbProfile %>%
 				filter(ANALYSIS_ID == 2004) %>%
-				filter(STRATUM_1 == bitString) %>%
+				filter(STRATUM_1 %in% bitString) %>%
 				select(COUNT_VALUE) %>%
 				mutate(statistic = 'propWithDeathCriteria',
 							 spec = case_when(desiredDeath == 1 ~ 'Death domain desired',
@@ -521,11 +578,11 @@ executeDbDiagnostics <- function(connectionDetails,
 
 			personOutput <- rbind(personOutput, personsWithDeathCriteria)
 
-			bitString <- '0000010'
+			bitString <- c('0000010','10')
 
 			personsWithProcedureCriteria <- dbProfile %>%
 				filter(ANALYSIS_ID == 2004) %>%
-				filter(STRATUM_1 == bitString) %>%
+				filter(STRATUM_1 %in% bitString) %>%
 				select(COUNT_VALUE) %>%
 				mutate(statistic = 'propWithProcedureCriteria',
 							 spec = case_when(desiredProcedure == 1 ~ 'Procedures desired',
@@ -543,11 +600,11 @@ executeDbDiagnostics <- function(connectionDetails,
 
 			personOutput <- rbind(personOutput, personsWithProcedureCriteria)
 
-			bitString <- '0000001'
+			bitString <- c('0000001','1')
 
 			personsWithObservationCriteria <- dbProfile %>%
 				filter(ANALYSIS_ID == 2004) %>%
-				filter(STRATUM_1 == bitString) %>%
+				filter(STRATUM_1 %in% bitString) %>%
 				select(COUNT_VALUE) %>%
 				mutate(statistic = 'propWithObservationCriteria',
 							 spec = case_when(desiredObservation == 1 ~ 'Observations desired',
@@ -569,28 +626,27 @@ executeDbDiagnostics <- function(connectionDetails,
 			#Data Domain Coverage - Measurements w/Values
 			numMeasRecords <- sum(dbProfile[which(dbProfile$ANALYSIS_ID == 1801),]$COUNT_VALUE)
 
-			numMeasRecordsWithValues <- dbProfile[which(dbProfile$ANALYSIS_ID == 1814),]$COUNT_VALUE
+			numMeasRecordsWithNoValues <- dbProfile[which(dbProfile$ANALYSIS_ID == 1814),]$COUNT_VALUE
 
-			if(length(numMeasRecordsWithValues) == 0){
-				propMeasRecordsWithValues <- 0
-				numMeasRecordsWithValues <- 0
-			}else{
-				propMeasRecordsWithValues <- numMeasRecordsWithValues/numMeasRecords
-			}
+			if(length(numMeasRecordsWithNoValues) == 0){numMeasRecordsWithNoValues <- numMeasRecords}
+
+			numMeasRecordsWithValues <- numMeasRecords - numMeasRecordsWithNoValues
+
+			propMeasRecordsWithValues <- numMeasRecordsWithValues/numMeasRecords
 
 			measRecordsWithValues <- as.data.frame(cbind("propMeasRecordsWithValues", numMeasRecordsWithValues, propMeasRecordsWithValues)) %>%
 				rename("statistic" = "V1",
 							 "value" = "numMeasRecordsWithValues",
 							 "proportion" = "propMeasRecordsWithValues") %>%
-				mutate(spec = case_when(desiredObservation == 1 ~ 'Measurements with values desired',
-																desiredObservation == 0 ~ 'Measurements with values not desired'),
+				mutate(spec = case_when(desiredMeasurementValues == 1 ~ 'Measurements with values desired',
+																desiredMeasurementValues == 0 ~ 'Measurements with values not desired'),
 							 evaluateThreshold = desiredMeasurementValues)
 
 			finalOutput <- rbind(finalOutput, measRecordsWithValues)
 
 			#Visit Context --------
 
-			# identify rows were criteria is met
+			# identify rows where criteria is met
 			personsWithIPCriteria <- dbProfile %>%
 				filter(ANALYSIS_ID == 200) %>%
 				filter(VISIT_ANCESTOR_CONCEPT_ID %in% c(9201, 262)) %>%
