@@ -3,6 +3,7 @@
 export(collectMetadata)
 export(createDataDiagnosticsSettings)
 export(createDataDiagnosticsSummary)
+export(createPdfReport)
 export(executeDbDiagnostics)
 export(executeDbProfile)
 import(Achilles)
