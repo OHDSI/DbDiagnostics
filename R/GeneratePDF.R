@@ -588,7 +588,7 @@ results <- data.frame(
   spec = rep(specValues, 27),
   evaluateThreshold = rep(c(1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 2, 2, 1, rep(1, 11)), 27),
   threshold = rep(c(0.05, 0.05, 0.01, 0.05, 0.05, 0.05, 0.05, 0, 0.05, 0, 0, 0, 0, rep(0.05, 11)), 27),
-  status = sample(c("pass", "pass", "pass", "fail", NA), n_rows, replace = TRUE, prob = c(0.7, 0.1, 0.1, 0.1, 0.3)),
+  status = sample(c("pass", "pass", "pass", "fail", NA), nRows, replace = TRUE, prob = c(0.7, 0.1, 0.1, 0.1, 0.3)),
   fail = sample(0:1, nRows, replace = TRUE, prob = c(0.75, 0.25)),
   stringsAsFactors = FALSE
 )
@@ -596,5 +596,5 @@ results <- data.frame(
 
 #Test
 
-createPdfReport(results = results,
-                file = "~/Desktop/db_diagnostics_results_test.pdf")
+# createPdfReport(results = results,
+#                 file = "~/Desktop/db_diagnostics_results_test.pdf")

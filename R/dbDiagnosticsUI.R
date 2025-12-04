@@ -1037,7 +1037,7 @@ $(document).ready(function() {
                                        "Analysis ID:"
 
                                      ),
-                                     textInput("analysisId", NULL, placeholder = "Enter Concept ID")
+                                     textInput("analysisId", NULL, placeholder = "Enter numerical ID")
                                  ),
                                  uiOutput("analysisIdError")
                           ),
