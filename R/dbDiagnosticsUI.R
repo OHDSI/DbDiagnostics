@@ -1736,15 +1736,15 @@ server <- function(input, output, session) {
               p(strong("Age Range: "), paste(analysis$minAge, "-", analysis$maxAge)),
 
               if (length(analysis$genderIds) > 0) p(strong("Gender IDs: "), paste(analysis$genderIds, collapse = ", ")),
-              if (length(analysis$raceIds) > 0) p(strong("Race IDs: "), paste(analysis$raceIds, collapse = ", ")),
-              if (length(analysis$ethnicityIds) > 0) p(strong("Ethnicity IDs: "), paste(analysis$ethnicityIds, collapse = ", ")),
+              if (analysis$raceIds != "" || analysis$raceIds != "") p(strong("Race IDs: "), paste(analysis$raceIds, collapse = ", ")),
+              if (analysis$ethnicityIds != "" || analysis$ethnicityIds != "") p(strong("Ethnicity IDs: "), paste(analysis$ethnicityIds, collapse = ", ")),
               if (analysis$studyStartDate != "" || analysis$studyEndDate != "") p(strong("Study Period: "), paste(analysis$studyStartDate, "-", analysis$studyEndDate)),
               if (analysis$followUpDays > 0) p(strong("Follow-up: "), paste(analysis$followUpDays, "days")),
               if (length(analysis$requiredDomains) > 0) p(strong("Required Domains: "), paste(analysis$requiredDomains, collapse = ", ")),
               if (length(analysis$desiredDomains) > 0) p(strong("Desired Domains: "), paste(analysis$desiredDomains, collapse = ", ")),
               if (length(analysis$requiredVisits) > 0) p(strong("Required Visits: "), paste(analysis$requiredVisits, collapse = ", ")),
               if (length(analysis$desiredVisits) > 0) p(strong("Desired Visits: "), paste(analysis$desiredVisits, collapse = ", ")),
-              if (analysis$indicationName != "" || analysis$targetConcepts != "") p(strong("Indication: "), analysis$indicationName),
+              if (analysis$indicationName != "" || analysis$indicationConcepts != "") p(strong("Indication: "), analysis$indicationName),
               if (analysis$targetName != "" || analysis$targetConcepts != "") p(strong("Target: "), analysis$targetName),
               if (analysis$comparatorName != "" || analysis$comparatorConcepts != "") p(strong("Comparator: "), analysis$comparatorName),
               if (analysis$outcomeName != "" || analysis$outcomeConcepts != "") p(strong("Outcome: "), analysis$outcomeName)
