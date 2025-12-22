@@ -16,34 +16,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# install.packages(c("shiny", "DatabaseConnector", "shinyjs", "DbDiagnostics", "DT", "knitr", "kableExtra"))
-
-library(shiny)
-library(DatabaseConnector)
-library(shinyjs)
-library(DT)
-library(knitr)
-library(kableExtra)
-
-# Setup
-
-connectionDetails <- DatabaseConnector::createConnectionDetails(
-	dbms     = Sys.getenv('DBMS'),
-	server   = Sys.getenv('DB_SERVER'),
-	user     = Sys.getenv('DB_USER'),
-	password = Sys.getenv('DB_PASSWORD'),
-	port     = Sys.getenv('DB_PORT'),
-	pathToDriver = Sys.getenv('PATH_DRIVER')
-)
-
-
-
-aresLink <- Sys.getenv("ARES_INSTANCE_LINK", unset = '/') # full link to the ares instance and specific page
-resultsDatabaseSchema <- Sys.getenv("RESULTS_SCHEMA", unset = "db_profile")
-resultsTableName <- Sys.getenv("TABLE_NAME", unset = "db_profile_results")
-
 # Validators
-testDbConnection <- function() {
+testDbConnection <- function(connectionDetails) {
   tryCatch({
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
     DatabaseConnector::disconnect(connection)
@@ -80,17 +54,16 @@ parseNumericList <- function(input_str) {
 
 # Main
 
-globalResults <- NULL
-globalSettings <- NULL
 
+ui <- function(aresLink) {
+	shiny::fluidPage(
+	shinyjs::useShinyjs(),
 
-ui <- fluidPage(
-  useShinyjs(),
 
   #UI Styles
 
-  tags$head(
-    tags$style(HTML("
+  shiny::tags$head(
+    shiny::tags$style(shiny::HTML("
 
 body {
   background: #f5f5f5;
@@ -948,7 +921,7 @@ align-items: center;
     ")),
 
     # For tooltip windows positioning
-    tags$script(HTML("
+    shiny::tags$script(shiny::HTML("
 $(document).ready(function() {
   $(document).on('click', '.help-icon-btn', function(e) {
     e.preventDefault();
@@ -992,61 +965,61 @@ $(document).ready(function() {
 "))
   ),
 
-  fluidRow(
-    column(10, offset = 1,
+  shiny::fluidRow(
+  	shiny::column(10, offset = 1,
 
-           tags$div(
+           shiny::tags$div(
              class = "floating-help-panel",
-             tags$div(
+             shiny::tags$div(
                class = "help-panel-header",
-               tags$span(id = "floating-help-title", "Help"),
-               tags$button(class = "help-panel-close", HTML("&times;"))
+               shiny::tags$span(id = "floating-help-title", "Help"),
+               shiny::tags$button(class = "help-panel-close", shiny::HTML("&times;"))
              ),
-             tags$div(
+             shiny::tags$div(
                id = "floating-help-content",
                class = "help-panel-body"
              )
            ),
-           tags$div(
+           shiny::tags$div(
              style = "display: flex; align-items: center; margin-bottom: 20px;",
-             tags$img(
+             shiny::tags$img(
                src = "https://avatars.githubusercontent.com/u/6570077?s=200&v=4",
                alt = "Logo",
                style = "height: 35px; width: auto; margin-right: 20px;"
              ),
-             h1("Database Diagnostics Results Viewer", class = "title", style = "margin: 0; border: none; padding: 0;")
+             shiny::h1("Database Diagnostics Results Viewer", class = "title", style = "margin: 0; border: none; padding: 0;")
            ),
-           tags$hr(style = "border-top: 2px solid #333; margin-top: 0; margin-bottom: 20px;"),
+           shiny::tags$hr(style = "border-top: 2px solid #333; margin-top: 0; margin-bottom: 20px;"),
 
-           uiOutput("dbStatus"),
+           shiny::uiOutput("dbStatus"),
 
            # First row
-           fluidRow(
-             column(12,
-                    div(class = "section-container",
-                        div(class = "section-header",
-                            h3(
+           shiny::fluidRow(
+           	shiny::column(12,
+                    shiny::div(class = "section-container",
+                        shiny::div(class = "section-header",
+                            shiny::h3(
                               "Analysis Information"
 
                             )
                         ),
-                        fluidRow(
-                          column(6,
-                                 div(class = "required-field",
-                                     tags$label(
+                        shiny::fluidRow(
+                        	shiny::column(6,
+                                 shiny::div(class = "required-field",
+                                     shiny::tags$label(
                                        "Analysis ID:"
 
                                      ),
-                                     textInput("analysisId", NULL, placeholder = "Enter numerical ID")
+                                     shiny::textInput("analysisId", NULL, placeholder = "Enter numerical ID")
                                  ),
-                                 uiOutput("analysisIdError")
+                                 shiny::uiOutput("analysisIdError")
                           ),
-                          column(6,
-                                 div(class = "required-field",
-                                     textInput("analysisName", "Analysis Name:",
+                        	shiny::column(6,
+                                 shiny::div(class = "required-field",
+                                     shiny::textInput("analysisName", "Analysis Name:",
                                                placeholder = "Enter analysis name")
                                  ),
-                                 uiOutput("analysisNameError")
+                                 shiny::uiOutput("analysisNameError")
                           )
                         )
                     )
@@ -1054,12 +1027,12 @@ $(document).ready(function() {
            ),
 
            # Second row
-           fluidRow(
-             column(6,
-                    div(class = "section-container",
-                        h3("Demographics",
+           shiny::fluidRow(
+           	shiny::column(6,
+                    shiny::div(class = "section-container",
+                        shiny::h3("Demographics",
 
-                           tags$button(
+                           shiny::tags$button(
                              class = "help-icon-btn",
                              style = "margin-left: 10px;",
                              `data-help-title` = "Demographics",
@@ -1071,32 +1044,32 @@ $(document).ready(function() {
 					 				 			 	<p>OMOP concepts for ethnicity can be found here: <a href='https://athena.ohdsi.org/search-terms/terms?domain=Ethnicity&standardConcept=Standard&page=1&pageSize=15&query=' target='_blank'>View concepts</a></p>
 					 				 			 	<p>Please see the ARES application for race distribution across our licensed databases standardized to the OMOP CDM: <a href='%s' target='_blank'>View Ares</a> </p>
 					 				 			 	", aresLink),
-                             HTML("?")
+                             shiny::HTML("?")
                            )
                         ),
-                        sliderInput("ageRange", "Age Range:",
+                        shiny::sliderInput("ageRange", "Age Range:",
                                     min = 0, width = '100%', max = 150, value = c(0, 150)),
-                        fluidRow(
-                          column(6,
-                                 h4("Gender"),
-                                 checkboxInput("genderMale", "Male (8507)", value = TRUE),
-                                 checkboxInput("genderFemale", "Female (8532)", value = TRUE)
+                        shiny::fluidRow(
+                        	shiny::column(6,
+                                 shiny::h4("Gender"),
+                                 shiny::checkboxInput("genderMale", "Male (8507)", value = TRUE),
+                                 shiny::checkboxInput("genderFemale", "Female (8532)", value = TRUE)
                           ),
-                          column(6,
-                                 textInput("raceConceptIds", "Race Concept IDs:",
+                        	shiny::column(6,
+                                 shiny::textInput("raceConceptIds", "Race Concept IDs:",
                                            placeholder = "e.g., 12345, 54321"),
-                                 uiOutput("raceError"),
-                                 textInput("ethnicityConceptIds", "Ethnicity Concept IDs:",
+                                 shiny::uiOutput("raceError"),
+                                 shiny::textInput("ethnicityConceptIds", "Ethnicity Concept IDs:",
                                            placeholder = "e.g., 12345, 54321"),
-                                 uiOutput("ethnicityError")
+                                 shiny::uiOutput("ethnicityError")
                           )
                         )
                     )
              ),
-             column(6,
-                    div(class = "section-container",
-                        h3("Target and Comparator Requirements",
-                           tags$button(
+           	shiny::column(6,
+                    shiny::div(class = "section-container",
+                        shiny::h3("Target and Comparator Requirements",
+                           shiny::tags$button(
                              class = "help-icon-btn",
                              style = "margin-left: 10px;",
                              `data-help-title` = "Target and Comparator",
@@ -1111,68 +1084,68 @@ $(document).ready(function() {
 
 					 				 			 	<p>In this section <strong>only the target is required </strong>. If you are unsure of the comparator or are performing a characterization, you only need to fill in the target.</p>
 					 				 			 	",
-                             HTML("?")
+                             shiny::HTML("?")
                            )
 
                         ),
 
-                        div(class = "input-group",
-                            h4("Indication"),
-                            fluidRow(
-                              column(6,
-                                     textInput("indicationConcepts", "Concept IDs:",
+                        shiny::div(class = "input-group",
+                            shiny::h4("Indication"),
+                            shiny::fluidRow(
+                            	shiny::column(6,
+                                     shiny::textInput("indicationConcepts", "Concept IDs:",
                                                placeholder = "e.g., 12345, 54321"),
-                                     uiOutput("indicationConceptsError")
+                                     shiny::uiOutput("indicationConceptsError")
                               ),
-                              column(6,
-                                     textInput("indicationName", "Name:"
+                            	shiny::column(6,
+                                     shiny::textInput("indicationName", "Name:"
                                      ),
-                                     uiOutput("indicationNameError")
+                                     shiny::uiOutput("indicationNameError")
                               )
                             ),
 
                         ),
 
-                        div(class = "input-group",
-                        		div(class = "required-field",
-                        				h4("Target"),
+                        shiny::div(class = "input-group",
+                        		shiny::div(class = "required-field",
+                        				shiny::h4("Target"),
                         		),
-                            fluidRow(
-                              column(6,
-                                     textInput("targetConcepts", "Concept IDs:",
+                            shiny::fluidRow(
+                            	shiny::column(6,
+                                     shiny::textInput("targetConcepts", "Concept IDs:",
                                                placeholder = "e.g., 12345, 54321"),
-                                     uiOutput("targetConceptsError")
+                                     shiny::uiOutput("targetConceptsError")
                               ),
-                              column(6,
-                                     textInput("targetName", "Name:",
+                            	shiny::column(6,
+                                     shiny::textInput("targetName", "Name:",
                                                placeholder = "Default: 'target'"),
-                                     uiOutput("targetNameError")
+                                     shiny::uiOutput("targetNameError")
                               )
                             ),
-                            fluidRow(
-                              column(6,
-                                     checkboxInput("targetUseDrugEra", "Drug Ingredients Only", value = FALSE),
+                        		shiny::fluidRow(
+                        			shiny::column(6,
+                                     shiny::checkboxInput("targetUseDrugEra", "Drug Ingredients Only", value = FALSE),
                               )
                             )
                         ),
 
-                        div(class = "input-group",
-                            h4("Comparator"),
-                            fluidRow(
-                              column(6,
-                                     textInput("comparatorConcepts", "Concept IDs:",
+                        shiny::div(class = "input-group",
+                            shiny::h4("Comparator"),
+                            shiny::fluidRow(
+                            	shiny::column(6,
+                                     shiny::textInput("comparatorConcepts", "Concept IDs:",
                                                placeholder = "e.g., 12345, 54321"),
-                                     uiOutput("comparatorConceptsError")
+                                     shiny::uiOutput("comparatorConceptsError")
                               ),
-                              column(6,
-                                     textInput("comparatorName", "Name:"
+                            	shiny::column(6,
+                                     shiny::textInput("comparatorName", "Name:"
                                      ),
-                                     uiOutput("comparatorNameError")
+                                     shiny::uiOutput("comparatorNameError")
                               )
                             ),
-                            fluidRow(
-                              column(6,
-                                     checkboxInput("comparatorUseDrugEra", "Drug Ingredients Only", value = FALSE),
+                            shiny::fluidRow(
+                            	shiny::column(6,
+                                     shiny::checkboxInput("comparatorUseDrugEra", "Drug Ingredients Only", value = FALSE),
                               )
                             )
                         )
@@ -1181,27 +1154,27 @@ $(document).ready(function() {
            ),
 
            # Third row
-           fluidRow(
-             column(6,
-                    div(class = "section-container",
-                        h3("Domains and Visits"),
-                        fluidRow(
-                          column(6,
-                                 tags$div(
+           shiny::fluidRow(
+           	shiny::column(6,
+                    shiny::div(class = "section-container",
+                        shiny::h3("Domains and Visits"),
+                        shiny::fluidRow(
+                        	shiny::column(6,
+                                 shiny::tags$div(
                                    class = "shiny-input-container",
-                                   tags$label(
+                                   shiny::tags$label(
                                      "Required Domains:",
-                                     tags$button(
+                                     shiny::tags$button(
                                        class = "help-icon-btn",
                                        `data-help-title` = "Required Domains",
                                        `data-help-content` = "<p><strong>Required domains</strong> refer to data domains in which all patients in the analysis need data.
                                        For example, if your target is patients with Type 2 Diabetes Mellitus with exposure to canagliflozin, then all patients need at least one condition record (diabetes) and at least one drug record (canagliflozin) to be included in the study.
                                        Valid values are condition,drug,device,measurement,measurementValues, <br> death,procedure,observation.
                                        If no restriction leave blank. </p>",
-                                       HTML("?")
+                                       shiny::HTML("?")
                                      )
                                    ),
-                                   selectInput("requiredDomains", NULL,
+                                   shiny::selectInput("requiredDomains", NULL,
                                                choices = list("Condition" = "condition",
                                                               "Drug" = "drug",
                                                               "Procedure" = "procedure",
@@ -1214,21 +1187,21 @@ $(document).ready(function() {
                                                selected = c("condition", "drug"))
                                  )
                           ),
-                          column(6,
-                                 tags$div(
+                        	shiny::column(6,
+                                 shiny::tags$div(
                                    class = "shiny-input-container",
-                                   tags$label(
+                                   shiny::tags$label(
                                      "Desired Domains:",
-                                     tags$button(
+                                     shiny::tags$button(
                                        class = "help-icon-btn",
                                        `data-help-title` = "Desired Domains",
                                        `data-help-content` = "<p> <strong>Desired domains</strong> refer to data domains in which only some patients in the analysis need data, meaning data domains needed for the outcome.
                                        For example, if your outcome is a surgical procedure, then procedures must be available in the data to observe the outcome so the desired domain would be 'procedure'.
                                        Valid values are condition,drug,device,measurement,measurementValues, <br> death,procedure,observation. If no restriction leave blank. </p>",
-                                       HTML("?")
+                                       shiny::HTML("?")
                                      )
                                    ),
-                                   selectInput("desiredDomains", NULL,
+                                   shiny::selectInput("desiredDomains", NULL,
                                                choices = list("Condition" = "condition",
                                                               "Drug" = "drug",
                                                               "Procedure" = "procedure",
@@ -1242,40 +1215,40 @@ $(document).ready(function() {
                           )
 
                         ),
-                        fluidRow(
-                          column(6,
-                                 tags$div(
+                        shiny::fluidRow(
+                        	shiny::column(6,
+                                 shiny::tags$div(
                                    class = "shiny-input-container",
-                                   tags$label(
+                                   shiny::tags$label(
                                      "Required Visits:",
-                                     tags$button(
+                                     shiny::tags$button(
                                        class = "help-icon-btn",
                                        `data-help-title` = "Required Visits",
                                        `data-help-content` = "<p><strong>Required visits</strong> refer to requirements for all patients in the analysis, meaning requirements for the target and comparator. For example, if your target or comparator definition requires an IP visit, then put 'IP' in this field. Valid values are IP,OP,ER. If no restriction leave blank.</p>",
-                                       HTML("?")
+                                       shiny::HTML("?")
                                      )
                                    ),
-                                   selectInput("requiredVisits", NULL,
+                                   shiny::selectInput("requiredVisits", NULL,
                                                choices = list("Inpatient" = "IP",
                                                               "Outpatient" = "OP",
                                                               "Emergency" = "ER"),
                                                multiple = TRUE)
                                  )),
-                          column(6,
-                                 tags$div(
+                        	shiny::column(6,
+                                 shiny::tags$div(
                                    class = "shiny-input-container",
-                                   tags$label(
+                                   shiny::tags$label(
                                      "Desired Visits:",
-                                     tags$button(
+                                     shiny::tags$button(
                                        class = "help-icon-btn",
                                        `data-help-title` = "Desired Visits",
                                        `data-help-content` = "<p> <strong>Desired visits</strong> refer to requirements for only some patients in the analysis, meaning requirements for the outcome.
                                        For example, if your outcome must be observed in the inpatient setting, put IP here.
                                        Valid values are IP,OP,ER. If no restrictions leave blank. </p>",
-                                       HTML("?")
+                                       shiny::HTML("?")
                                      )
                                    ),
-                                   selectInput("desiredVisits", NULL,
+                                   shiny::selectInput("desiredVisits", NULL,
                                                choices = list("Inpatient" = "IP",
                                                               "Outpatient" = "OP",
                                                               "Emergency" = "ER"),
@@ -1286,11 +1259,11 @@ $(document).ready(function() {
                         )
                     )
              ),
-             column(6,
-                    div(class = "section-container",
-                        h3("Temporal Criteria",
+           	shiny::column(6,
+                    shiny::div(class = "section-container",
+                        shiny::h3("Temporal Criteria",
 
-                           tags$button(
+                           shiny::tags$button(
                              class = "help-icon-btn",
                              style = "margin-left: 10px;",
                              `data-help-title` = "Temporal Criteria",
@@ -1300,101 +1273,104 @@ $(document).ready(function() {
 
 
 					 				 			 	",
-                             HTML("?")
+                             shiny::HTML("?")
                            )
 
                         ),
-                        fluidRow(
-                          column(6,
-                                 textInput("studyStartDate", "Start Date (YYYYMM):",
+                        shiny::fluidRow(
+                        	shiny::column(6,
+                                 shiny::textInput("studyStartDate", "Start Date (YYYYMM):",
                                            placeholder = "e.g., 202301"),
-                                 uiOutput("startDateError")
+                                 shiny::uiOutput("startDateError")
                           ),
-                          column(6,
-                                 textInput("studyEndDate", "End Date (YYYYMM):",
+                        	shiny::column(6,
+                                 shiny::textInput("studyEndDate", "End Date (YYYYMM):",
                                            placeholder = "e.g., 202312"),
-                                 uiOutput("endDateError")
+                                 shiny::uiOutput("endDateError")
                           )
                         ),
-                        numericInput("followUpDays", "Required Follow-up (days):",
+                        shiny::numericInput("followUpDays", "Required Follow-up (days):",
                                      value = 365, min = 0)
                     )
              )
            ),
 
            # Fourth row
-           fluidRow(
-             column(12,
-                    div(class = "section-container",
-                        h3("Outcome Requirements"),
-                        fluidRow(
-                          column(6,
-                                 textInput("outcomeConcepts", "Outcome Concept IDs:",
+           shiny::fluidRow(
+           	shiny::column(12,
+                    shiny::div(class = "section-container",
+                        shiny::h3("Outcome Requirements"),
+                        shiny::fluidRow(
+                        	shiny::column(6,
+                                 shiny::textInput("outcomeConcepts", "Outcome Concept IDs:",
                                            placeholder = "e.g., 12345, 54321"),
-                                 uiOutput("outcomeConceptsError")
+                                 shiny::uiOutput("outcomeConceptsError")
                           ),
-                          column(6,
-                                 textInput("outcomeName", "Outcome Name:"
+                        	shiny::column(6,
+                                 shiny::textInput("outcomeName", "Outcome Name:"
                                  ),
-                                 uiOutput("outcomeNameError")
+                                 shiny::uiOutput("outcomeNameError")
                           )
                         )
                     )
              )
            ),
 
-           fluidRow(column(12,
+           shiny::fluidRow(shiny::column(12,
 
-                           actionButton("addToList", "Add to List",
+                           shiny::actionButton("addToList", "Add to List",
                                         class = "btn-primary btn-lg btn-add",
                                         style = "width: 100%")
            )
            ),
 
            # Analyses queue
-           fluidRow(
-             column(12,
-                    div(class = "section-container", style = "margin-top: 30px;",
-                        h3("Queued Analyses"),
-                        uiOutput("analysesListDisplay")
+           shiny::fluidRow(
+           	shiny::column(12,
+                    shiny::div(class = "section-container", style = "margin-top: 30px;",
+                        shiny::h3("Queued Analyses"),
+                        shiny::uiOutput("analysesListDisplay")
                     )
              )
            ),
 
            # Run Analysis Button
-           fluidRow(
-             column(12,
-                    div(style = "text-align: center; margin-top: 30px;",
-                        actionButton("runAnalysis", "Run All Analyses",
+           shiny::fluidRow(
+           	shiny::column(12,
+                    shiny::div(style = "text-align: center; margin-top: 30px;",
+                        shiny::actionButton("runAnalysis", "Run All Analyses",
                                      class = "btn-primary btn-lg")
                     )
              )
            ),
     )
   )
-)
+)}
 
 
-server <- function(input, output, session) {
+server <- function(input, output, session, connectionDetails, aresLink, resultsDatabaseSchema, resultsTableName) {
 
   dbConnected <- reactiveVal(FALSE)
   analysesList <- reactiveVal(list())
 
-  observe({
-    status <- testDbConnection()
+  globalResults <- NULL
+  globalSettings <- NULL
+
+  shiny::observe({
+    status <- testDbConnection(connectionDetails)
     dbConnected(status)
   })
 
   # App info/error messages
 
-  output$dbStatus <- renderUI({
+  output$dbStatus <- shiny::renderUI({
     if (dbConnected()) {
-      div(class = "db-status db-connected",
-          icon("check-circle"),
+    	shiny::div(class = "db-status db-connected",
+      		shiny::icon("check-circle"),
           " Database Connected")
     } else {
-      div(class = "db-status db-disconnected",
-          icon("times-circle"),
+    	shiny::div(class = "db-status db-disconnected",
+      		shiny::icon("times-circle"),
           " Database Disconnected - Check configuration")
     }
   })
@@ -1402,8 +1378,8 @@ server <- function(input, output, session) {
   output$analysisIdError <- renderUI({
     if (!is.null(input$analysisId) && input$analysisId != "") {
       if (!grepl("^[0-9]+$", input$analysisId)) {
-        div(class = "validation-error",
-            icon("exclamation-triangle"),
+      	shiny::div(class = "validation-error",
+        		shiny::icon("exclamation-triangle"),
             " Analysis ID must contain only numeric values")
       }
     }
@@ -1411,48 +1387,48 @@ server <- function(input, output, session) {
 
   output$analysisNameError <- renderUI({
     if (input$analysisId != "" && input$analysisName == "") {
-      div(class = "validation-error",
-          icon("exclamation-triangle"),
+    	shiny::div(class = "validation-error",
+      		shiny::icon("exclamation-triangle"),
           " Analysis Name is required")
     }
   })
 
   output$indicationNameError <- renderUI({
     if (input$indicationConcepts != "" && input$indicationName == "") {
-      div(class = "validation-error",
-          icon("exclamation-triangle"),
+    	shiny::div(class = "validation-error",
+      		shiny::icon("exclamation-triangle"),
           " Indication Name is required")
     }
   })
 
   output$targetError <- renderUI({
   	if (input$targetConcepts == "") {
-  		div(class = "validation-error",
-  				icon("exclamation-triangle"),
+  		shiny::div(class = "validation-error",
+  				shiny::icon("exclamation-triangle"),
   				" Target is a mandatory field ")
   	}
   })
 
   output$targetNameError <- renderUI({
     if (input$targetConcepts != "" && input$targetName == "") {
-      div(class = "validation-error",
-          icon("exclamation-triangle"),
+    	shiny::div(class = "validation-error",
+      		shiny::icon("exclamation-triangle"),
           " Target Name is required")
     }
   })
 
   output$comparatorNameError <- renderUI({
     if (input$comparatorConcepts != "" && input$comparatorName == "") {
-      div(class = "validation-error",
-          icon("exclamation-triangle"),
+    	shiny::div(class = "validation-error",
+      		shiny::icon("exclamation-triangle"),
           " Comparator Name is required")
     }
   })
 
   output$outcomeNameError <- renderUI({
     if (input$outcomeConcepts != "" && input$outcomeName == "") {
-      div(class = "validation-error",
-          icon("exclamation-triangle"),
+    	shiny::div(class = "validation-error",
+      		shiny::icon("exclamation-triangle"),
           " Outcome Name is required")
     }
   })
@@ -1460,8 +1436,8 @@ server <- function(input, output, session) {
   output$raceError <- renderUI({
     if (!is.null(input$raceConceptIds) && input$raceConceptIds != "") {
       if (!validateNumericList(input$raceConceptIds)) {
-        div(class = "validation-error",
-            icon("exclamation-triangle"),
+      	shiny::div(class = "validation-error",
+        		shiny::icon("exclamation-triangle"),
             " Must be numerical values separated by commas")
       }
     }
@@ -1470,8 +1446,8 @@ server <- function(input, output, session) {
   output$ethnicityError <- renderUI({
     if (!is.null(input$ethnicityConceptIds) && input$ethnicityConceptIds != "") {
       if (!validateNumericList(input$ethnicityConceptIds)) {
-        div(class = "validation-error",
-            icon("exclamation-triangle"),
+      	shiny::div(class = "validation-error",
+        		shiny::icon("exclamation-triangle"),
             " Must be numerical values separated by commas")
       }
     }
@@ -1480,8 +1456,8 @@ server <- function(input, output, session) {
   output$startDateError <- renderUI({
     if (!is.null(input$studyStartDate) && input$studyStartDate != "") {
       if (!validateYYYYMM(input$studyStartDate)) {
-        div(class = "validation-error",
-            icon("exclamation-triangle"),
+      	shiny::div(class = "validation-error",
+        		shiny::icon("exclamation-triangle"),
             " Date must be in YYYYMM format (e.g., 202301)")
       }
     }
@@ -1490,8 +1466,8 @@ server <- function(input, output, session) {
   output$endDateError <- renderUI({
     if (!is.null(input$studyEndDate) && input$studyEndDate != "") {
       if (!validateYYYYMM(input$studyEndDate)) {
-        div(class = "validation-error",
-            icon("exclamation-triangle"),
+      	shiny::div(class = "validation-error",
+        		shiny::icon("exclamation-triangle"),
             " Date must be in YYYYMM format (e.g., 202312)")
       }
     }
@@ -1500,8 +1476,8 @@ server <- function(input, output, session) {
   output$indicationConceptsError <- renderUI({
     if (!is.null(input$indicationConcepts) && input$indicationConcepts != "") {
       if (!validateNumericList(input$indicationConcepts)) {
-        div(class = "validation-error",
-            icon("exclamation-triangle"),
+      	shiny::div(class = "validation-error",
+        		shiny::icon("exclamation-triangle"),
             " Must be numerical values separated by commas")
       }
     }
@@ -1510,8 +1486,8 @@ server <- function(input, output, session) {
   output$targetConceptsError <- renderUI({
     if (!is.null(input$targetConcepts) && input$targetConcepts != "") {
       if (!validateNumericList(input$targetConcepts)) {
-        div(class = "validation-error",
-            icon("exclamation-triangle"),
+      	shiny::div(class = "validation-error",
+            shiny::icon("exclamation-triangle"),
             " Must be numerical values separated by commas")
       }
     }
@@ -1520,8 +1496,8 @@ server <- function(input, output, session) {
   output$comparatorConceptsError <- renderUI({
     if (!is.null(input$comparatorConcepts) && input$comparatorConcepts != "") {
       if (!validateNumericList(input$comparatorConcepts)) {
-        div(class = "validation-error",
-            icon("exclamation-triangle"),
+      	shiny::div(class = "validation-error",
+            shiny::icon("exclamation-triangle"),
             " Must be numerical values separated by commas")
       }
     }
@@ -1530,8 +1506,8 @@ server <- function(input, output, session) {
   output$outcomeConceptsError <- renderUI({
     if (!is.null(input$outcomeConcepts) && input$outcomeConcepts != "") {
       if (!validateNumericList(input$outcomeConcepts)) {
-        div(class = "validation-error",
-            icon("exclamation-triangle"),
+      	shiny::div(class = "validation-error",
+            shiny::icon("exclamation-triangle"),
             " Must be numerical values separated by commas")
       }
     }
@@ -1539,7 +1515,7 @@ server <- function(input, output, session) {
 
 
   # Handler for adding to list
-  observeEvent(input$addToList, {
+  shiny::observeEvent(input$addToList, {
     errors <- c()
 
     if (is.null(input$analysisId) || input$analysisId == "") {
@@ -1650,12 +1626,12 @@ server <- function(input, output, session) {
     }
 
     if (length(errors) > 0) {
-      showModal(modalDialog(
+    	shiny::showModal(modalDialog(
         title = "Validation Errors",
-        div(
-          p("Please fix the following issues before adding the analysis:"),
-          tags$ul(
-            lapply(errors, function(e) tags$li(style = "color: #d9534f;", e))
+        shiny::div(
+        	shiny::p("Please fix the following issues before adding the analysis:"),
+        	shiny::tags$ul(
+            lapply(errors, function(e) shiny::tags$li(style = "color: #d9534f;", e))
           )
         ),
         easyClose = TRUE,
@@ -1702,14 +1678,14 @@ server <- function(input, output, session) {
       currentList[[length(currentList) + 1]] <- newAnalysis
       analysesList(currentList)
 
-      updateTextInput(session, "analysisName", value = "")
+      shiny::updateTextInput(session, "analysisName", value = "")
 
-      showNotification("Analysis added to queue", type = "message", duration = 3)
+      shiny::showNotification("Analysis added to queue", type = "message", duration = 3)
     }
   })
 
   # Render analyses list
-  output$analysesListDisplay <- renderUI({
+  output$analysesListDisplay <- shiny::renderUI({
     analyses <- analysesList()
 
     if (length(analyses) == 0) {
@@ -1721,19 +1697,19 @@ server <- function(input, output, session) {
       uniqueId <- analysis$uniqueId
 
 
-      div(class = "analysis-item",
-          div(class = "analysis-header", onclick = paste0("$('#analysis-details-", uniqueId, "').toggleClass('show')"),
-              div(
-                strong(analysis$analysisName),
-                tags$span(class = "analysis-count", paste("ID:", analysis$analysisId))
+      shiny::div(class = "analysis-item",
+      		shiny::div(class = "analysis-header", onclick = paste0("$('#analysis-details-", uniqueId, "').toggleClass('show')"),
+          		shiny::div(
+              	shiny::strong(analysis$analysisName),
+                shiny::tags$span(class = "analysis-count", paste("ID:", analysis$analysisId))
               ),
-              div(class = "analysis-actions",
-                  actionButton(paste0("edit_", uniqueId), "Edit", class = "btn-edit"),
-                  actionButton(paste0("remove_", uniqueId), "Remove", class = "btn-remove")
+          		shiny::div(class = "analysis-actions",
+                  shiny::actionButton(paste0("edit_", uniqueId), "Edit", class = "btn-edit"),
+                  shiny::actionButton(paste0("remove_", uniqueId), "Remove", class = "btn-remove")
               )
           ),
-          div(id = paste0("analysis-details-", uniqueId), class = "analysis-details",
-              p(strong("Age Range: "), paste(analysis$minAge, "-", analysis$maxAge)),
+      		shiny::div(id = paste0("analysis-details-", uniqueId), class = "analysis-details",
+          		shiny::p(shiny::strong("Age Range: "), paste(analysis$minAge, "-", analysis$maxAge)),
 
               if (length(analysis$genderIds) > 0) p(strong("Gender IDs: "), paste(analysis$genderIds, collapse = ", ")),
               if (analysis$raceIds != "" || analysis$raceIds != "") p(strong("Race IDs: "), paste(analysis$raceIds, collapse = ", ")),
@@ -1756,9 +1732,9 @@ server <- function(input, output, session) {
   })
 
   # Analyses edit/remove handlers
-  createdObservers <- reactiveVal(character())
+  createdObservers <- shiny::reactiveVal(character())
 
-  observeEvent(analysesList(), {
+  shiny::observeEvent(analysesList(), {
     analyses <- analysesList()
     existingObservers <- createdObservers()
 
@@ -1772,7 +1748,7 @@ server <- function(input, output, session) {
       createdObservers(c(createdObservers(), uniqueId))
 
       # Remove button
-      observeEvent(input[[paste0("remove_", uniqueId)]], {
+      shiny::observeEvent(input[[paste0("remove_", uniqueId)]], {
         currentList <- analysesList()
         keepIndices <- sapply(currentList, function(x) x$uniqueId != uniqueId)
         if (any(keepIndices)) {
@@ -1781,11 +1757,11 @@ server <- function(input, output, session) {
           newList <- list()
         }
         analysesList(newList)
-        showNotification("Analysis removed", type = "message", duration = 2)
+        shiny::showNotification("Analysis removed", type = "message", duration = 2)
       }, ignoreInit = TRUE, once = TRUE)
 
       # Edit button
-      observeEvent(input[[paste0("edit_", uniqueId)]], {
+      shiny::observeEvent(input[[paste0("edit_", uniqueId)]], {
         currentList <- analysesList()
         analysisIndex <- which(sapply(currentList, function(x) x$uniqueId == uniqueId))
         if (length(analysisIndex) > 0) {
@@ -1822,7 +1798,7 @@ server <- function(input, output, session) {
             newList <- list()
           }
           analysesList(newList)
-          showNotification("Analysis loaded for editing", type = "message", duration = 3)
+          shiny::showNotification("Analysis loaded for editing", type = "message", duration = 3)
         }
       }, ignoreInit = TRUE, once = TRUE)
     })
@@ -1833,11 +1809,11 @@ server <- function(input, output, session) {
     analyses <- analysesList()
 
     if (length(analyses) == 0 && (is.null(input$analysisId) || input$analysisId == "")) {
-      showModal(modalDialog(
+    	shiny::showModal(shiny::modalDialog(
         title = "No Analyses to Run",
         "Please add at least one analysis to the queue or fill in the current form.",
         easyClose = TRUE,
-        footer = modalButton("Close")
+        footer = shiny::modalButton("Close")
       ))
       return()
     }
@@ -1850,16 +1826,16 @@ server <- function(input, output, session) {
     # }
 
     if (!dbConnected()) {
-      showModal(modalDialog(
+    	shiny::showModal(modalDialog(
         title = "Database Connection Error",
         "Database is not connected. Please check your connection settings.",
         easyClose = TRUE,
-        footer = modalButton("Close")
+        footer = shiny::modalButton("Close")
       ))
       return()
     }
 
-    showModal(modalDialog(
+    shiny::showModal(shiny::modalDialog(
       title = "Running Database Diagnostics",
       paste("Processing", length(analyses), "analyses... Please wait."),
       footer = NULL
@@ -1909,14 +1885,14 @@ server <- function(input, output, session) {
       globalResults <<- dbDiagnosticResults
       globalSettings <<- analyses
 
-      removeModal()
+      shiny::removeModal()
 
-      displayContent <- tagList()
+      displayContent <- shiny::tagList()
 
-      displayContent <- tagList(
+      displayContent <- shiny::tagList(
         displayContent,
-        div(class = "summary-card",
-            h5("Results Summary"),
+        shiny::div(class = "summary-card",
+        		shiny::h5("Results Summary"),
 
             lapply(analyses, function(analysis) {
               analysis_data <- dbDiagnosticResults[!is.na(dbDiagnosticResults$analysisName) &
@@ -1925,7 +1901,7 @@ server <- function(input, output, session) {
               unique_dbs <- unique(analysis_data$databaseId[!is.na(analysis_data$databaseId)])
 
               tagList(
-                h6(strong(analysis$analysisName)),
+              	shiny::h6(shiny::strong(analysis$analysisName)),
 
                 if (length(unique_dbs) > 0) {
                   concept_types <- list(
@@ -1955,7 +1931,7 @@ server <- function(input, output, session) {
                               else if (tolower(stat_row$status[1]) == "fail") bg_color <- "#F44336"
                             }
 
-                            span(
+                            shiny::span(
                               style = paste0("background-color: ", bg_color,
                                              "; color: white; padding: 2px 6px; margin-right: 4px; border-radius: 3px; font-size: 12px;"),
                               type
@@ -1965,19 +1941,19 @@ server <- function(input, output, session) {
                     })
                   )
                 } else {
-                  p(em("No results available."))
+                	shiny::p(shiny::em("No results available."))
                 },
 
-                tags$hr()
+                shiny::tags$hr()
               )
             })
         )
       )
       if (is.data.frame(dbDiagnosticResults)) {
-        displayContent <- tagList(
+        displayContent <- shiny::tagList(
           displayContent,
-          h5("Diagnostic Results Table"),
-          div(class = "results-table",
+          shiny::h5("Diagnostic Results Table"),
+          shiny::div(class = "results-table",
               DT::dataTableOutput("resultsTable")
           )
         )
@@ -2010,18 +1986,18 @@ server <- function(input, output, session) {
       }
 
 
-      showModal(modalDialog(
+      shiny::showModal(modalDialog(
         title = "Database Diagnostics Results",
         size = "l",
         displayContent,
         easyClose = TRUE,
         footer = tagList(
-          modalButton("Close"),
-          downloadButton("downloadPDF", "Download PDF Report"),
-          downloadButton("downloadCSV", "Download raw CSV")
+        	shiny::modalButton("Close"),
+        	shiny::downloadButton("downloadPDF", "Download PDF Report"),
+        	shiny::downloadButton("downloadCSV", "Download raw CSV")
 
         ),
-        tags$head(tags$style(".modal-dialog { width: 90%; max-width: 1300px; }"))
+        shiny::tags$head(shiny::tags$style(".modal-dialog { width: 90%; max-width: 1300px; }"))
       ))
 
       output$downloadPDF <- downloadHandler(
@@ -2029,7 +2005,7 @@ server <- function(input, output, session) {
           "db_diagnostics_results.pdf"
         },
         content = function(file) {
-          showModal(modalDialog(
+        	shiny::showModal(modalDialog(
             title = "Generating PDF Report",
             "Creating PDF report... Please wait.",
             footer = NULL
@@ -2037,10 +2013,10 @@ server <- function(input, output, session) {
 
           tryCatch({
             DbDiagnostics::createPdfReport(globalResults, file)
-            removeModal()
+          	shiny::removeModal()
           }, error = function(e) {
-            removeModal()
-            showNotification(
+          	shiny::removeModal()
+          	shiny::showNotification(
               paste("PDF generation failed:", e$message),
               type = "error",
               duration = 10
@@ -2055,17 +2031,17 @@ server <- function(input, output, session) {
           "db_diagnostics_results.csv"
         },
         content = function(file) {
-          showModal(modalDialog(
+        	shiny::showModal(shiny::modalDialog(
             title = "Generating CSV Export",
             "Creating CSV file... Please wait.",
             footer = NULL
           ))
           tryCatch({
             write.csv(globalResults, file, row.names = FALSE)
-            removeModal()
+          	shiny::removeModal()
           }, error = function(e) {
-            removeModal()
-            showNotification(
+          	shiny::removeModal()
+          	shiny::showNotification(
               paste("CSV export failed:", e$message),
               type = "error",
               duration = 10
@@ -2076,15 +2052,33 @@ server <- function(input, output, session) {
       )
 
     }, error = function(e) {
-      removeModal()
-      showModal(modalDialog(
+    	shiny::removeModal()
+    	shiny::showModal(modalDialog(
         title = "Error",
         paste("An error occurred while running diagnostics:", e$message),
         easyClose = TRUE,
-        footer = modalButton("Close")
+        footer = shiny::modalButton("Close")
       ))
     })
   })
 }
 
-shinyApp(ui = ui, server = server)
+#' @export
+run_shiny_app <- function(
+		connectionDetails = NULL,
+		aresLink = Sys.getenv("ARES_INSTANCE_LINK", unset = '/'),
+		resultsDatabaseSchema = Sys.getenv("RESULTS_SCHEMA", unset = "db_profile"),
+		resultsTableName = Sys.getenv("TABLE_NAME", unset = "db_profile_results")
+) {
+	if (is.null(connectionDetails)) {
+		stop("connectionDetails object must be provided. Create one using DatabaseConnector::createConnectionDetails()")
+	}
+
+	app <- shiny::shinyApp(
+		ui = ui(aresLink),
+		server = function(input, output, session) {
+			server(input, output, session, connectionDetails, aresLink, resultsDatabaseSchema, resultsTableName)
+		}
+	)
+	shiny::runApp(app)
+}
