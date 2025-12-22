@@ -2074,11 +2074,10 @@ run_shiny_app <- function(
 		stop("connectionDetails object must be provided. Create one using DatabaseConnector::createConnectionDetails()")
 	}
 
-	app <- shiny::shinyApp(
+	shiny::shinyApp(
 		ui = ui(aresLink),
 		server = function(input, output, session) {
 			server(input, output, session, connectionDetails, aresLink, resultsDatabaseSchema, resultsTableName)
 		}
 	)
-	shiny::runApp(app)
 }
