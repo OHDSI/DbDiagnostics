@@ -1348,8 +1348,8 @@ $(document).ready(function() {
 )}
 
 
-server <- function(input, output, session, connectionDetails, aresLink, resultsDatabaseSchema, resultsTableName) {
-
+server <- function(input, output, session, connectionDetails, aresLink, resultsDatabaseSchema, resultsTableName, pinName) {
+  board <- pins::board_connect()
   dbConnected <- reactiveVal(FALSE)
   analysesList <- reactiveVal(list())
 
@@ -1875,12 +1875,41 @@ server <- function(input, output, session, connectionDetails, aresLink, resultsD
         )
       })
 
+      start_time <- Sys.time()
+
       dbDiagnosticResults <- DbDiagnostics::executeDbDiagnostics(
-        connectionDetails = connectionDetails,
-        resultsDatabaseSchema = resultsDatabaseSchema,
-        resultsTableName = resultsTableName,
-        dataDiagnosticsSettings = ddStudiesList
+      	connectionDetails = connectionDetails,
+      	resultsDatabaseSchema = resultsDatabaseSchema,
+      	resultsTableName = resultsTableName,
+      	dataDiagnosticsSettings = ddStudiesList
       )
+
+      end_time <- Sys.time()
+      duration_secs <- as.numeric(difftime(end_time, start_time, units = "secs"))
+
+      runLog <- data.frame(
+      	run_id = paste0("run_", as.integer(Sys.time())),
+      	timestamp = as.character(Sys.time()),
+      	duration_secs = duration_secs,
+      	num_analyses = length(analyses),
+      	stringsAsFactors = FALSE
+      )
+
+      tryCatch({
+      	existing <- pins::pin_read(board, pinName)
+      	updated <- rbind(existing, runLog)
+      	pins::pin_write(board, updated, pinName)
+      }, error = function(e) {
+
+      	pins::pin_write(board, runLog, pinName)
+      })
+
+      # dbDiagnosticResults <- DbDiagnostics::executeDbDiagnostics(
+      #   connectionDetails = connectionDetails,
+      #   resultsDatabaseSchema = resultsDatabaseSchema,
+      #   resultsTableName = resultsTableName,
+      #   dataDiagnosticsSettings = ddStudiesList
+      # )
 
       globalResults <<- dbDiagnosticResults
       globalSettings <<- analyses
@@ -2077,7 +2106,7 @@ run_shiny_app <- function(
 	shiny::shinyApp(
 		ui = ui(aresLink),
 		server = function(input, output, session) {
-			server(input, output, session, connectionDetails, aresLink, resultsDatabaseSchema, resultsTableName)
+			server(input, output, session, connectionDetails, aresLink, resultsDatabaseSchema, resultsTableName, pinName)
 		}
 	)
 }
