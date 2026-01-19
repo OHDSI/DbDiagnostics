@@ -2097,7 +2097,8 @@ run_shiny_app <- function(
 		connectionDetails = NULL,
 		aresLink = Sys.getenv("ARES_INSTANCE_LINK", unset = '/'),
 		resultsDatabaseSchema = Sys.getenv("RESULTS_SCHEMA", unset = "db_profile"),
-		resultsTableName = Sys.getenv("TABLE_NAME", unset = "db_profile_results")
+		resultsTableName = Sys.getenv("TABLE_NAME", unset = "db_profile_results"),
+        pinName = 'DbDiagnostics_logs'
 ) {
 	if (is.null(connectionDetails)) {
 		stop("connectionDetails object must be provided. Create one using DatabaseConnector::createConnectionDetails()")
