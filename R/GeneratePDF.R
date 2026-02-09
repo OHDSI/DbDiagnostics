@@ -465,7 +465,7 @@ if (!is.null(results) && is.data.frame(results) && nrow(results) > 0 && "analysi
             cat("\\\\end{table}\\n\\n")
 
             cat("\\\\begin{infobox}\\n")
-		 	cat("\\\\faInfoCircle\\\\hspace{0.3cm}\\\\textbf{About T/C/I/O Metrics}\\n\\n")
+		 	cat("\\\\faInfoCircle\\\\hspace{0.3cm}\\\\textbf{About Target/Comparator Requirements Table}\\n\\n")
 			cat("The count and percent of persons in the database with a record of at least one concept defined for the comparator \\n")
 			cat("\\\\end{infobox}\\n\\n")
 
