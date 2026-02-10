@@ -55,14 +55,13 @@ parseNumericList <- function(input_str) {
 # Main
 
 
-ui <- function(aresLink, appLogo, optionalScriptLink) {
+ui <- function(aresLink, appLogo, optionalScriptTag) {
   shiny::fluidPage(
     shinyjs::useShinyjs(),
 
-
     tags$head(
-    	if (!is.null(optionalScriptLink)) {
-    		tags$script(src = optionalScriptLink)
+    	if (!is.null(optionalScriptTag)) {
+    		HTML(optionalScriptTag)
     	}
     ),
     #UI Styles
@@ -2335,14 +2334,14 @@ run_shiny_app <- function(
   resultsTableName = Sys.getenv("TABLE_NAME", unset = "db_profile_results"),
   pinName = NULL,
   appLogo = "https://avatars.githubusercontent.com/u/6570077?s=200&v=4",
-  optionalScriptLink = NULL
+  optionalScriptTag = NULL
 ) {
   if (is.null(connectionDetails)) {
     stop("connectionDetails object must be provided. Create one using DatabaseConnector::createConnectionDetails()")
   }
 
   shiny::shinyApp(
-    ui = ui(aresLink, appLogo, optionalScriptLink),
+    ui = ui(aresLink, appLogo, optionalScriptTag),
     server = function(input, output, session) {
       server(input, output, session, connectionDetails, aresLink, resultsDatabaseSchema, resultsTableName, pinName)
     }
