@@ -2276,9 +2276,7 @@ server <- function(input, output, session, connectionDetails, aresLink, resultsD
               userNotes = userNotesForPdf,
               analysisSettings = analysisSettingsForPdf
             )
-            shiny::removeModal()
           }, error = function(e) {
-            shiny::removeModal()
             shiny::showNotification(
               paste("PDF generation failed:", e$message),
               type = "error",
@@ -2301,9 +2299,7 @@ server <- function(input, output, session, connectionDetails, aresLink, resultsD
           ))
           tryCatch({
             utils::write.csv(globalResults, file, row.names = FALSE)
-            shiny::removeModal()
           }, error = function(e) {
-            shiny::removeModal()
             shiny::showNotification(
               paste("CSV export failed:", e$message),
               type = "error",
