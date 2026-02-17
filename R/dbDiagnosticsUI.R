@@ -924,21 +924,19 @@ align-items: center;
 #downloadPDF.generating,
 #downloadCSV.generating {
   pointer-events: none;
-  opacity: 0.7;
-  position: relative;
-  border: 2px solid transparent;
-  background-image: linear-gradient(#fff, #fff), linear-gradient(90deg, #0066cc, #00ccff, #0066cc);
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
-  animation: border-spin 1.5s linear infinite;
+  background-image: linear-gradient(
+    -45deg,
+    #0066cc 25%, #0077ee 25%,
+    #0077ee 50%, #0066cc 50%,
+    #0066cc 75%, #0077ee 75%
+  );
+  background-size: 20px 20px;
+  animation: stripe-slide 0.8s linear infinite;
 }
 
-@keyframes border-spin {
-  0% { background-image: linear-gradient(#fff, #fff), linear-gradient(0deg, #0066cc, #00ccff, #0066cc); }
-  25% { background-image: linear-gradient(#fff, #fff), linear-gradient(90deg, #0066cc, #00ccff, #0066cc); }
-  50% { background-image: linear-gradient(#fff, #fff), linear-gradient(180deg, #0066cc, #00ccff, #0066cc); }
-  75% { background-image: linear-gradient(#fff, #fff), linear-gradient(270deg, #0066cc, #00ccff, #0066cc); }
-  100% { background-image: linear-gradient(#fff, #fff), linear-gradient(360deg, #0066cc, #00ccff, #0066cc); }
+@keyframes stripe-slide {
+  0% { background-position: 0 0; }
+  100% { background-position: 20px 0; }
 }
 
     ")),
@@ -1420,6 +1418,17 @@ Shiny.addCustomMessageHandler('downloadComplete', function(msg) {
                                     )
                       )
                     ),
+
+      							#for debug purposes
+
+      							# shiny::fluidRow(
+      							# 	shiny::column(12,
+      							# 								shiny::div(style = "text-align: center; margin-top: 10px;",
+      							# 													 shiny::actionButton("debugResults", "Debug: Show Results Modal",
+      							# 													 										class = "btn-primary", style = "background-color: #6c757d; border-color: #6c757d;")
+      							# 								)
+      							# 	)
+      							# ),
       )
     )
   ) }
@@ -1446,6 +1455,107 @@ server <- function(input, output, session, connectionDetails, aresLink, resultsD
     status <- testDbConnection(connectionDetails)
     dbConnected(status)
   })
+
+  output$downloadPDF <- shiny::downloadHandler(
+  	filename = function() {
+  		paste0("dbDiagnostics - ", gsub("[^A-Za-z0-9_ -]", "_", reportName()), ".pdf")
+  	},
+  	content = function(file) {
+  		# shiny::showModal(shiny::modalDialog(
+  		#   title = "Generating PDF Report",
+  		#   "Creating PDF report... Please wait.",
+  		#   footer = NULL
+  		# ))
+
+  		tryCatch({
+  			userNotesForPdf <- list()
+  			for (analysis in globalSettings) {
+  				if (!is.null(analysis$notes) && length(analysis$notes) > 0) {
+  					for (note in analysis$notes) {
+  						userNotesForPdf[[length(userNotesForPdf) + 1]] <- list(
+  							analysisId = as.numeric(analysis$analysisId),
+  							analysisName = analysis$analysisName,
+  							text = note$text
+  						)
+  					}
+  				}
+  			}
+  			if (length(userNotesForPdf) == 0) userNotesForPdf <- NULL
+
+  			analysisSettingsForPdf <- lapply(globalSettings, function(analysis) {
+  				genderIds <- analysis$genderIds
+  				if (length(genderIds) == 0) genderIds <- c(8507, 8532)
+
+  				list(
+  					analysisId = as.numeric(analysis$analysisId),
+  					analysisName = analysis$analysisName,
+  					minAge = analysis$minAge,
+  					maxAge = analysis$maxAge,
+  					genderConceptIds = genderIds,
+  					raceConceptIds = parseNumericList(analysis$raceIds),
+  					ethnicityConceptIds = parseNumericList(analysis$ethnicityIds),
+  					studyStartDate = if (analysis$studyStartDate != "") as.numeric(analysis$studyStartDate) else NULL,
+  					studyEndDate = if (analysis$studyEndDate != "") as.numeric(analysis$studyEndDate) else NULL,
+  					requiredDurationDays = analysis$followUpDays,
+  					requiredDomains = if (length(analysis$requiredDomains) > 0) analysis$requiredDomains else c("condition", "drug"),
+  					desiredDomains = if (length(analysis$desiredDomains) > 0) analysis$desiredDomains else NULL,
+  					requiredVisits = if (length(analysis$requiredVisits) > 0) analysis$requiredVisits else NULL,
+  					desiredVisits = if (length(analysis$desiredVisits) > 0) analysis$desiredVisits else NULL,
+  					targetName = if (analysis$targetName != "") analysis$targetName else "target",
+  					targetConceptIds = parseNumericList(analysis$targetConcepts),
+  					comparatorName = if (analysis$comparatorName != "") analysis$comparatorName else NULL,
+  					comparatorConceptIds = parseNumericList(analysis$comparatorConcepts),
+  					indicationName = if (analysis$indicationName != "") analysis$indicationName else NULL,
+  					indicationConceptIds = parseNumericList(analysis$indicationConcepts),
+  					outcomeName = if (analysis$outcomeName != "") analysis$outcomeName else NULL,
+  					outcomeConceptIds = parseNumericList(analysis$outcomeConcepts),
+  					targetUseDrugEra = analysis$targetUseDrugEra,
+  					comparatorUseDrugEra = analysis$comparatorUseDrugEra
+  				)
+  			})
+
+  			DbDiagnostics::createPdfReport(
+  				results = globalResults,
+  				file = file,
+  				reportName = reportName(),
+  				userNotes = userNotesForPdf,
+  				analysisSettings = analysisSettingsForPdf
+  			)
+  		}, error = function(e) {
+  			shiny::showNotification(
+  				paste("PDF generation failed:", e$message),
+  				type = "error",
+  				duration = 10
+  			)
+  		})
+  		session$sendCustomMessage("downloadComplete", list(id = "downloadPDF"))
+  	},
+  	contentType = "application/pdf"
+  )
+
+  output$downloadCSV <- shiny::downloadHandler(
+  	filename = function() {
+  		paste0("dbDiagnostics - ", gsub("[^A-Za-z0-9_ -]", "_", reportName()), ".csv")
+  	},
+  	content = function(file) {
+  		# shiny::showModal(shiny::modalDialog(
+  		#   title = "Generating CSV Export",
+  		#   "Creating CSV file... Please wait.",
+  		#   footer = NULL
+  		# ))
+  		tryCatch({
+  			utils::write.csv(globalResults, file, row.names = FALSE)
+  		}, error = function(e) {
+  			shiny::showNotification(
+  				paste("CSV export failed:", e$message),
+  				type = "error",
+  				duration = 10
+  			)
+  		})
+  		session$sendCustomMessage("downloadComplete", list(id = "downloadCSV"))
+  	},
+  	contentType = "text/csv"
+  )
 
   # App info/error messages
 
@@ -1803,6 +1913,177 @@ server <- function(input, output, session, connectionDetails, aresLink, resultsD
     }
   })
 
+  shiny::observeEvent(input$debugResults, {
+  	analyses <- analysesList()
+  	if (length(analyses) == 0) {
+  		analyses <- list(list(
+  			uniqueId = "debug_1",
+  			analysisId = "1",
+  			analysisName = "Debug Analysis",
+  			minAge = 18, maxAge = 65,
+  			genderIds = c(8507, 8532),
+  			raceIds = "", ethnicityIds = "",
+  			studyStartDate = "202301", studyEndDate = "202312",
+  			followUpDays = 365,
+  			requiredDomains = c("condition", "drug"),
+  			desiredDomains = NULL,
+  			requiredVisits = NULL, desiredVisits = NULL,
+  			indicationConcepts = "", indicationName = "",
+  			targetConcepts = "12345", targetName = "Debug Target",
+  			comparatorConcepts = "54321", comparatorName = "Debug Comparator",
+  			outcomeConcepts = "99999", outcomeName = "Debug Outcome",
+  			targetUseDrugEra = FALSE, comparatorUseDrugEra = FALSE,
+  			notes = list(list(noteId = "note_debug", text = "This is fake data for UI testing."))
+  		))
+  	}
+
+  	dbs <- c("DB_Alpha", "DB_Beta", "DB_Gamma")
+  	stats <- c(
+  		"propWithRequiredTargetConcepts",
+  		"propWithRequiredComparatorConcepts",
+  		"propWithRequiredIndicationConcepts",
+  		"propWithRequiredOutcomeConcepts",
+  		"numPersons", "numPersonsWithTarget", "numPersonsWithComparator"
+  	)
+  	statuses <- c("pass", "fail", "pass", "pass", "pass", "fail", "pass")
+  	values <- c("0.85", "0.42", "0.91", "0.78", "150000", "12000", "9500")
+
+  	rows <- list()
+  	for (analysis in analyses) {
+  		for (db in dbs) {
+  			for (j in seq_along(stats)) {
+  				rows[[length(rows) + 1]] <- data.frame(
+  					analysisId = analysis$analysisId,
+  					analysisName = analysis$analysisName,
+  					databaseId = db,
+  					statistic = stats[j],
+  					value = values[j],
+  					status = statuses[j],
+  					stringsAsFactors = FALSE
+  				)
+  			}
+  		}
+  	}
+
+  	dbDiagnosticResults <- do.call(rbind, rows)
+  	globalResults <<- dbDiagnosticResults
+  	globalSettings <<- analyses
+
+  	displayContent <- shiny::tagList()
+
+  	displayContent <- shiny::tagList(
+  		displayContent,
+  		shiny::div(class = "summary-card",
+  							 shiny::h5("Results Summary"),
+  							 shiny::div(style = "display: table; border-collapse: separate; border-spacing: 8px;",
+  							 					 lapply(analyses, function(analysis) {
+  							 					 	analysis_data <- dbDiagnosticResults[!is.na(dbDiagnosticResults$analysisName) &
+  							 					 																			 	dbDiagnosticResults$analysisName == analysis$analysisName,]
+  							 					 	unique_dbs <- unique(analysis_data$databaseId[!is.na(analysis_data$databaseId)])
+
+  							 					 	concept_types <- list(
+  							 					 		T = "propWithRequiredTargetConcepts",
+  							 					 		C = "propWithRequiredComparatorConcepts",
+  							 					 		I = "propWithRequiredIndicationConcepts",
+  							 					 		O = "propWithRequiredOutcomeConcepts"
+  							 					 	)
+
+  							 					 	shiny::tagList(
+  							 					 		shiny::div(style = "display: table-row;",
+  							 					 							 shiny::span(style = "display: table-cell; font-weight: bold; padding: 12px 0 4px 0; font-size: 14px;",
+  							 					 							 						analysis$analysisName),
+  							 					 							 shiny::span(style = "display: table-cell;"),
+  							 					 							 shiny::span(style = "display: table-cell;"),
+  							 					 							 shiny::span(style = "display: table-cell;"),
+  							 					 							 shiny::span(style = "display: table-cell;")
+  							 					 		),
+  							 					 		if (length(unique_dbs) > 0) {
+  							 					 			lapply(unique_dbs, function(db) {
+  							 					 				db_results <- analysis_data[!is.na(analysis_data$databaseId) &
+  							 					 																			analysis_data$databaseId == db,]
+  							 					 				shiny::div(style = "display: table-row;",
+  							 					 									 shiny::span(style = "display: table-cell; padding-right: 16px; white-space: nowrap; padding-left: 16px;", db),
+  							 					 									 lapply(names(concept_types), function(type) {
+  							 					 									 	stat_name <- concept_types[[type]]
+  							 					 									 	stat_row <- db_results[!is.na(db_results$statistic) &
+  							 					 									 												 	db_results$statistic == stat_name,]
+  							 					 									 	bg_color <- "#cccccc"
+  							 					 									 	if (nrow(stat_row) > 0 &&
+  							 					 									 			"status" %in% names(stat_row) &&
+  							 					 									 			!is.na(stat_row$status[1])) {
+  							 					 									 		if (tolower(stat_row$status[1]) == "pass") bg_color <- "#4CAF50"
+  							 					 									 		else if (tolower(stat_row$status[1]) == "fail") bg_color <- "#F44336"
+  							 					 									 	}
+  							 					 									 	shiny::span(
+  							 					 									 		style = paste0("display: table-cell; text-align: center;"),
+  							 					 									 		shiny::span(style = paste0("background-color: ", bg_color,
+  							 					 									 															 "; color: white; padding: 2px 6px; border-radius: 3px; font-size: 12px;"),
+  							 					 									 								type)
+  							 					 									 	)
+  							 					 									 })
+  							 					 				)
+  							 					 			})
+  							 					 		} else {
+  							 					 			shiny::div(style = "display: table-row;",
+  							 					 								 shiny::span(style = "display: table-cell; padding-left: 16px; font-style: italic;", "No results available."),
+  							 					 								 shiny::span(style = "display: table-cell;"),
+  							 					 								 shiny::span(style = "display: table-cell;"),
+  							 					 								 shiny::span(style = "display: table-cell;"),
+  							 					 								 shiny::span(style = "display: table-cell;")
+  							 					 			)
+  							 					 		}
+  							 					 	)
+  							 					 })
+  							 )
+  		)
+  	)
+
+  	displayContent <- shiny::tagList(
+  		displayContent,
+  		shiny::h5("Diagnostic Results Table"),
+  		shiny::div(class = "results-table",
+  							 DT::dataTableOutput("resultsTable")
+  		)
+  	)
+
+  	output$resultsTable <- DT::renderDataTable({
+  		data_to_display <- dbDiagnosticResults
+  		for (i in seq_along(data_to_display)) {
+  			col <- data_to_display[[i]]
+  			if (is.character(col)) {
+  				num_col <- suppressWarnings(as.numeric(col))
+  				if (sum(is.na(num_col)) == sum(is.na(col))) {
+  					data_to_display[[i]] <- num_col
+  				}
+  			}
+  		}
+  		DT::datatable(
+  			data_to_display,
+  			options = list(
+  				pageLength = 10,
+  				scrollX = TRUE,
+  				dom = 'Bfrtip',
+  				buttons = c('copy', 'csv', 'excel')
+  			),
+  			class = 'display compact',
+  			rownames = FALSE
+  		)
+  	})
+
+  	shiny::showModal(shiny::modalDialog(
+  		title = "Database Diagnostics Results",
+  		size = "l",
+  		displayContent,
+  		easyClose = TRUE,
+  		footer = shiny::tagList(
+  			shiny::modalButton("Close"),
+  			shiny::downloadButton("downloadPDF", "Download PDF Report"),
+  			shiny::downloadButton("downloadCSV", "Download raw CSV")
+  		),
+  		shiny::tags$head(shiny::tags$style(".modal-dialog { width: 90%; max-width: 1300px; }"))
+  	))
+  })
+
   shiny::observeEvent(input$addNote, {
     if (is.null(input$noteText) || trimws(input$noteText) == "") {
       shiny::showNotification("Please enter a note", type = "error", duration = 2)
@@ -1989,6 +2270,7 @@ server <- function(input, output, session, connectionDetails, aresLink, resultsD
       }, ignoreInit = TRUE, once = TRUE)
     })
   }, ignoreInit = TRUE)
+
 
   observeEvent(input$runAnalysis, {
     analyses <- analysesList()
@@ -2241,106 +2523,7 @@ server <- function(input, output, session, connectionDetails, aresLink, resultsD
         shiny::tags$head(shiny::tags$style(".modal-dialog { width: 90%; max-width: 1300px; }"))
       ))
 
-      output$downloadPDF <- shiny::downloadHandler(
-        filename = function() {
-          "db_diagnostics_results.pdf"
-        },
-        content = function(file) {
-          # shiny::showModal(shiny::modalDialog(
-          #   title = "Generating PDF Report",
-          #   "Creating PDF report... Please wait.",
-          #   footer = NULL
-          # ))
 
-          tryCatch({
-            userNotesForPdf <- list()
-            for (analysis in globalSettings) {
-              if (!is.null(analysis$notes) && length(analysis$notes) > 0) {
-                for (note in analysis$notes) {
-                  userNotesForPdf[[length(userNotesForPdf) + 1]] <- list(
-                    analysisId = as.numeric(analysis$analysisId),
-                    analysisName = analysis$analysisName,
-                    text = note$text
-                  )
-                }
-              }
-            }
-            if (length(userNotesForPdf) == 0) userNotesForPdf <- NULL
-
-            analysisSettingsForPdf <- lapply(globalSettings, function(analysis) {
-              genderIds <- analysis$genderIds
-              if (length(genderIds) == 0) genderIds <- c(8507, 8532)
-
-              list(
-                analysisId = as.numeric(analysis$analysisId),
-                analysisName = analysis$analysisName,
-                minAge = analysis$minAge,
-                maxAge = analysis$maxAge,
-                genderConceptIds = genderIds,
-                raceConceptIds = parseNumericList(analysis$raceIds),
-                ethnicityConceptIds = parseNumericList(analysis$ethnicityIds),
-                studyStartDate = if (analysis$studyStartDate != "") as.numeric(analysis$studyStartDate) else NULL,
-                studyEndDate = if (analysis$studyEndDate != "") as.numeric(analysis$studyEndDate) else NULL,
-                requiredDurationDays = analysis$followUpDays,
-                requiredDomains = if (length(analysis$requiredDomains) > 0) analysis$requiredDomains else c("condition", "drug"),
-                desiredDomains = if (length(analysis$desiredDomains) > 0) analysis$desiredDomains else NULL,
-                requiredVisits = if (length(analysis$requiredVisits) > 0) analysis$requiredVisits else NULL,
-                desiredVisits = if (length(analysis$desiredVisits) > 0) analysis$desiredVisits else NULL,
-                targetName = if (analysis$targetName != "") analysis$targetName else "target",
-                targetConceptIds = parseNumericList(analysis$targetConcepts),
-                comparatorName = if (analysis$comparatorName != "") analysis$comparatorName else NULL,
-                comparatorConceptIds = parseNumericList(analysis$comparatorConcepts),
-                indicationName = if (analysis$indicationName != "") analysis$indicationName else NULL,
-                indicationConceptIds = parseNumericList(analysis$indicationConcepts),
-                outcomeName = if (analysis$outcomeName != "") analysis$outcomeName else NULL,
-                outcomeConceptIds = parseNumericList(analysis$outcomeConcepts),
-                targetUseDrugEra = analysis$targetUseDrugEra,
-                comparatorUseDrugEra = analysis$comparatorUseDrugEra
-              )
-            })
-
-            DbDiagnostics::createPdfReport(
-              results = globalResults,
-              file = file,
-              reportName = reportName(),
-              userNotes = userNotesForPdf,
-              analysisSettings = analysisSettingsForPdf
-            )
-          }, error = function(e) {
-            shiny::showNotification(
-              paste("PDF generation failed:", e$message),
-              type = "error",
-              duration = 10
-            )
-          })
-        	session$sendCustomMessage("downloadComplete", list(id = "downloadPDF"))
-        },
-        contentType = "application/pdf"
-      )
-
-      output$downloadCSV <- shiny::downloadHandler(
-        filename = function() {
-          "db_diagnostics_results.csv"
-        },
-        content = function(file) {
-          # shiny::showModal(shiny::modalDialog(
-          #   title = "Generating CSV Export",
-          #   "Creating CSV file... Please wait.",
-          #   footer = NULL
-          # ))
-          tryCatch({
-            utils::write.csv(globalResults, file, row.names = FALSE)
-          }, error = function(e) {
-            shiny::showNotification(
-              paste("CSV export failed:", e$message),
-              type = "error",
-              duration = 10
-            )
-          })
-        	session$sendCustomMessage("downloadComplete", list(id = "downloadCSV"))
-        },
-        contentType = "text/csv"
-      )
 
     }, error = function(e) {
       shiny::showModal(shiny::modalDialog(
@@ -2352,6 +2535,7 @@ server <- function(input, output, session, connectionDetails, aresLink, resultsD
     })
 
   })
+
 }
 
 #' @export
