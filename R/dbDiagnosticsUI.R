@@ -921,7 +921,29 @@ align-items: center;
   }
 }
 
+#downloadPDF.generating,
+#downloadCSV.generating {
+  pointer-events: none;
+  opacity: 0.7;
+  position: relative;
+  border: 2px solid transparent;
+  background-image: linear-gradient(#fff, #fff), linear-gradient(90deg, #0066cc, #00ccff, #0066cc);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  animation: border-spin 1.5s linear infinite;
+}
+
+@keyframes border-spin {
+  0% { background-image: linear-gradient(#fff, #fff), linear-gradient(0deg, #0066cc, #00ccff, #0066cc); }
+  25% { background-image: linear-gradient(#fff, #fff), linear-gradient(90deg, #0066cc, #00ccff, #0066cc); }
+  50% { background-image: linear-gradient(#fff, #fff), linear-gradient(180deg, #0066cc, #00ccff, #0066cc); }
+  75% { background-image: linear-gradient(#fff, #fff), linear-gradient(270deg, #0066cc, #00ccff, #0066cc); }
+  100% { background-image: linear-gradient(#fff, #fff), linear-gradient(360deg, #0066cc, #00ccff, #0066cc); }
+}
+
     ")),
+
+
 
       # For tooltip windows positioning
       shiny::tags$script(shiny::HTML("
@@ -952,6 +974,14 @@ $(document).ready(function() {
       })
       .addClass('show');
   });
+
+  $(document).on('click', '#downloadPDF, #downloadCSV', function() {
+  $(this).addClass('generating');
+});
+
+Shiny.addCustomMessageHandler('downloadComplete', function(msg) {
+  $('#' + msg.id).removeClass('generating');
+});
 
 
 
@@ -2216,11 +2246,11 @@ server <- function(input, output, session, connectionDetails, aresLink, resultsD
           "db_diagnostics_results.pdf"
         },
         content = function(file) {
-          shiny::showModal(shiny::modalDialog(
-            title = "Generating PDF Report",
-            "Creating PDF report... Please wait.",
-            footer = NULL
-          ))
+          # shiny::showModal(shiny::modalDialog(
+          #   title = "Generating PDF Report",
+          #   "Creating PDF report... Please wait.",
+          #   footer = NULL
+          # ))
 
           tryCatch({
             userNotesForPdf <- list()
@@ -2283,6 +2313,7 @@ server <- function(input, output, session, connectionDetails, aresLink, resultsD
               duration = 10
             )
           })
+        	session$sendCustomMessage("downloadComplete", list(id = "downloadPDF"))
         },
         contentType = "application/pdf"
       )
@@ -2292,11 +2323,11 @@ server <- function(input, output, session, connectionDetails, aresLink, resultsD
           "db_diagnostics_results.csv"
         },
         content = function(file) {
-          shiny::showModal(shiny::modalDialog(
-            title = "Generating CSV Export",
-            "Creating CSV file... Please wait.",
-            footer = NULL
-          ))
+          # shiny::showModal(shiny::modalDialog(
+          #   title = "Generating CSV Export",
+          #   "Creating CSV file... Please wait.",
+          #   footer = NULL
+          # ))
           tryCatch({
             utils::write.csv(globalResults, file, row.names = FALSE)
           }, error = function(e) {
@@ -2306,6 +2337,7 @@ server <- function(input, output, session, connectionDetails, aresLink, resultsD
               duration = 10
             )
           })
+        	session$sendCustomMessage("downloadComplete", list(id = "downloadCSV"))
         },
         contentType = "text/csv"
       )
