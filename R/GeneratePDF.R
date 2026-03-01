@@ -534,21 +534,33 @@ if (!is.null(results) && is.data.frame(results) && nrow(results) > 0 && "analysi
 
                   if (length(columnsWithData) > 0) {
                     # Split into chunks of max 6 columns per table
-                    maxCols <- 6
+                    maxCols <- 5
                     chunks <- split(columnsWithData, ceiling(seq_along(columnsWithData) / maxCols))
 
                     for (chunkIndex in seq_along(chunks)) {
                       chunk <- chunks[[chunkIndex]]
                       numCols <- length(chunk)
 
-                      colSpec <- paste0("|l|", paste(rep("c|", numCols), collapse = ""))
+
+                      if (chunkIndex == 1) {
+  						colSpec <- paste0("|l|r|", paste(rep("c|", numCols), collapse = ""))
+						} else {
+  									colSpec <- paste0("|l|", paste(rep("c|", numCols), collapse = ""))
+								}
 
                       cat("\\\\begin{table}[H]\\n")
                       cat("\\\\centering\\n")
                       cat("\\\\begin{tabular}{", colSpec, "}\\n", sep = "")
                       cat("\\\\hline\\n")
 
-                      headerParts <- c("\\\\textbf{Database}")
+
+
+                      if (chunkIndex == 1) {
+						  headerParts <- c("\\\\textbf{Database}", "\\\\textbf{Count}")
+						} else {
+						  headerParts <- c("\\\\textbf{Database}")
+						}
+
                       for (col in chunk) {
                         headerParts <- c(headerParts, paste0("\\\\textbf{", col$label, "}"))
                       }
@@ -560,6 +572,17 @@ if (!is.null(results) && is.data.frame(results) && nrow(results) > 0 && "analysi
                                                        outcomeAllStats$databaseId == db, ]
                         dbEscaped <- gsub("_", "\\\\\\\\_", db)
                         cat(dbEscaped, " & ")
+
+                        # Add count only in first chunk
+                        if (chunkIndex == 1) {
+                          countVal <- "N/A"
+                          countRow <- dbResults[!is.na(dbResults$statistic) &
+                                                 dbResults$statistic == "propWithRequiredOutcomeConcepts", ]
+                          if (nrow(countRow) > 0 && "value" %in% names(countRow) && !is.na(countRow$value[1])) {
+                            countVal <- format(round(countRow$value[1]), big.mark = ",")
+                          }
+                          cat(countVal, " & ")
+                        }
 
                         for (j in seq_along(chunk)) {
                           col <- chunk[[j]]
