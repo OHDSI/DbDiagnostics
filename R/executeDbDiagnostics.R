@@ -56,7 +56,7 @@ executeDbDiagnostics <- function(connectionDetails,
 														results_table_name = resultsTableName)
 	tsql <- SqlRender::translate(rsql, connectionDetails$dbms)
 
-	dbNames <- DatabaseConnector::querySql(conn, tsql)
+	dbNames <- DatabaseConnector::querySql(conn, tsql, snakeCaseToCamelCase = TRUE)
 
 	# Get the most recent release for each database -------------------------------
 	# message("Get most recent database release")
@@ -119,7 +119,7 @@ executeDbDiagnostics <- function(connectionDetails,
 			)
 
 			# Get the dbProfile information for the database
-			dbProfile <- DatabaseConnector::querySql(conn, tsql, snakeCaseToCamelCase)
+			dbProfile <- DatabaseConnector::querySql(conn, tsql, snakeCaseToCamelCase = TRUE)
 
 			# Set up the specs for this study/db combination. This is done after getting the dbProfile information because NULL
 			# values in the specs get values from the database in order to evaluate them
@@ -605,8 +605,8 @@ executeDbDiagnostics <- function(connectionDetails,
 				rename("statistic" = "V1",
 							 "value" = "numMeasRecordsWithValues",
 							 "proportion" = "propMeasRecordsWithValues") %>%
-				mutate(spec = case_when(desiredObservation == 1 ~ 'Measurements with values desired',
-																desiredObservation == 0 ~ 'Measurements with values not desired'),
+				mutate(spec = case_when(desiredMeasurementValues  == 1 ~ 'Measurements with values desired',
+																desiredMeasurementValues  == 0 ~ 'Measurements with values not desired'),
 							 evaluateThreshold = desiredMeasurementValues)
 
 			finalOutput <- rbind(finalOutput, measRecordsWithValues)
@@ -749,7 +749,6 @@ executeDbDiagnostics <- function(connectionDetails,
 						mutate(spec = comparator,
 									 evaluateThreshold = 2)
 				}
-
 			}
 
 			personOutput <- rbind(personOutput, personsWithRequiredComparatorConcepts)
@@ -775,8 +774,8 @@ executeDbDiagnostics <- function(connectionDetails,
 						mutate(spec = indication,
 									 evaluateThreshold = 2)
 				}
-				personOutput <- rbind(personOutput, personsWithRequiredIndicationConcepts)
 			}
+			personOutput <- rbind(personOutput, personsWithRequiredIndicationConcepts)
 
 
 			if(is.null(studySpecs$outcomeConceptIds)){
@@ -795,13 +794,13 @@ executeDbDiagnostics <- function(connectionDetails,
 
 				if(nrow(personsWithRequiredOutcomeConcepts) == 0){
 					personsWithRequiredOutcomeConcepts[1,]$statistic <- 'propWithRequiredOutcomeConcepts'
-					personsWithRequiredOutcomeConcepts[1,]$COUNT_VALUE <- 0
+					personsWithRequiredOutcomeConcepts[1,]$countValue <- 0
 					personsWithRequiredOutcomeConcepts <- personsWithRequiredOutcomeConcepts %>%
 						mutate(spec = outcome,
 									 evaluateThreshold = 2)
 				}
-				personOutput <- rbind(personOutput, personsWithRequiredOutcomeConcepts)
 			}
+			personOutput <- rbind(personOutput, personsWithRequiredOutcomeConcepts)
 
 
 
