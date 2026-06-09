@@ -90,8 +90,8 @@ executeDbDiagnostics <- function(connectionDetails,
     checkmate::assertIntegerish(studySpecs$genderConceptIds, null.ok = FALSE)
     checkmate::assertIntegerish(studySpecs$raceConceptIds, null.ok = TRUE)
     checkmate::assertIntegerish(studySpecs$ethnicityConceptIds, null.ok = TRUE)
-    checkmate::assertString(studySpecs$studyStartDate, null.ok = FALSE, min.chars = 6, max.chars = 6)
-    checkmate::assertString(studySpecs$studyEndDate, null.ok = FALSE, min.chars = 6, max.chars = 6)
+    checkmate::assertString(studySpecs$studyStartDate, null.ok = TRUE, min.chars = 6, max.chars = 6)
+    checkmate::assertString(studySpecs$studyEndDate, null.ok = TRUE, min.chars = 6, max.chars = 6)
     checkmate::assertIntegerish(studySpecs$requiredDurationDays, null.ok = FALSE)
 
     allowed_visits <- c("IP", "OP", "ER")
