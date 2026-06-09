@@ -2,41 +2,71 @@ SELECT
     release_key,
     analysis_id,
     stratum_1,
-    count_value
+    count_value,
+    visit_ancestor_concept_id 
 FROM @results_database_schema.@results_table_name
 WHERE release_key = '@databaseName'
     AND analysis_id IN (1800, 400, 600, 700, 800, 2100)
-    AND CAST(stratum_1 AS INT) IN @study_concept_ids
+    AND CAST(stratum_1 AS INT) IN (@study_concept_ids)
 
-UNION
+UNION ALL
 
 SELECT 
     release_key,
     analysis_id,
     stratum_1,
-    count_value
+    count_value,
+    visit_ancestor_concept_id
 FROM @results_database_schema.@results_table_name
 WHERE release_key = '@databaseName'
     AND analysis_id IN (@base_analysis_ids)
 
-UNION
+UNION ALL
 
-SELECT r
+SELECT 
     release_key,
     analysis_id,
-    MAX(stratum_1) AS stratum_1,
-    count_value
-FROM @results_database_schema.@results_table_name
-WHERE release_key = '@databaseName'
-    AND analysis_id IN (101, 111, 112)
+    stratum_1,
+    count_value,
+    visit_ancestor_concept_id
+FROM (
+    SELECT  
+        release_key,
+        analysis_id,
+        stratum_1,
+        count_value,
+        visit_ancestor_concept_id
+        ROW_NUMBER() OVER (
+            PARTITION BY release_key, analysis_id
+            ORDER BY count_value DESC
+        ) as row_number
+    FROM @results_database_schema.@results_table_name
+    WHERE release_key = '@databaseName'
+        AND analysis_id IN (101, 111, 112)
+) tmp
+where row_number = 1
 
-UNION
+UNION ALL
 
-SELECT r
+SELECT 
     release_key,
     analysis_id,
-    MIN(stratum_1) AS stratum_1,
-    count_value
-FROM @results_database_schema.@results_table_name
-WHERE release_key = '@databaseName'
-    AND analysis_id IN (101, 111, 112)
+    stratum_1,
+    count_value,
+    visit_ancestor_concept_id
+FROM (
+    SELECT  
+        release_key,
+        analysis_id,
+        stratum_1,
+        count_value,
+        visit_ancestor_concept_id
+        ROW_NUMBER() OVER (
+            PARTITION BY release_key, analysis_id
+            ORDER BY count_value ASC
+        ) as row_number
+    FROM @results_database_schema.@results_table_name
+    WHERE release_key = '@databaseName'
+        AND analysis_id IN (101, 111, 112)
+) tmp
+where row_number = 1
