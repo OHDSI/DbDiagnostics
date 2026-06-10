@@ -30,25 +30,24 @@
 #' @export
 
 executeDbDiagnostics <- function(connectionDetails,
-																 resultsDatabaseSchema,
-																 resultsTableName,
-																 outputFolder = getwd(),
-																 dataDiagnosticsSettingsList) {
+                                 resultsDatabaseSchema,
+                                 resultsTableName,
+                                 outputFolder = getwd(),
+                                 dataDiagnosticsSettingsList) {
+  # Set up outputFolder
 
-	# Set up outputFolder
+  if (!dir.exists(outputFolder)) {
+    dir.create(path = outputFolder, recursive = TRUE)
+  }
 
-	if (!dir.exists(outputFolder)) {
-		dir.create(path = outputFolder, recursive = TRUE)
-	}
+  # Connect to the results schema to get list of databases included in results table ---------------
+  options(scipen = 999)
 
-	# Connect to the results schema to get list of databases included in results table ---------------
-	options(scipen = 999)
+  conn <- DatabaseConnector::connect(connectionDetails)
+  on.exit(DatabaseConnector::disconnect(conn))
 
-	conn <- DatabaseConnector::connect(connectionDetails)
-	on.exit(DatabaseConnector::disconnect(conn))
-
-	#TODO check the name of the column in the results schema -----------
-	sql <- "SELECT DISTINCT CDM_SOURCE_NAME, RELEASE_KEY
+  # TODO check the name of the column in the results schema -----------
+  sql <- "SELECT DISTINCT CDM_SOURCE_NAME, RELEASE_KEY
         FROM @results_database_schema.@results_table_name"
 
 	rsql <- SqlRender::render(sql = sql,
