@@ -46,11 +46,13 @@ createDataDiagnosticsSummary <- function(dbDiagnosticsResults) {
 							by = c("analysisId"="analysisId", "analysisName"="analysisName", "databaseId"="databaseId")) %>%
 		relocate(totalFails, minSampleSize, maxSampleSize, .before = propWithCalendarTime)
 
-	suppressMessages(attach(dbDiagnosticsSummary))
-
-	dbDiagnosticsSummarySort <- dbDiagnosticsSummary[order(analysisId, totalFails, -minSampleSize),]
-
-	detach(dbDiagnosticsSummary)
+	dbDiagnosticsSummarySort <- dbDiagnosticsSummary %>%
+		arrange(
+			analysisId,
+			totalFails,
+			desc(is.na(minSampleSize)),  # NA = TRUE = 1, so they go last
+			desc(minSampleSize)
+		)
 
 	return(dbDiagnosticsSummarySort)
 }

@@ -21,13 +21,17 @@ createDataDiagnosticsSettings(
   desiredVisits = NULL,
   targetName = "target",
   targetConceptIds = NULL,
+  targetUseDrugEra = F,
   comparatorName = NULL,
   comparatorConceptIds = NULL,
+  comparatorUseDrugEra = F,
   indicationName = NULL,
   indicationConceptIds = NULL,
+  indicationUseDrugEra = F,
   includeIndicationInCalc = F,
   outcomeName = NULL,
-  outcomeConceptIds = NULL
+  outcomeConceptIds = NULL,
+  outcomeUseDrugEra = F
 )
 }
 \arguments{
@@ -73,19 +77,27 @@ Meaning you need the dataset to have these data but each person is not required 
 
 \item{targetConceptIds}{A vector containing the required target concepts.}
 
+\item{targetUseDrugEra}{Should the DRUG_ERA table be used for identifying targets? Set to T only if targetConceptIds param is a list of RxNorm ingredients.}
+
 \item{comparatorName}{The name of the comparator of interest.}
 
 \item{comparatorConceptIds}{A vector containing the required comparator concepts.}
 
+\item{comparatorUseDrugEra}{Should the DRUG_ERA table be used for identifying comparators? Set to T only if comparatorConceptIds param is a list of RxNorm ingredients.}
+
 \item{indicationName}{The name of the indication of interest.}
 
 \item{indicationConceptIds}{A vector containing the required indication concepts.}
+
+\item{indicationUseDrugEra}{Should the DRUG_ERA table be used for identifying the indication? Set to T only if indicationConceptIds param is a list of RxNorm ingredients.}
 
 \item{includeIndicationInCalc}{A T/F object indicating whether the proportion of people with the indication concepts should be included in the estimated sample size calculation. Default is FALSE.}
 
 \item{outcomeName}{The name of the outcome of interest.}
 
 \item{outcomeConceptIds}{A vector containing the required outcome concepts.}
+
+\item{outcomeUseDrugEra}{Should the DRUG_ERA table be used for identifying the outcome? Set to T only if outcomeConceptIds param is a list of RxNorm ingredients.}
 }
 \description{
 createDataDiagnosticsSettings

@@ -144,7 +144,7 @@ section.footnotes::before {
 <div class="frontmatter">
 <div class="title"><h1>How to Run and Upload dbProfile Results</h1></div>
 <div class="author"><h2></h2></div>
-<div class="date"><h3>2024-07-22</h3></div>
+<div class="date"><h3>2025-03-21</h3></div>
 </div>
 <div class="body">
 <p>This document will take you through the steps on how to run the database profile functions and upload them to a location to be reference when running database diagnostics.</p>
@@ -222,71 +222,76 @@ DbDiagnostics::executeDbProfile(connectionDetails = connectionDetails,
 </code></pre>
 <p>Upon completion, the summary statistics results <code>*.csv</code> file, the CDM_SOURCE table, metadata.csv and the data quality dashboard JSON file (if specified) will be located in a zip file in the output location you set as part of the execute function.</p>
 <h2 id="upload-dbprofile-results-to-a-local-schema">Upload dbProfile results to a local schema</h2>
-<p>Be sure to unzip the dbProfile results that are generated in the above. Then, set the location where you unzipped the results as the parameter <code>resultsLocation</code>. Any parameter below denoted as <cdmSourceName> should be replaced with the database key that was generated when <code>executeDbProfile</code> was run. You can find this in the file names.</p>
+<p>Be sure to unzip the dbProfile results that are generated in the above. Then, set the location where you unzipped the results as the parameter <code>resultsLocation</code>.</p>
 <pre><code class="language-r">
-# set the location of the results that were generated from executeDbProfile
-resultsLocation &lt;- &quot;&quot;
+# set the location of the unzipped results that were generated from executeDbProfile
+resultsLocation &lt;- &quot;/Users/clairblacketer/Documents/Output/DbProfiles/Synthea_v54_OHDSI_Example/20220329/DbProfileResults_Synthea_v54_OHDSI_Example_20220329_20240718083009&quot;
 
 # set a parameter detailing if the DQD was run
 addDQD &lt;- FALSE
 
-# add dbId and prep output files for writing into the results schema
-db_profile_results &lt;- read.csv(paste0(resultsLocation,&quot;/db_profile_results.csv&quot;), stringsAsFactors = F, colClasses = c(&quot;STRATUM_1&quot;=&quot;character&quot;))
+# set the schema name in your database where you want the files uploaded 
+databaseSchema &lt;- &quot;db_profile&quot;
 
-# make sure the columns are read in as characters to facilitate dbDiagnostics execution
-db_profile_results$STRATUM_1 &lt;- as.character(db_profile_results$STRATUM_1)
-db_profile_results$STRATUM_2 &lt;- as.character(db_profile_results$STRATUM_2)
-db_profile_results$STRATUM_3 &lt;- as.character(db_profile_results$STRATUM_3)
-db_profile_results$STRATUM_4 &lt;- as.character(db_profile_results$STRATUM_4)
-db_profile_results$STRATUM_5 &lt;- as.character(db_profile_results$STRATUM_5)
+# Read in the results and make sure the columns are characters to facilitate dbDiagnostics execution
+db_profile_results &lt;- read.csv(paste0(resultsLocation,&quot;/db_profile_results.csv&quot;), stringsAsFactors = F, colClasses = c(&quot;stratum_1&quot;=&quot;character&quot;,
+                                                                                                                       &quot;stratum_2&quot;=&quot;character&quot;,
+                                                                                                                       &quot;stratum_3&quot;=&quot;character&quot;,
+                                                                                                                       &quot;stratum_4&quot;=&quot;character&quot;,
+                                                                                                                       &quot;stratum_5&quot;=&quot;character&quot;))
 
+db_profile_results_dist &lt;- read.csv(paste0(resultsLocation,&quot;/db_profile_results_dist.csv&quot;), stringsAsFactors = F, colClasses = c(&quot;stratum_1&quot;=&quot;character&quot;,
+                                                                                                                                 &quot;stratum_2&quot;=&quot;character&quot;,
+                                                                                                                                 &quot;stratum_3&quot;=&quot;character&quot;,
+                                                                                                                                 &quot;stratum_4&quot;=&quot;character&quot;,
+                                                                                                                                 &quot;stratum_5&quot;=&quot;character&quot;))
+                                                                                                                                 
 # read in the metadata
-
-db_metadata &lt;- read.csv(paste0(resultsLocation,&quot;/&lt;cdmSourceName&gt;_metadata.csv&quot;), stringsAsFactors = F)
-
+metadataFile &lt;- list.files(path = resultsLocation, pattern = &quot;\\metadata.csv$&quot;)
+db_metadata &lt;- read.csv(paste0(resultsLocation,&quot;/&quot;,metadataFile), stringsAsFactors = F, colClasses = c(&quot;dataDoiType&quot;=&quot;character&quot;,
+                                                                                                       &quot;dataShortName&quot;=&quot;character&quot;))
 # read in the cdm_source table
-
-db_cdm_source &lt;- read.csv(paste0(resultsLocation,&quot;/&lt;cdmSourceName&gt;_cdm_source.csv&quot;), stringsAsFactors = F)
+cdmSourceFile &lt;- list.files(path = resultsLocation, pattern = &quot;\\cdm_source.csv$&quot;)
+db_cdm_source &lt;- read.csv(paste0(resultsLocation,&quot;/&quot;,cdmSourceFile), stringsAsFactors = F)
 
 # determine which tables should be uploaded based on if the DQD was included
 if (addDQD) {
-
-	dqdJsonDf &lt;- jsonlite::fromJSON(
-		paste0(outputFolder,&quot;/&quot;,dbId,&quot;_DbProfile.json&quot;),
-		simplifyDataFrame = TRUE)
-
-	dqd_overview     &lt;- as.data.frame(dqdJsonDf$Overview)
-	dqd_checkresults &lt;- as.data.frame(dqdJsonDf$CheckResults)
-	
-	dqd_checkresults$THRESHOLD_VALUE &lt;- as.character(dqd_checkresults$THRESHOLD_VALUE)
-
-	tablesToUpload &lt;- c(&quot;db_profile_results&quot;,&quot;db_metadata&quot;,&quot;db_cdm_source&quot;,&quot;dqd_checkresults&quot;,&quot;dqd_overview&quot;)
+  
+  dqdJsonDf &lt;- jsonlite::fromJSON(
+    paste0(outputFolder,&quot;/&quot;,dbId,&quot;_DbProfile.json&quot;),
+    simplifyDataFrame = TRUE)
+  
+  dqd_overview     &lt;- as.data.frame(dqdJsonDf$Overview)
+  dqd_checkresults &lt;- as.data.frame(dqdJsonDf$CheckResults)
+  
+  dqd_checkresults$THRESHOLD_VALUE &lt;- as.character(dqd_checkresults$THRESHOLD_VALUE)
+  
+  tablesToUpload &lt;- c(&quot;db_profile_results&quot;,&quot;db_profile_results_dist&quot;,&quot;db_metadata&quot;,&quot;db_cdm_source&quot;,&quot;dqd_checkresults&quot;,&quot;dqd_overview&quot;)
 } else {
-	tablesToUpload &lt;- c(&quot;db_profile_results&quot;,&quot;db_metadata&quot;,&quot;db_cdm_source&quot;)
+  tablesToUpload &lt;- c(&quot;db_profile_results&quot;,&quot;db_profile_results_dist&quot;,&quot;db_metadata&quot;,&quot;db_cdm_source&quot;)
 }
 
 # create the connectionDetails for the database where the results should be uploaded. It is likely this will be different than the database where the dbProfile was run
-
 connectionDetails &lt;- DatabaseConnector::createConnectionDetails(
-	dbms = &quot;postgresql&quot;,
-	server = &quot;localhost/synthea&quot;,
-	user = &quot;postgres&quot;,
-	password = Sys.getenv(&quot;POSTGRES_PW&quot;)
+  dbms = &quot;postgresql&quot;,
+  server = &quot;localhost/synthea&quot;,
+  user = &quot;postgres&quot;,
+  password = Sys.getenv(&quot;POSTGRES_PW&quot;)
 )
 
 conn &lt;- DatabaseConnector::connect(connectionDetails)
 
 # When the schema is empty, use createTable = TRUE
 for (tableName in tablesToUpload) {
-	DatabaseConnector::insertTable(
-		connection        = conn,
-		tableName         = tableName,
-		databaseSchema    = &quot;cdm_54_results&quot;,
-		data              = eval(parse(text=tableName)),
-		dropTableIfExists = FALSE,
-		createTable       = TRUE,
-		tempTable         = FALSE,
-		progressBar       = TRUE)
+  DatabaseConnector::insertTable(
+    connection        = conn,
+    tableName         = tableName,
+    databaseSchema    = databaseSchema,
+    data              = eval(parse(text=tableName)),
+    dropTableIfExists = TRUE,
+    createTable       = TRUE,
+    tempTable         = FALSE,
+    progressBar       = TRUE)
 }
 
 DatabaseConnector::disconnect(conn)

@@ -44,13 +44,17 @@
 #'                                  Meaning you need the dataset to have these data but each person is not required to have a record. This is most often used to identify the presence of outcomes of interest. Valid values are IP,OP,ER.
 #' @param targetName			          The name of the target of interest.
 #' @param targetConceptIds          A vector containing the required target concepts.
+#' @param targetUseDrugEra					Should the DRUG_ERA table be used for identifying targets? Set to T only if targetConceptIds param is a list of RxNorm ingredients.
 #' @param comparatorName            The name of the comparator of interest.
 #' @param comparatorConceptIds      A vector containing the required comparator concepts.
+#' @param comparatorUseDrugEra      Should the DRUG_ERA table be used for identifying comparators? Set to T only if comparatorConceptIds param is a list of RxNorm ingredients.
 #' @param indicationName						The name of the indication of interest.
 #' @param indicationConceptIds			A vector containing the required indication concepts.
+#' @param indicationUseDrugEra      Should the DRUG_ERA table be used for identifying the indication? Set to T only if indicationConceptIds param is a list of RxNorm ingredients.
 #' @param includeIndicationInCalc	  A T/F object indicating whether the proportion of people with the indication concepts should be included in the estimated sample size calculation. Default is FALSE.
 #' @param outcomeName               The name of the outcome of interest.
 #' @param outcomeConceptIds				  A vector containing the required outcome concepts.
+#' @param outcomeUseDrugEra         Should the DRUG_ERA table be used for identifying the outcome? Set to T only if outcomeConceptIds param is a list of RxNorm ingredients.
 #'
 #' @export
 
@@ -70,13 +74,17 @@ createDataDiagnosticsSettings <- function(analysisId,
 																					desiredVisits = NULL,
 																					targetName = "target",
 																					targetConceptIds = NULL,
+																					targetUseDrugEra = F,
 																					comparatorName = NULL,
 																					comparatorConceptIds = NULL,
+																					comparatorUseDrugEra = F,
 																					indicationName = NULL,
 																					indicationConceptIds = NULL,
+																					indicationUseDrugEra = F,
 																					includeIndicationInCalc = F,
 																					outcomeName = NULL,
-																					outcomeConceptIds = NULL) {
+																					outcomeConceptIds = NULL,
+																					outcomeUseDrugEra = F) {
 
 	analysis <- list()
 	for (name in names(formals(createDataDiagnosticsSettings))) {

@@ -1,180 +1,95 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-
-<title>1. Answer the questions that pop-up to the user as <code>executeDbProfile</code> is running</title>
-
-<script type="text/javascript">
-window.onload = function() {
-  var imgs = document.getElementsByTagName('img'), i, img;
-  for (i = 0; i < imgs.length; i++) {
-    img = imgs[i];
-    // center an image if it is the only element of its parent
-    if (img.parentElement.childElementCount === 1)
-      img.parentElement.style.textAlign = 'center';
-  }
-};
-</script>
-
-
-
-
-
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Metadata</title>
 <style type="text/css">
-body, td {
-   font-family: sans-serif;
-   background-color: white;
-   font-size: 13px;
-}
-
 body {
+  font-family: sans-serif;
   max-width: 800px;
   margin: auto;
   padding: 1em;
-  line-height: 20px;
+  line-height: 1.5;
+  box-sizing: border-box;
 }
-
-tt, code, pre {
-   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+body, .footnotes, code { font-size: .9em; }
+li li { font-size: .95em; }
+*, *:before, *:after {
+  box-sizing: inherit;
 }
-
-h1 {
-   font-size:2.2em;
-}
-
-h2 {
-   font-size:1.8em;
-}
-
-h3 {
-   font-size:1.4em;
-}
-
-h4 {
-   font-size:1.0em;
-}
-
-h5 {
-   font-size:0.9em;
-}
-
-h6 {
-   font-size:0.8em;
-}
-
-a:visited {
-   color: rgb(50%, 0%, 50%);
-}
-
-pre, img {
-  max-width: 100%;
-}
-pre {
-  overflow-x: auto;
+pre, img { max-width: 100%; }
+pre, pre:hover {
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 pre code {
-   display: block; padding: 0.5em;
+  display: block;
+  overflow-x: auto;
 }
-
-code {
-  font-size: 92%;
-  border: 1px solid #ccc;
+code { font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace; }
+:not(pre) > code, code[class] { background-color: #F8F8F8; }
+code.language-undefined, pre > code:not([class]) {
+  background-color: inherit;
+  border: 1px solid #eee;
 }
-
-code[class] {
-  background-color: #F8F8F8;
+table {
+  margin: auto;
+  border-top: 1px solid #666;
 }
-
-table, td, th {
-  border: none;
-}
-
+table thead th { border-bottom: 1px solid #ddd; }
+th, td { padding: 5px; }
+thead, tfoot, tr:nth-child(even) { background: #eee; }
 blockquote {
-   color:#666666;
-   margin:0;
-   padding-left: 1em;
-   border-left: 0.5em #EEE solid;
+  color: #666;
+  margin: 0;
+  padding-left: 1em;
+  border-left: 0.5em solid #eee;
 }
-
-hr {
-   height: 0px;
-   border-bottom: none;
-   border-top-width: thin;
-   border-top-style: dotted;
-   border-top-color: #999999;
+hr, .footnotes::before { border: 1px dashed #ddd; }
+.frontmatter { text-align: center; }
+#TOC .numbered li { list-style: none; }
+#TOC .numbered { padding-left: 0; }
+#TOC .numbered ul { padding-left: 1em; }
+table, .body h2 { border-bottom: 1px solid #666; }
+.body .appendix, .appendix ~ h2 { border-bottom-style: dashed; }
+.footnote-ref a::before { content: "["; }
+.footnote-ref a::after { content: "]"; }
+section.footnotes::before {
+  content: "";
+  display: block;
+  max-width: 20em;
 }
 
 @media print {
-   * {
-      background: transparent !important;
-      color: black !important;
-      filter:none !important;
-      -ms-filter: none !important;
-   }
-
-   body {
-      font-size:12pt;
-      max-width:100%;
-   }
-
-   a, a:visited {
-      text-decoration: underline;
-   }
-
-   hr {
-      visibility: hidden;
-      page-break-before: always;
-   }
-
-   pre, blockquote {
-      padding-right: 1em;
-      page-break-inside: avoid;
-   }
-
-   tr, img {
-      page-break-inside: avoid;
-   }
-
-   img {
-      max-width: 100% !important;
-   }
-
-   @page :left {
-      margin: 15mm 20mm 15mm 10mm;
-   }
-
-   @page :right {
-      margin: 15mm 10mm 15mm 20mm;
-   }
-
-   p, h2, h3 {
-      orphans: 3; widows: 3;
-   }
-
-   h2, h3 {
-      page-break-after: avoid;
-   }
+  body {
+    font-size: 12pt;
+    max-width: 100%;
+  }
+  tr, img { page-break-inside: avoid; }
+}
+@media only screen and (min-width: 992px) {
+  pre { white-space: pre; }
 }
 </style>
-
-
-
 </head>
-
 <body>
+<div class="include-before">
+</div>
+<div class="frontmatter">
+<div class="title"><h1>Metadata</h1></div>
+<div class="author"><h2></h2></div>
+<div class="date"><h3>2025-03-21</h3></div>
+</div>
+<div class="body">
 <p>This document describes how metadata is compiled and reported when the <code>executeDbProfile</code> function is run. There are three ways to enter the necessary database metadata:</p>
-
 <ul>
 <li>By answering the questions that pop-up to the user as <code>executeDbProfile</code> is running</li>
 <li>By including a metadata csv file in the output folder</li>
 <li>By passing values to the metadata parameters when calling the <code>executeDbProfile</code> function</li>
 </ul>
-
-<h3>1. Answer the questions that pop-up to the user as <code>executeDbProfile</code> is running</h3>
-
-<p>If the user does not pass any values to the metadata parameters and if the metadata csv file is missing from the output folder, the function will ask the user the series of following questions. </p>
-
+<h3 id="1-answer-the-questions-that-pop-up-to-the-user-as-executedbprofile-is-running">1. Answer the questions that pop-up to the user as <code>executeDbProfile</code> is running</h3>
+<p>If the user does not pass any values to the metadata parameters and if the metadata csv file is missing from the output folder, the function will ask the user the series of following questions.</p>
 <ul>
 <li>What is the name of the site or institution that owns or licenses the data?</li>
 <li>Has your site contributed to an OHDSI study in the past?</li>
@@ -188,39 +103,24 @@ hr {
 <li>What types of data are present in your database?</li>
 <li>How often are the data refreshed?</li>
 </ul>
-
 <p>Once the questions are answered once for a database, the package will save a csv file with this information so the user does not need to answer them again. As long as the same <code>cdmSourceName</code> is used each time the <code>executeDbProfile</code> function is run, it will find the metadata file and include it in the output zip file.</p>
-
-<h3>2. Include a metadata csv file in the output folder</h3>
-
+<h3 id="2-include-a-metadata-csv-file-in-the-output-folder">2. Include a metadata csv file in the output folder</h3>
 <p>The function will create an folder in the specified output folder labelled with the the <code>cdmSourceName</code> parameter that is passed in. If there is a csv file in that location with the name <cdmSourceName>.metadata.csv with the proper structure, the function will not ask the user the pop-up questions and instead include the information in the csv file in the output zip file.</p>
-
-<h3>3. passing values to the metadata parameters when calling the <code>executeDbProfile</code> function</h3>
-
+<h3 id="3-passing-values-to-the-metadata-parameters-when-calling-the-executedbprofile-function">3. passing values to the metadata parameters when calling the <code>executeDbProfile</code> function</h3>
 <p>There are parameters in the function that allow you to pass in the metadata programmatically. These are listed below.</p>
-
 <p><strong>siteName</strong>: The name of the site or institution that owns or licenses the data.</p>
-
 <p><strong>siteOHDSIParticipation</strong>: Yes/No if the site contributed to an OHDSI study in the past</p>
-
 <p><strong>siteOHDSIRunPackage</strong>: Yes/No if site has someone who can run and/or debug an OHDSI study package</p>
-
 <p><strong>dataFullName</strong>: The full name of the database</p>
-
 <p><strong>dataShortName</strong>: The short name or nickname of the database</p>
-
 <p><strong>dataContactName</strong>: The <em>name</em> of the person who should be contacted in the event this database is identified as a good candidate for a study</p>
-
 <p><strong>dataContactemail</strong>: The <em>email address</em> of the person who should be contacted in the event this database is identified as a good candidate for a study</p>
-
-<p><strong>dataDoiType</strong>: The type of data object identifier (DOI) the database has. Options are &ldquo;DOI&rdquo;, &ldquo;CURIE&rdquo;, &ldquo;ARK&rdquo;, &ldquo;Other&rdquo;</p>
-
+<p><strong>dataDoiType</strong>: The type of data object identifier (DOI) the database has. Options are “DOI”, “CURIE”, “ARK”, “Other”</p>
 <p><strong>governanceTime</strong>: How long (in weeks) it typically takes to receive approval to run a study on this database</p>
-
-<p><strong>dataProvenance</strong>: The type(s) of data that are present in your database. Options are &ldquo;Electronic Health Records&rdquo;, &ldquo;Administrative Claims&rdquo;, &ldquo;Disease-specific Registry&rdquo;, &ldquo;Wearable or Sensor Data&rdquo;, &ldquo;Other&rdquo;</p>
-
+<p><strong>dataProvenance</strong>: The type(s) of data that are present in your database. Options are “Electronic Health Records”, “Administrative Claims”, “Disease-specific Registry”, “Wearable or Sensor Data”, “Other”</p>
 <p><strong>refreshTime</strong>: How often the data are refreshed</p>
-
+</div>
+<div class="include-after">
+</div>
 </body>
-
 </html>
