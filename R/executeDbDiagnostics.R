@@ -105,8 +105,10 @@ executeDbDiagnostics <- function(connectionDetails,
 
 		checkmate::assertString(studySpecs$targetName, null.ok = FALSE)
 		checkmate::assertIntegerish(studySpecs$targetConceptIds, null.ok = FALSE, min.len = 1)
+		checkmate::assertLogical(studySpecs$targetUseDrugEra, null.ok = FALSE, len = 1)
 		checkmate::assertString(studySpecs$comparatorName, null.ok = TRUE)
 		checkmate::assertIntegerish(studySpecs$comparatorConceptIds, null.ok = TRUE)
+		checkmate::assertLogical(studySpecs$comparatorUseDrugEra, null.ok = FALSE, len = 1)
 		checkmate::assertString(studySpecs$indicationName, null.ok = TRUE)
 		checkmate::assertIntegerish(studySpecs$indicationConceptIds, null.ok = TRUE)
 		checkmate::assertLogical(studySpecs$includeIndicationInCalc, null.ok = FALSE)
@@ -119,7 +121,7 @@ executeDbDiagnostics <- function(connectionDetails,
 
 	dbNum <- nrow(dbNames)
 
-	baseAnalysisIds <- c(1, 2, 3, 4, 5, 108, 200, 2004, 1801, 1814, 111, 101, 112)
+	baseAnalysisIds <- c(1, 2, 3, 4, 5, 108, 200, 2004, 1801, 1814, 111, 101, 112, 1800, 400, 600, 700, 800, 2100, 900)
 
 	studyConceptIds <- as.integer(unique(unlist(
 		lapply(dataDiagnosticsSettingsList, function(settings) {
@@ -402,6 +404,10 @@ executeDbDiagnostics <- function(connectionDetails,
 			} else {
 				requiredOutcomeConcepts <- NULL
 			}
+
+			conceptAnalysisIds <- c(1800, 400, 600, 700, 800, 2100)
+			targetAnalysisIds <- if (isTRUE(studySpecs$targetUseDrugEra)) 900 else conceptAnalysisIds
+			comparatorAnalysisIds <- if (isTRUE(studySpecs$comparatorUseDrugEra)) 900 else conceptAnalysisIds
 
 			# Get values for each criterion using Achilles analyses pulled in dbProfile
 
@@ -944,7 +950,7 @@ executeDbDiagnostics <- function(connectionDetails,
 			# Required Concepts ------
 
 			personsWithRequiredTargetConcepts <- dbProfile %>%
-				filter(analysisId %in% c(1800, 400, 600, 700, 800, 2100)) %>%
+				filter(analysisId %in% targetAnalysisIds) %>%
 				filter(stratum1 %in% requiredTargetConcepts) %>%
 				select(countValue) %>%
 				mutate(
@@ -975,7 +981,7 @@ executeDbDiagnostics <- function(connectionDetails,
 				)
 			} else {
 				personsWithRequiredComparatorConcepts <- dbProfile %>%
-					filter(analysisId %in% c(1800, 400, 600, 700, 800, 2100)) %>%
+					filter(analysisId %in% comparatorAnalysisIds) %>%
 					filter(stratum1 %in% requiredComparatorConcepts) %>%
 					select(countValue) %>%
 					mutate(
@@ -1006,7 +1012,7 @@ executeDbDiagnostics <- function(connectionDetails,
 				)
 			} else {
 				personsWithRequiredIndicationConcepts <- dbProfile %>%
-					filter(analysisId %in% c(1800, 400, 600, 700, 800, 2100)) %>%
+					filter(analysisId %in% conceptAnalysisIds) %>%
 					filter(stratum1 %in% requiredIndicationConcepts) %>%
 					select(countValue) %>%
 					mutate(
@@ -1037,7 +1043,7 @@ executeDbDiagnostics <- function(connectionDetails,
 				)
 			} else {
 				personsWithRequiredOutcomeConcepts <- dbProfile %>%
-					filter(analysisId %in% c(1800, 400, 600, 700, 800, 2100)) %>%
+					filter(analysisId %in% conceptAnalysisIds) %>%
 					filter(stratum1 %in% requiredOutcomeConcepts) %>%
 					select(countValue) %>%
 					mutate(

@@ -32,6 +32,8 @@ collectMetadata(
 
 \item{siteOHDSIRunPackage}{Yes/No if site has someone who can run and/or debug an OHDSI study package}
 
+\item{siteSponsoredStudy}{Yes/No if site is interested in participating in sponsored studies}
+
 \item{dataFullName}{The full name of the database}
 
 \item{dataShortName}{The short name or nickname of the database}
