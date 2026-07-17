@@ -58,6 +58,8 @@ header-includes:
   - \\usepackage{tcolorbox}
   - \\usepackage{booktabs}
   - \\usepackage{fontawesome5}
+  - \\usepackage{longtable}
+  - \\newcommand{\\needspace}[1]{\\vskip#1\\penalty-1000\\vskip-#1}
   - \\newtcolorbox{accentbox}{colback=rowgray, colframe=tablerule, boxrule=1pt, arc=3pt, left=10pt, right=10pt, top=8pt, bottom=8pt, boxsep=0pt}
   - \\newtcolorbox{infobox}{colback=infoback, colframe=infoborder, boxrule=1pt, arc=3pt, left=6pt, right=6pt, top=6pt, bottom=6pt, boxsep=0pt}
   - \\newtcolorbox{notesbox}{colback=notesback, colframe=notesborder, boxrule=1pt, arc=3pt, left=6pt, right=6pt, top=6pt, bottom=6pt, boxsep=0pt}
@@ -138,12 +140,16 @@ if (!is.null(results) && is.data.frame(results) && nrow(results) > 0 && "analysi
           Outcome = "propWithRequiredOutcomeConcepts"
         )
 
-       cat("\\\\begin{table}[H]\\n")
-			 cat("\\\\centering\\n")
-			 cat("\\\\begin{tabular}{|l|c|c|c|c|}\\n")
+       cat("\\\\begin{longtable}{|l|c|c|c|c|}\\n")
 			 cat("\\\\hline\\n")
 			 cat("\\\\textbf{Database} & \\\\textbf{T} & \\\\textbf{C} & \\\\textbf{I} & \\\\textbf{O} \\\\\\\\\\n")
 			 cat("\\\\hline\\n")
+			 cat("\\\\endfirsthead\\n")
+			 cat("\\\\hline\\n")
+			 cat("\\\\textbf{Database} & \\\\textbf{T} & \\\\textbf{C} & \\\\textbf{I} & \\\\textbf{O} \\\\\\\\\\n")
+			 cat("\\\\hline\\n")
+			 cat("\\\\endhead\\n")
+			 cat("\\\\endfoot\\n")
 
         passCount <- 0
         failCount <- 0
@@ -205,8 +211,7 @@ if (!is.null(results) && is.data.frame(results) && nrow(results) > 0 && "analysi
           }
         }
 
-        cat("\\\\end{tabular}\\n")
-        cat("\\\\end{table}\\n\\n")
+        cat("\\\\end{longtable}\\n\\n")
         cat("\\\\vspace{0.3cm}\\n")
 
 
@@ -268,7 +273,7 @@ if (!is.null(results) && is.data.frame(results) && nrow(results) > 0 && "analysi
             compName <- compNames[1]
             compEscaped <- gsub("_", "\\\\\\\\_", as.character(compName))
 
-            cat("\\\\begin{minipage}{\\\\textwidth}\\n")
+            cat("\\\\needspace{4cm}\\n")
             cat("\\\\vspace{0.5cm}\\n")
             cat("\\\\noindent\\\\textbf{Comparator: ", compEscaped, "}\\n\\n", sep = "")
 
@@ -277,12 +282,17 @@ if (!is.null(results) && is.data.frame(results) && nrow(results) > 0 && "analysi
             if (nrow(compSubset) > 0 && "databaseId" %in% names(compSubset)) {
               compSubset <- compSubset[order(compSubset$databaseId), ]
 
-              cat("\\\\begin{table}[H]\\n")
-              cat("\\\\centering\\n")
-              cat("\\\\begin{tabular}{|l|r|r|}\\n")
+              cat("\\\\begin{longtable}{|p{\\\\dimexpr\\\\linewidth-5.5cm\\\\relax}|r|r|}\\n")
               cat("\\\\hline\\n")
               cat("\\\\textbf{Database} & \\\\textbf{Count} & \\\\textbf{Proportion} \\\\\\\\\\n")
               cat("\\\\hline\\n")
+              cat("\\\\endfirsthead\\n")
+              cat("\\\\hline\\n")
+              cat("\\\\textbf{Database} & \\\\textbf{Count} & \\\\textbf{Proportion} \\\\\\\\\\n")
+              cat("\\\\hline\\n")
+              cat("\\\\endhead\\n")
+              cat("\\\\hline\\n")
+              cat("\\\\endfoot\\n")
 
               rowNum <- 0
               for (i in 1:nrow(compSubset)) {
@@ -311,15 +321,12 @@ if (!is.null(results) && is.data.frame(results) && nrow(results) > 0 && "analysi
               }
 
               cat("\\\\hline\\n")
-              cat("\\\\end{tabular}\\n")
-              cat("\\\\end{table}\\n\\n")
+              cat("\\\\end{longtable}\\n\\n")
 
               cat("\\\\begin{infobox}\\n")
 			  cat("\\\\faInfoCircle\\\\hspace{0.3cm}\\\\textbf{About Comparator Table}\\n\\n")
 			  cat("The count and percent of persons in the database with a record of at least one concept defined for the comparator \\n")
 			  cat("\\\\end{infobox}\\n\\n")
-
-              cat("\\\\end{minipage}\\n\\n")
             }
           }
         }
@@ -337,7 +344,7 @@ if (!is.null(results) && is.data.frame(results) && nrow(results) > 0 && "analysi
             for (targetName in targetNames) {
               targetEscaped <- gsub("_", "\\\\\\\\_", as.character(targetName))
 
-              cat("\\\\begin{minipage}{\\\\textwidth}\\n")
+              cat("\\\\needspace{4cm}\\n")
               cat("\\\\vspace{0.5cm}\\n")
               cat("\\\\noindent\\\\textbf{Target: ", targetEscaped, "}\\n\\n", sep = "")
 
@@ -347,12 +354,17 @@ if (!is.null(results) && is.data.frame(results) && nrow(results) > 0 && "analysi
 
                 targetSubset <- targetSubset[order(targetSubset$databaseId), ]
 
-                cat("\\\\begin{table}[H]\\n")
-                cat("\\\\centering\\n")
-                cat("\\\\begin{tabular}{|l|r|r|}\\n")
+                cat("\\\\begin{longtable}{|p{\\\\dimexpr\\\\linewidth-5.5cm\\\\relax}|r|r|}\\n")
                 cat("\\\\hline\\n")
                 cat("\\\\textbf{Database} & \\\\textbf{Count} & \\\\textbf{Proportion} \\\\\\\\\\n")
                 cat("\\\\hline\\n")
+                cat("\\\\endfirsthead\\n")
+                cat("\\\\hline\\n")
+                cat("\\\\textbf{Database} & \\\\textbf{Count} & \\\\textbf{Proportion} \\\\\\\\\\n")
+                cat("\\\\hline\\n")
+                cat("\\\\endhead\\n")
+                cat("\\\\hline\\n")
+                cat("\\\\endfoot\\n")
 
                 rowNum <- 0
                 for (i in 1:nrow(targetSubset)) {
@@ -380,23 +392,20 @@ if (!is.null(results) && is.data.frame(results) && nrow(results) > 0 && "analysi
                 }
 
                 cat("\\\\hline\\n")
-                cat("\\\\end{tabular}\\n")
-                cat("\\\\end{table}\\n\\n")
+                cat("\\\\end{longtable}\\n\\n")
 
 
 	            cat("\\\\begin{infobox}\\n")
 				cat("\\\\faInfoCircle\\\\hspace{0.3cm}\\\\textbf{About Target Table}\\n\\n")
 				cat("The count and percent of persons in the database with a record of at least one concept defined for the target \\n")
 				cat("\\\\end{infobox}\\n\\n")
-
-                cat("\\\\end{minipage}\\n\\n")
               }
             }
           }
         }
 
          # TARGET/COMPARATOR REQUIREMENTS SECTION
-        cat("\\\\begin{minipage}{\\\\textwidth}\\n")
+        cat("\\\\needspace{4cm}\\n")
         cat("\\\\vspace{0.5cm}\\n")
         cat("\\\\noindent\\\\textbf{Target/Comparator Requirements}\\n\\n")
 
@@ -413,13 +422,17 @@ if (!is.null(results) && is.data.frame(results) && nrow(results) > 0 && "analysi
               "propWithRequiredDomain"
             )
 
-            cat("\\\\begin{table}[H]\\n")
-            cat("\\\\centering\\n")
-            cat("\\\\resizebox{\\\\textwidth}{!}{%\\n")
-            cat("\\\\begin{tabular}{|l|c|c|c|c|c|c|}\\n")
+            cat("\\\\footnotesize\\n")
+            cat("\\\\begin{longtable}{|p{\\\\dimexpr\\\\linewidth-10.6cm\\\\relax}|>{\\\\centering\\\\arraybackslash}p{1.4cm}|>{\\\\centering\\\\arraybackslash}p{1.3cm}|>{\\\\centering\\\\arraybackslash}p{1.3cm}|>{\\\\centering\\\\arraybackslash}p{1.5cm}|>{\\\\centering\\\\arraybackslash}p{0.8cm}|>{\\\\centering\\\\arraybackslash}p{1.0cm}|}\\n")
             cat("\\\\hline\\n")
-            cat("\\\\textbf{Database} & \\\\textbf{Calendar Time} & \\\\textbf{Age Range} & \\\\textbf{Age at First Obs} & \\\\textbf{Longitudinal} & \\\\textbf{Race} & \\\\textbf{Domain} \\\\\\\\\\n")
+            cat("\\\\textbf{Database} & \\\\textbf{Calendar Time} & \\\\textbf{Age Range} & \\\\textbf{Age at First Obs} & \\\\textbf{Longi\\\\-tudinal} & \\\\textbf{Race} & \\\\textbf{Domain} \\\\\\\\\\n")
             cat("\\\\hline\\n")
+            cat("\\\\endfirsthead\\n")
+            cat("\\\\hline\\n")
+            cat("\\\\textbf{Database} & \\\\textbf{Calendar Time} & \\\\textbf{Age Range} & \\\\textbf{Age at First Obs} & \\\\textbf{Longi\\\\-tudinal} & \\\\textbf{Race} & \\\\textbf{Domain} \\\\\\\\\\n")
+            cat("\\\\hline\\n")
+            cat("\\\\endhead\\n")
+            cat("\\\\endfoot\\n")
 
             for (db in uniqueDbsAnalysis) {
               dbAnalysisResults <- analysisData[!is.na(analysisData$databaseId) &
@@ -460,16 +473,13 @@ if (!is.null(results) && is.data.frame(results) && nrow(results) > 0 && "analysi
               }
             }
 
-            cat("\\\\end{tabular}%\\n")
-            cat("}\\n")
-            cat("\\\\end{table}\\n\\n")
+            cat("\\\\end{longtable}\\n")
+            cat("\\\\normalsize\\n")
 
             cat("\\\\begin{infobox}\\n")
 		 	cat("\\\\faInfoCircle\\\\hspace{0.3cm}\\\\textbf{About Target/Comparator Requirements Table}\\n\\n")
 			cat("The count and percent of persons in the database with a record of at least one concept defined for the comparator \\n")
 			cat("\\\\end{infobox}\\n\\n")
-
-            cat("\\\\end{minipage}\\n\\n")
           }
         }
 
@@ -484,7 +494,7 @@ if (!is.null(results) && is.data.frame(results) && nrow(results) > 0 && "analysi
             for (outcomeName in outcomeNames) {
               outcomeEscaped <- gsub("_", "\\\\\\\\_", as.character(outcomeName))
 
-              cat("\\\\begin{minipage}{\\\\textwidth}\\n")
+              cat("\\\\needspace{4cm}\\n")
               cat("\\\\vspace{0.5cm}\\n")
               cat("\\\\noindent\\\\textbf{Outcome: ", outcomeEscaped, "}\\n\\n", sep = "")
 
@@ -533,11 +543,16 @@ if (!is.null(results) && is.data.frame(results) && nrow(results) > 0 && "analysi
                   }
 
                   if (length(columnsWithData) > 0) {
-                    # Split into chunks of max 6 columns per table
+                    # Split into chunks of max 5 columns per table
                     maxCols <- 5
                     chunks <- split(columnsWithData, ceiling(seq_along(columnsWithData) / maxCols))
+                    rowGroupSize <- 20
+                    dbGroups <- split(uniqueDbsOutcome, ceiling(seq_along(uniqueDbsOutcome) / rowGroupSize))
 
-                    for (chunkIndex in seq_along(chunks)) {
+                    for (dgIdx in seq_along(dbGroups)) {
+                      dbGroup <- dbGroups[[dgIdx]]
+
+                      for (chunkIndex in seq_along(chunks)) {
                       chunk <- chunks[[chunkIndex]]
                       numCols <- length(chunk)
 
@@ -548,9 +563,7 @@ if (!is.null(results) && is.data.frame(results) && nrow(results) > 0 && "analysi
   									colSpec <- paste0("|l|", paste(rep("c|", numCols), collapse = ""))
 								}
 
-                      cat("\\\\begin{table}[H]\\n")
-                      cat("\\\\centering\\n")
-                      cat("\\\\begin{tabular}{", colSpec, "}\\n", sep = "")
+                      cat("\\\\begin{longtable}{", colSpec, "}\\n", sep = "")
                       cat("\\\\hline\\n")
 
 
@@ -564,10 +577,17 @@ if (!is.null(results) && is.data.frame(results) && nrow(results) > 0 && "analysi
                       for (col in chunk) {
                         headerParts <- c(headerParts, paste0("\\\\textbf{", col$label, "}"))
                       }
-                      cat(paste(headerParts, collapse = " & "), " \\\\\\\\\\n", sep = "")
+                      headerLine <- paste0(paste(headerParts, collapse = " & "), " \\\\\\\\\\n")
+                      cat(headerLine)
                       cat("\\\\hline\\n")
+                      cat("\\\\endfirsthead\\n")
+                      cat("\\\\hline\\n")
+                      cat(headerLine)
+                      cat("\\\\hline\\n")
+                      cat("\\\\endhead\\n")
+                      cat("\\\\endfoot\\n")
 
-                      for (db in uniqueDbsOutcome) {
+                      for (db in dbGroup) {
                         dbResults <- outcomeAllStats[!is.na(outcomeAllStats$databaseId) &
                                                        outcomeAllStats$databaseId == db, ]
                         dbEscaped <- gsub("_", "\\\\\\\\_", db)
@@ -623,11 +643,15 @@ if (!is.null(results) && is.data.frame(results) && nrow(results) > 0 && "analysi
                         }
                       }
 
-                      cat("\\\\end{tabular}\\n")
-                      cat("\\\\end{table}\\n")
+                      cat("\\\\end{longtable}\\n")
 
                       if (chunkIndex < length(chunks)) {
-                        cat("\\\\vspace{0.2cm}\\n")
+                        cat("\\\\vspace{0.3cm}\\n")
+                      }
+                      }
+
+                      if (dgIdx < length(dbGroups)) {
+                        cat("\\\\vspace{0.5cm}\\n")
                       }
                     }
                   }
@@ -638,7 +662,6 @@ if (!is.null(results) && is.data.frame(results) && nrow(results) > 0 && "analysi
 			  cat("\\\\faInfoCircle\\\\hspace{0.3cm}\\\\textbf{About Outcome Table}\\n\\n")
 			  cat("This table shows which databases have the specified requirements for the outcome. A database is indicated as green when > 0% of the patients in the database have a record in each individual domain. \\n")
 			  cat("\\\\end{infobox}\\n\\n")
-              cat("\\\\end{minipage}\\n\\n")
             }
           }
         }
@@ -909,10 +932,25 @@ if (!is.null(analysisSettings)) {
 
 #Test data
 
-dbNames <- c("Test_1", "Test_2", "Test_3",
-             "SomeDB_SomeDate", "Test_4", "SomeNameIComeUpWithHave_youngPadawan",
-             "2b||!2b", "Test_5", "That'sTheLimitOfMyImagination")
+dbNames <- c(
+	"DB_Alpha", "DB_Beta", "DB_Gamma",
+	"DB_Delta", "DB_Epsilon", "DB_Zeta",
+	"DB_Eta", "DB_Theta", "DB_Iota",
+	"DB_Kappa", "DB_Lambda", "DB_Mu",
+	"DB_Nu", "DB_Xi", "DB_Omicron",
+	"DB_Pi", "DB_Rho", "DB_Sigma",
+	"DB_Tau", "DB_Upsilon", "DB_Phi",
+	"DB_Chi", "DB_Psi", "DB_Omega",
+	"DB_Ash", "DB_Birch", "DB_Cedar",
+	"DB_Dune", "DB_Elm", "DB_Fern",
+	"DB_Glen", "DB_Heath", "DB_Ivy",
+	"DB_Jade", "DB_Kite", "DB_Lark",
+	"DB_Maple", "DB_North", "DB_Oak",
+	"DB_Pine"
+)
 
+nDbs <- length(dbNames)
+nAnalyses <- 3
 
 allStats <- c(
   "propWithCalendarTime", "propInAgeRange", "propWithAgeAtFirstObs",
@@ -938,18 +976,19 @@ specValues <- c(
 )
 
 nStats <- length(allStats)
-nRows <- 3 * 9 * nStats
+nRepUnits <- nAnalyses * nDbs
+nRows <- nRepUnits * nStats
 
 results <- data.frame(
-  analysisId = rep(1:3, each = nStats * 9),
-  analysisName = rep(c("Hypertension_Study", "Diabetes_Analysis", "ScaryAffliction_study"), each = nStats * 9),
-  databaseId = rep(rep(dbNames, each = nStats), 3),
-  statistic = rep(allStats, 27),
+  analysisId = rep(1:nAnalyses, each = nStats * nDbs),
+  analysisName = rep(c("Hypertension_Study", "Diabetes_Analysis", "ScaryAffliction_study"), each = nStats * nDbs),
+  databaseId = rep(rep(dbNames, each = nStats), nAnalyses),
+  statistic = rep(allStats, nRepUnits),
   value = sample(100:50000, nRows, replace = TRUE),
   proportion = runif(nRows, 0.01, 1),
-  spec = rep(specValues, 27),
-  evaluateThreshold = rep(c(1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 2, 2, 1, rep(1, 11)), 27),
-  threshold = rep(c(0.05, 0.05, 0.01, 0.05, 0.05, 0.05, 0.05, 0, 0.05, 0, 0, 0, 0, rep(0.05, 11)), 27),
+  spec = rep(specValues, nRepUnits),
+  evaluateThreshold = rep(c(1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 2, 2, 1, rep(1, 11)), nRepUnits),
+  threshold = rep(c(0.05, 0.05, 0.01, 0.05, 0.05, 0.05, 0.05, 0, 0.05, 0, 0, 0, 0, rep(0.05, 11)), nRepUnits),
   status = sample(c("pass", "pass", "pass", "fail", NA), nRows, replace = TRUE, prob = c(0.7, 0.1, 0.1, 0.1, 0.3)),
   fail = sample(0:1, nRows, replace = TRUE, prob = c(0.75, 0.25)),
   stringsAsFactors = FALSE

@@ -216,10 +216,10 @@ h5 {
 .section-container {
   background-color: #fff;
   padding: 20px;
-  border-radius: 0;
+  border-radius: 6px;
   margin-bottom: 15px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
-  border: 1px solid #ddd;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  border: 1.5px solid #94a3b8;
   flex: 1;
 }
 
@@ -264,11 +264,12 @@ h5 {
 }
 
 .input-group {
-  border-left: 3px solid #0066cc;
-  padding-left: 15px;
-  margin-bottom: 20px;
-  background-color: #fafafa;
-  padding: 12px 12px 12px 15px;
+  padding: 20px 0 4px 0;
+  margin-bottom: 0;
+}
+
+.input-group + .input-group {
+  border-top: 1.5px solid #94a3b8;
 }
 
 .required-field label:after {
@@ -390,12 +391,12 @@ input[type='checkbox'] {
 .summary-card {
   background-color: #f9f9f9;
   padding: 15px;
-  border-radius: 0;
-  border-left: 3px solid #0066cc;
+  border-radius: 6px;
+  border-left: 1.5px solid #94a3b8;
   margin-bottom: 15px;
-  border-top: 1px solid #ddd;
-  border-right: 1px solid #ddd;
-  border-bottom: 1px solid #ddd;
+  border-top: 1.5px solid #94a3b8;
+  border-right: 1.5px solid #94a3b8;
+  border-bottom: 1.5px solid #94a3b8;
 }
 
 .summary-card h5 {
@@ -425,24 +426,24 @@ input[type='checkbox'] {
   margin-top: 20px;
   font-size: 13px;
   background-color: #fff;
-  border: 1px solid #ddd;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+  border: 1.5px solid #94a3b8;
+  border-radius: 6px;
   padding: 0;
+  overflow: hidden;
 }
 
 .dataTables_wrapper .dataTables_length,
 .dataTables_wrapper .dataTables_filter {
-  padding: 15px 20px;
-  background-color: #fafafa;
-  border-bottom: 1px solid #e5e5e5;
+  padding: 12px 16px;
+  background: transparent;
 }
 
 .dataTables_wrapper .dataTables_length {
-  float: left;
+  float: right !important;
 }
 
 .dataTables_wrapper .dataTables_filter {
-  float: right;
+  float: left !important;
 }
 
 .dataTables_filter label {
@@ -455,20 +456,19 @@ input[type='checkbox'] {
 }
 
 .dataTables_filter input {
-  border: 1px solid #ccc;
-  border-radius: 2px;
-  padding: 6px 12px;
+  border: 1.5px solid #94a3b8;
+  border-radius: 4px;
+  padding: 5px 10px;
   font-size: 13px;
   width: 200px;
-  transition: all 0.15s;
+  transition: border-color 0.15s;
   background-color: #fff;
 }
 
 .dataTables_filter input:focus {
   border-color: #0066cc;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.1);
-  width: 250px;
+  box-shadow: none;
 }
 
 .dataTables_length label {
@@ -481,9 +481,9 @@ input[type='checkbox'] {
 }
 
 .dataTables_length select {
-  border: 1px solid #ccc;
-  border-radius: 2px;
-  padding: 6px 30px 6px 10px;
+  border: 1.5px solid #94a3b8;
+  border-radius: 4px;
+  padding: 5px 10px;
   font-size: 13px;
   background-color: #fff;
   margin: 0 5px;
@@ -494,7 +494,7 @@ input[type='checkbox'] {
 }
 
 .dataTables_wrapper .dataTables_scrollHead {
-  border-bottom: 2px solid #0066cc;
+  border-bottom: 2px solid #94a3b8;
 }
 
 .dataTables_wrapper .dataTables_scrollBody {
@@ -509,164 +509,187 @@ table.dataTable {
 }
 
 table.dataTable thead {
-  background: linear-gradient(to bottom, #f8f9fa, #f1f3f5);
+  background: #f1f3f5 !important;
 }
 
 table.dataTable thead th {
-  font-weight: 600;
-  color: #333;
-  border-bottom: none;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 12px 10px;
-  position: relative;
-  white-space: nowrap;
+  font-weight: 600 !important;
+  color: #333 !important;
+  border-bottom: 2px solid #94a3b8 !important;
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  padding: 12px 10px !important;
+  position: relative !important;
+  white-space: nowrap !important;
 }
 
 table.dataTable thead .sorting,
 table.dataTable thead .sorting_asc,
-table.dataTable thead .sorting_desc {
-  cursor: pointer;
-  position: relative;
-  padding-right: 25px;
+table.dataTable thead .sorting_desc,
+table.dataTable thead .sorting_asc_disabled,
+table.dataTable thead .sorting_desc_disabled {
+  cursor: pointer !important;
+  position: relative !important;
+  padding-right: 25px !important;
+  background-image: none !important;
+}
+
+table.dataTable thead .sorting:before,
+table.dataTable thead .sorting_asc:before,
+table.dataTable thead .sorting_desc:before,
+table.dataTable thead .sorting_asc_disabled:before,
+table.dataTable thead .sorting_desc_disabled:before {
+  content: none !important;
+  display: none !important;
 }
 
 table.dataTable thead .sorting:after,
 table.dataTable thead .sorting_asc:after,
 table.dataTable thead .sorting_desc:after {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-family: 'Font Awesome 5 Free', 'FontAwesome';
-  opacity: 0.5;
-  font-size: 11px;
+  position: absolute !important;
+  right: 8px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  font-size: 14px !important;
+  font-family: inherit !important;
 }
 
 table.dataTable thead .sorting:after {
-  content: '\f0dc';
-  opacity: 0.3;
+  content: '↕' !important;
+  opacity: 0.3 !important;
 }
 
 table.dataTable thead .sorting_asc:after {
-  content: '\f0de';
-  color: #0066cc;
-  opacity: 1;
+  content: '↑' !important;
+  color: #0066cc !important;
+  opacity: 1 !important;
 }
 
 table.dataTable thead .sorting_desc:after {
-  content: '\f0dd';
-  color: #0066cc;
-  opacity: 1;
+  content: '↓' !important;
+  color: #0066cc !important;
+  opacity: 1 !important;
 }
 
 table.dataTable thead .sorting:hover:after {
-  opacity: 0.6;
+  opacity: 0.6 !important;
 }
 
 table.dataTable tbody tr {
-  transition: background-color 0.15s;
+  transition: background-color 0.15s !important;
 }
 
-table.dataTable tbody tr:nth-child(even) {
-  background-color: #fafafa;
-}
-
-table.dataTable tbody tr:hover {
-  background-color: #e8f3ff;
+table.dataTable tbody tr:hover,
+table.dataTable.display tbody tr:hover,
+table.dataTable.hover tbody tr:hover {
+  background-color: #f1f3f5 !important;
 }
 
 table.dataTable tbody td {
-  font-size: 13px;
-  padding: 10px;
-  color: #555;
-  border-top: 1px solid #efefef;
+  font-size: 13px !important;
+  padding: 10px !important;
+  color: #555 !important;
+  border-top: 1px solid #e2e8f0 !important;
 }
 
 table.dataTable tbody tr:first-child td {
-  border-top: none;
+  border-top: none !important;
+}
+
+table.dataTable tbody tr.odd,
+table.dataTable tbody tr.even {
+  background-color: transparent !important;
 }
 
 table.dataTable tbody tr.selected {
-  background-color: #d4e3f4;
+  background-color: #e8f0fb !important;
 }
 
 table.dataTable tbody tr.selected:hover {
-  background-color: #c4d9ef;
+  background-color: #dce8f8 !important;
 }
 
 .dataTables_wrapper .dataTables_info,
 .dataTables_wrapper .dataTables_paginate {
-  padding: 15px 20px;
-  background-color: #fafafa;
-  border-top: 1px solid #e5e5e5;
+  padding: 12px 16px;
+  background: transparent;
 }
 
 .dataTables_info {
-  float: left;
-  color: #666;
-  font-size: 13px;
-  padding-top: 8px;
+  float: left !important;
+  color: #666 !important;
+  font-size: 13px !important;
+  display: flex !important;
+  align-items: center !important;
+  min-height: 36px !important;
 }
 
 .dataTables_paginate {
-  float: right;
+  float: right !important;
+  display: flex !important;
+  align-items: center !important;
+  min-height: 36px !important;
+}
+
+div.dataTables_filter {
+  text-align: left !important;
 }
 
 .dataTables_paginate .paginate_button {
-  background: #fff !important;
-  border: 1px solid #ddd !important;
+  background: transparent !important;
+  border: none !important;
   color: #555 !important;
-  padding: 6px 12px !important;
-  margin: 0 2px !important;
-  border-radius: 2px !important;
+  padding: 5px 10px !important;
+  margin: 0 1px !important;
+  border-radius: 4px !important;
   font-size: 13px !important;
   font-weight: 500 !important;
   cursor: pointer !important;
-  transition: all 0.15s !important;
+  transition: background-color 0.15s !important;
   text-decoration: none !important;
   display: inline-block !important;
 }
 
 .dataTables_paginate .paginate_button:hover:not(.disabled):not(.current) {
-  background: #0066cc !important;
-  border-color: #0066cc !important;
-  color: #fff !important;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0,102,204,0.2);
+  background: #f1f3f5 !important;
+  color: #333 !important;
 }
 
-.dataTables_paginate .paginate_button.current,
-.dataTables_paginate .paginate_button.current:hover {
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover,
+.dataTables_wrapper .dataTables_paginate span .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate span .paginate_button.current:hover {
   background: #0066cc !important;
-  border-color: #0066cc !important;
   color: #fff !important;
   cursor: default !important;
   font-weight: 600 !important;
 }
 
+.dataTables_wrapper .dataTables_paginate .paginate_button.current a,
+.dataTables_wrapper .dataTables_paginate span .paginate_button.current a {
+  color: #fff !important;
+}
+
 .dataTables_paginate .paginate_button.disabled,
 .dataTables_paginate .paginate_button.disabled:hover {
-  background: #f5f5f5 !important;
-  border-color: #ddd !important;
-  color: #999 !important;
+  background: transparent !important;
+  color: #bbb !important;
   cursor: not-allowed !important;
 }
 
 .dataTables_paginate .paginate_button.previous,
 .dataTables_paginate .paginate_button.next {
   font-weight: 600 !important;
-  padding: 6px 16px !important;
+  padding: 5px 14px !important;
 }
-
 
 .dataTables_empty {
   text-align: center;
   padding: 40px !important;
   color: #999;
   font-style: italic;
-  background-color: #fafafa;
+  background: transparent;
 }
 
 .dataTables_processing {
@@ -674,8 +697,7 @@ table.dataTable tbody tr.selected:hover {
   color: white;
   border: none;
   padding: 10px 20px;
-  border-radius: 2px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  border-radius: 0;
   font-size: 14px;
   font-weight: 500;
   top: 50%;
@@ -687,22 +709,22 @@ table.dataTable tbody tr.selected:hover {
 }
 
 .dataTables_scrollBody::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #f1f3f5;
 }
 
 .dataTables_scrollBody::-webkit-scrollbar-thumb {
-  background: #999;
+  background: #94a3b8;
   border-radius: 4px;
 }
 
 .dataTables_scrollBody::-webkit-scrollbar-thumb:hover {
-  background: #666;
+  background: #64748b;
 }
 
 .dt-buttons {
-  padding: 15px 20px;
-  background-color: #fafafa;
-  border-bottom: 1px solid #e5e5e5;
+  padding: 12px 16px;
+  background: transparent;
+  border-bottom: 1px solid #94a3b8;
 }
 
 .dt-button {
@@ -748,7 +770,7 @@ input[type='checkbox'] {
   -moz-appearance: none;
   width: 18px;
   height: 18px;
-  border: 2px solid #ccc;
+  border: 1.5px solid #94a3b8;
   border-radius: 2px;
   background-color: #fff;
   cursor: pointer;
@@ -1080,16 +1102,21 @@ Shiny.addCustomMessageHandler('downloadComplete', function(msg) {
                                                ),
                                                shiny::sliderInput("ageRange", "Age Range:",
                                                                   min = 0, width = '100%', max = 150, value = c(0, 150)),
+                                               shiny::tags$div(
+                                                 shiny::tags$label("Gender", style = "font-weight: 500; color: #555; font-size: 13px; display: block; margin-bottom: 6px;"),
+                                                 shiny::tags$div(
+                                                   style = "display: flex; gap: 24px; margin-bottom: 15px;",
+                                                   shiny::tags$div(style = "margin-bottom: 0;", shiny::checkboxInput("genderMale", "Male (8507)", value = TRUE)),
+                                                   shiny::tags$div(style = "margin-bottom: 0;", shiny::checkboxInput("genderFemale", "Female (8532)", value = TRUE))
+                                                 )
+                                               ),
                                                shiny::fluidRow(
-                                                 shiny::column(6,
-                                                               shiny::h4("Gender"),
-                                                               shiny::checkboxInput("genderMale", "Male (8507)", value = TRUE),
-                                                               shiny::checkboxInput("genderFemale", "Female (8532)", value = TRUE)
-                                                 ),
                                                  shiny::column(6,
                                                                shiny::textInput("raceConceptIds", "Race Concept IDs:",
                                                                                 placeholder = "e.g., 12345, 54321"),
-                                                               shiny::uiOutput("raceError"),
+                                                               shiny::uiOutput("raceError")
+                                                 ),
+                                                 shiny::column(6,
                                                                shiny::textInput("ethnicityConceptIds", "Ethnicity Concept IDs:",
                                                                                 placeholder = "e.g., 12345, 54321"),
                                                                shiny::uiOutput("ethnicityError")
@@ -1368,9 +1395,12 @@ Shiny.addCustomMessageHandler('downloadComplete', function(msg) {
                                                                     width = "100%",
                                                                     rows = 2
                                                ),
-                                               shiny::actionButton("addNote", "Add Note",
-                                                                   class = "btn-primary btn-add",
-                                                                   style = "margin-bottom: 15px;"
+                                               shiny::div(
+                                                 style = "text-align: right; margin-top: -8px; margin-bottom: 15px;",
+                                                 shiny::actionButton("addNote", "Add Note",
+                                                                     class = "btn-primary btn-add",
+                                                                     style = "padding: 5px 14px; font-size: 12px;"
+                                                 )
                                                ),
                                                shiny::uiOutput("currentAnalysisNotes")
                                     )
@@ -2057,16 +2087,26 @@ server <- function(input, output, session, connectionDetails, aresLink, resultsD
   				}
   			}
   		}
+  		status_col <- which(tolower(names(data_to_display)) == "status") - 1
+  		col_defs <- if (length(status_col) > 0) list(list(
+  			targets = status_col,
+  			render = DT::JS("function(data, type, row) {
+  			  if (type !== 'display' || data === null) return data;
+  			  var color = data === 'pass' ? '#4CAF50' : data === 'fail' ? '#F44336' : '#94a3b8';
+  			  return '<span style=\"background:' + color + ';color:white;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;\">' + data + '</span>';
+  			}")
+  		)) else list()
   		DT::datatable(
   			data_to_display,
   			options = list(
   				pageLength = 10,
-  				scrollX = TRUE,
-  				dom = 'Bfrtip',
-  				buttons = c('copy', 'csv', 'excel')
+  				scrollX = FALSE,
+  				dom = 'lfrtip',
+  				columnDefs = col_defs
   			),
   			class = 'display compact',
-  			rownames = FALSE
+  			rownames = FALSE,
+  			escape = FALSE
   		)
   	})
 
@@ -2076,9 +2116,9 @@ server <- function(input, output, session, connectionDetails, aresLink, resultsD
   		displayContent,
   		easyClose = TRUE,
   		footer = shiny::tagList(
-  			shiny::modalButton("Close"),
   			shiny::downloadButton("downloadPDF", "Download PDF Report"),
-  			shiny::downloadButton("downloadCSV", "Download raw CSV")
+  			shiny::downloadButton("downloadCSV", "Download raw CSV"),
+  			shiny::modalButton("Close")
   		),
   		shiny::tags$head(shiny::tags$style(".modal-dialog { width: 90%; max-width: 1300px; }"))
   	))
@@ -2345,7 +2385,7 @@ server <- function(input, output, session, connectionDetails, aresLink, resultsD
         			connectionDetails = connectionDetails,
         			resultsDatabaseSchema = resultsDatabaseSchema,
         			resultsTableName = resultsTableName,
-        			dataDiagnosticsSettings = ddStudiesList
+        			dataDiagnosticsSettingsList = ddStudiesList
         		)
         	},
         	message = function(m) {
@@ -2496,16 +2536,26 @@ server <- function(input, output, session, connectionDetails, aresLink, resultsD
             }
           }
 
+          status_col <- which(tolower(names(data_to_display)) == "status") - 1
+          col_defs <- if (length(status_col) > 0) list(list(
+            targets = status_col,
+            render = DT::JS("function(data, type, row) {
+              if (type !== 'display' || data === null) return data;
+              var color = data === 'pass' ? '#4CAF50' : data === 'fail' ? '#F44336' : '#94a3b8';
+              return '<span style=\"background:' + color + ';color:white;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;\">' + data + '</span>';
+            }")
+          )) else list()
           DT::datatable(
             data_to_display,
             options = list(
               pageLength = 10,
-              scrollX = TRUE,
-              dom = 'Bfrtip',
-              buttons = c('copy', 'csv', 'excel')
+              scrollX = FALSE,
+              dom = 'lfrtip',
+              columnDefs = col_defs
             ),
             class = 'display compact',
-            rownames = FALSE
+            rownames = FALSE,
+            escape = FALSE
           )
         })
       }
@@ -2516,9 +2566,9 @@ server <- function(input, output, session, connectionDetails, aresLink, resultsD
         displayContent,
         easyClose = TRUE,
         footer = shiny::tagList(
-          shiny::modalButton("Close"),
           shiny::downloadButton("downloadPDF", "Download PDF Report"),
-          shiny::downloadButton("downloadCSV", "Download raw CSV")
+          shiny::downloadButton("downloadCSV", "Download raw CSV"),
+          shiny::modalButton("Close")
         ),
         shiny::tags$head(shiny::tags$style(".modal-dialog { width: 90%; max-width: 1300px; }"))
       ))
