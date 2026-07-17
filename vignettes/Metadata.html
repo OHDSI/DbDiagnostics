@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta name="generator" content="litedown 0.9">
 <title>Metadata</title>
 <style type="text/css">
 body {
@@ -11,75 +12,106 @@ body {
   margin: auto;
   padding: 1em;
   line-height: 1.5;
-  box-sizing: border-box;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
 }
-body, .footnotes, code { font-size: .9em; }
+body, .abstract, code, .footnotes, footer, #refs, .caption { font-size: .9em; }
 li li { font-size: .95em; }
-*, *:before, *:after {
-  box-sizing: inherit;
-}
+ul:has(li > input[type="checkbox"]) { list-style: none; padding-left: 1em; }
+*, :before, :after { box-sizing: border-box; }
+a { color: steelblue; }
 pre, img { max-width: 100%; }
-pre, pre:hover {
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-pre code {
-  display: block;
-  overflow-x: auto;
-}
+pre { white-space: pre-wrap; word-break: break-word; }
+pre code { display: block; padding: 1em; overflow-x: auto; }
 code { font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace; }
-:not(pre) > code, code[class] { background-color: #F8F8F8; }
-code.language-undefined, pre > code:not([class]) {
-  background-color: inherit;
-  border: 1px solid #eee;
+:not(pre, th) > code, code[class], div > .caption { background: #f8f8f8; }
+pre > code:is(:not([class]), .language-plain, .language-none, .plain), .box, .figure, .table { background: inherit; border: 1px solid #eee; }
+pre > code {
+  &.message { border-color: #9eeaf9; }
+  &.warning { background: #fff3cd; border-color: #fff3cd; }
+  &.error { background: #f8d7da; border-color: #f8d7da; }
 }
+.fenced-chunk { border-left: 1px solid #666; }
+.code-fence {
+  opacity: .4;
+  border: 1px dashed #666;
+  border-left: 2px solid;
+  &:hover { opacity: inherit; }
+}
+.box, .figure, .table, table { margin: 1em auto; }
+div > .caption { padding: 1px 1em; }
+.figure { p:has(img, svg), pre:has(svg) { text-align: center; } }
+.flex-col { display: flex; justify-content: space-between; }
 table {
-  margin: auto;
-  border-top: 1px solid #666;
+  &:only-child:not(.table > *) { margin: auto; }
+  th, td { padding: 5px; font-variant-numeric: tabular-nums; }
+  thead, tfoot, tr:nth-child(even) { background: whitesmoke; }
+  thead th { border-bottom: 1px solid #ddd; }
+  &:not(.datatable-table) {
+    border-top: 1px solid #666;
+    border-bottom: 1px solid #666;
+  }
 }
-table thead th { border-bottom: 1px solid #ddd; }
-th, td { padding: 5px; }
-thead, tfoot, tr:nth-child(even) { background: #eee; }
 blockquote {
   color: #666;
   margin: 0;
-  padding-left: 1em;
-  border-left: 0.5em solid #eee;
+  padding: 1px 1em;
+  border-left: .5em solid #eee;
 }
 hr, .footnotes::before { border: 1px dashed #ddd; }
 .frontmatter { text-align: center; }
-#TOC .numbered li { list-style: none; }
-#TOC .numbered { padding-left: 0; }
-#TOC .numbered ul { padding-left: 1em; }
-table, .body h2 { border-bottom: 1px solid #666; }
+#TOC {
+  a { text-decoration: none; }
+  ul { list-style: none; padding-left: 1em; }
+  & > ul { padding: 0; }
+  ul ul { border-left: 1px solid lightsteelblue; }
+}
+.body h2 { border-bottom: 1px solid #666; }
 .body .appendix, .appendix ~ h2 { border-bottom-style: dashed; }
-.footnote-ref a::before { content: "["; }
-.footnote-ref a::after { content: "]"; }
-section.footnotes::before {
-  content: "";
-  display: block;
-  max-width: 20em;
+.main-number::after { content: "."; }
+span[class^="ref-number-"] { font-weight: bold; }
+.ref-number-fig::after, .ref-number-tab::after { content: ":"; }
+.cross-ref-chp::before { content: "Chapter "; }
+.cross-ref-sec::before { content: "Section "; }
+.cross-ref-fig::before, .ref-number-fig::before { content: "Figure "; }
+.cross-ref-tab::before, .ref-number-tab::before { content: "Table "; }
+.cross-ref-eqn::before, .MathJax_ref:has(mjx-mtext > mjx-c + mjx-c)::before { content: "Equation "; }
+.abstract, #refs {
+  &::before { display: block; margin: 1em auto; font-weight: bold; }
+}
+.abstract::before { content: "Abstract"; text-align: center; }
+#refs::before { content: "Bibliography"; font-size: 1.5em; }
+.ref-paren-open::before { content: "("; }
+.ref-paren-close::after { content: ")"; }
+.ref-semicolon::after { content: "; "; }
+.ref-and::after { content: " and "; }
+.ref-et-al::after { content: " et al."; font-style: italic; }
+.footnote-ref a {
+  &::before { content: "["; }
+  &::after { content: "]"; }
+}
+section.footnotes {
+  margin-top: 2em;
+  &::before { content: ""; display: block; max-width: 20em; }
+}
+.fade {
+  background: repeating-linear-gradient(135deg, white, white 30px, #ddd 32px, #ddd 32px);
+  opacity: 0.6;
 }
 
 @media print {
-  body {
-    font-size: 12pt;
-    max-width: 100%;
-  }
-  tr, img { page-break-inside: avoid; }
+  body { max-width: 100%; }
+  tr, img { break-inside: avoid; }
 }
 @media only screen and (min-width: 992px) {
-  pre { white-space: pre; }
+  body:not(.pagesjs) pre:has(.line-numbers):not(:hover) { white-space: pre; }
 }
 </style>
 </head>
 <body>
-<div class="include-before">
-</div>
 <div class="frontmatter">
 <div class="title"><h1>Metadata</h1></div>
-<div class="author"><h2></h2></div>
-<div class="date"><h3>2025-03-21</h3></div>
+<div class="date"><h3>2026-06-24</h3></div>
 </div>
 <div class="body">
 <p>This document describes how metadata is compiled and reported when the <code>executeDbProfile</code> function is run. There are three ways to enter the necessary database metadata:</p>
@@ -88,12 +120,13 @@ section.footnotes::before {
 <li>By including a metadata csv file in the output folder</li>
 <li>By passing values to the metadata parameters when calling the <code>executeDbProfile</code> function</li>
 </ul>
-<h3 id="1-answer-the-questions-that-pop-up-to-the-user-as-executedbprofile-is-running">1. Answer the questions that pop-up to the user as <code>executeDbProfile</code> is running</h3>
+<h3 id="sec:1-answer-the-questions-that-pop-up-to-the-user-as-executedbprofile-is-running">1. Answer the questions that pop-up to the user as <code>executeDbProfile</code> is running</h3>
 <p>If the user does not pass any values to the metadata parameters and if the metadata csv file is missing from the output folder, the function will ask the user the series of following questions.</p>
 <ul>
 <li>What is the name of the site or institution that owns or licenses the data?</li>
 <li>Has your site contributed to an OHDSI study in the past?</li>
 <li>Is there someone at your site who can run and/or debug an OHDSI study package?</li>
+<li>Is your site interested in participating in sponsored studies?</li>
 <li>What is the full name of the database?</li>
 <li>What is the short name or nickname of the database?</li>
 <li>What is the <em>name</em> of the person who should be contacted in the event this database is identified as a good candidate for a study?</li>
@@ -104,13 +137,14 @@ section.footnotes::before {
 <li>How often are the data refreshed?</li>
 </ul>
 <p>Once the questions are answered once for a database, the package will save a csv file with this information so the user does not need to answer them again. As long as the same <code>cdmSourceName</code> is used each time the <code>executeDbProfile</code> function is run, it will find the metadata file and include it in the output zip file.</p>
-<h3 id="2-include-a-metadata-csv-file-in-the-output-folder">2. Include a metadata csv file in the output folder</h3>
+<h3 id="sec:2-include-a-metadata-csv-file-in-the-output-folder">2. Include a metadata csv file in the output folder</h3>
 <p>The function will create an folder in the specified output folder labelled with the the <code>cdmSourceName</code> parameter that is passed in. If there is a csv file in that location with the name <cdmSourceName>.metadata.csv with the proper structure, the function will not ask the user the pop-up questions and instead include the information in the csv file in the output zip file.</p>
-<h3 id="3-passing-values-to-the-metadata-parameters-when-calling-the-executedbprofile-function">3. passing values to the metadata parameters when calling the <code>executeDbProfile</code> function</h3>
+<h3 id="sec:3-passing-values-to-the-metadata-parameters-when-calling-the-executedbprofile-function">3. passing values to the metadata parameters when calling the <code>executeDbProfile</code> function</h3>
 <p>There are parameters in the function that allow you to pass in the metadata programmatically. These are listed below.</p>
 <p><strong>siteName</strong>: The name of the site or institution that owns or licenses the data.</p>
 <p><strong>siteOHDSIParticipation</strong>: Yes/No if the site contributed to an OHDSI study in the past</p>
 <p><strong>siteOHDSIRunPackage</strong>: Yes/No if site has someone who can run and/or debug an OHDSI study package</p>
+<p><strong>siteSponsoredStudy</strong>: Yes/No if site is interested in participating in sponsored studies</p>
 <p><strong>dataFullName</strong>: The full name of the database</p>
 <p><strong>dataShortName</strong>: The short name or nickname of the database</p>
 <p><strong>dataContactName</strong>: The <em>name</em> of the person who should be contacted in the event this database is identified as a good candidate for a study</p>
@@ -119,8 +153,6 @@ section.footnotes::before {
 <p><strong>governanceTime</strong>: How long (in weeks) it typically takes to receive approval to run a study on this database</p>
 <p><strong>dataProvenance</strong>: The type(s) of data that are present in your database. Options are “Electronic Health Records”, “Administrative Claims”, “Disease-specific Registry”, “Wearable or Sensor Data”, “Other”</p>
 <p><strong>refreshTime</strong>: How often the data are refreshed</p>
-</div>
-<div class="include-after">
 </div>
 </body>
 </html>

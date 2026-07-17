@@ -271,7 +271,7 @@ executeDbProfile <- function(connectionDetails,
 																			resultsDatabaseSchema)
 
 			missingAnalyses$requiredAnalyses <-
-				ifelse(missingAnalyses$ANALYSIS_ID %in% analysisIds, 1, 0)
+				ifelse(missingAnalyses$analysis_id %in% analysisIds, 1, 0)
 
 			analysesToRun <- subset(missingAnalyses, requiredAnalyses == 1)
 
@@ -279,7 +279,7 @@ executeDbProfile <- function(connectionDetails,
 
 				if (appendAchilles){
 
-					writeLines(paste("Running Analyses", analysesToRun$ANALYSIS_ID, "and attempting to append to existing results tables"))
+					writeLines(paste("Running Analyses", analysesToRun$analysis_id, "and attempting to append to existing results tables"))
 
 					Achilles::achilles( connectionDetails,
 															cdmDatabaseSchema = cdmDatabaseSchema,
@@ -288,7 +288,7 @@ executeDbProfile <- function(connectionDetails,
 															resultsDatabaseSchema = resultsDatabaseSchema,
 															sourceName = cdmSourceName,
 															updateGivenAnalysesOnly = TRUE,
-															analysisIds = analysesToRun$ANALYSIS_ID,
+															analysisIds = analysesToRun$analysis_id,
 															cdmVersion = cdmVersion,
 															outputFolder = outputFolder
 															)
@@ -340,7 +340,7 @@ executeDbProfile <- function(connectionDetails,
 
 					achillesResultsDistIncomplete <- DatabaseConnector::querySql(connection = connection, sql = sql, snakeCaseToCamelCase = TRUE)
 
-					writeLines(paste("Running Analyses", analysesToRun$ANALYSIS_ID, "and writing to", writeTo))
+					writeLines(paste("Running Analyses", analysesToRun$analysis_id, "and writing to", writeTo))
 
 					Achilles::achilles(
 									connectionDetails,
@@ -350,7 +350,7 @@ executeDbProfile <- function(connectionDetails,
 									resultsDatabaseSchema = writeTo,
 									sourceName = cdmSourceName,
 									updateGivenAnalysesOnly = TRUE,
-									analysisIds = analysesToRun$ANALYSIS_ID,
+									analysisIds = analysesToRun$analysis_id,
 									cdmVersion = cdmVersion,
 									outputFolder = outputFolder
 								)
