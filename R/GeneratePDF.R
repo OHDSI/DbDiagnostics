@@ -251,7 +251,7 @@ if (!is.null(results) && is.data.frame(results) && nrow(results) > 0 && "analysi
 
 		cat("\\\\begin{infobox}\\n")
         cat("\\\\faInfoCircle\\\\hspace{0.3cm}\\\\textbf{About T/C/I/O Metrics}\\n\\n")
-        cat("This table shows a high-level overview of available databases and Target (T), Comparator (C), Incidence (I) and Outcome (O) requirements for the study. The percentage indicates the number of persons in the database that have at least one of the concepts defined for the T/C/I/O and the color indicates if a database has all study requirements as defined by the user. \\\\newline\\n")
+        cat("This table shows a high-level overview of available databases and Target (T), Comparator (C), Indication (I) and Outcome (O) requirements for the study. The percentage indicates the number of persons in the database that have at least one of the concepts defined for the T/C/I/O and the color indicates if a database has all study requirements as defined by the user. \\\\newline\\n")
         cat("Green = all elements of the study are available, red = one or more elements of the study are not available, grey - data is not available. \\n")
         cat("\\\\end{infobox}\\n\\n")
 

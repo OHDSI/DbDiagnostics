@@ -386,6 +386,7 @@ input[type='checkbox'] {
 
 .results-table {
   margin-top: 20px;
+  overflow-x: auto;
 }
 
 .summary-card {
@@ -2100,7 +2101,7 @@ server <- function(input, output, session, connectionDetails, aresLink, resultsD
   			data_to_display,
   			options = list(
   				pageLength = 10,
-  				scrollX = FALSE,
+  				scrollX = TRUE,
   				dom = 'lfrtip',
   				columnDefs = col_defs
   			),
@@ -2549,7 +2550,7 @@ server <- function(input, output, session, connectionDetails, aresLink, resultsD
             data_to_display,
             options = list(
               pageLength = 10,
-              scrollX = FALSE,
+              scrollX = TRUE,
               dom = 'lfrtip',
               columnDefs = col_defs
             ),

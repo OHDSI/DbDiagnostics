@@ -143,6 +143,23 @@ executeDbDiagnostics <- function(connectionDetails,
 		})
 	)))
 
+	targetComparatorRequirementStats <- c(
+		"propWithCalendarTime", "propInAgeRange", "propWithAgeAtFirstObs",
+		"propWithLongitudinalCriteria", "propWithRaceCriteria", "propWithRequiredDomain"
+	)
+	outcomeRequirementStats <- c(
+		"propWithERCriteria", "propMeasRecordsWithValues", "propWithProcedureCriteria",
+		"propWithObservationCriteria", "propWithDeathCriteria", "propWithOPCriteria",
+		"propWithMeasurementCriteria", "propWithIPCriteria", "propWithGenderCriteria",
+		"propWithEthnicityCriteria", "propWithDrugCriteria", "propWithDeviceCriteria",
+		"propWithConditionCriteria"
+	)
+
+	anyStatFail <- function(df, statNames) {
+		rows <- df[df$statistic %in% statNames, ]
+		nrow(rows) > 0 && any(!is.na(rows$status) & rows$status == "fail")
+	}
+
 	# Loop through the databases -----------------------------------------------
 
 	for (i in 1:dbNum) {
@@ -1193,6 +1210,19 @@ executeDbDiagnostics <- function(connectionDetails,
 					analysisName = analysisName,
 					databaseId = dbName, .before = statistic
 				)
+
+			if (anyStatFail(dataDiagnosticsOutput, targetComparatorRequirementStats)) {
+				targetIdx <- which(dataDiagnosticsOutput$statistic == "propWithRequiredTargetConcepts")
+				comparatorIdx <- which(dataDiagnosticsOutput$statistic == "propWithRequiredComparatorConcepts")
+				dataDiagnosticsOutput$status[c(targetIdx, comparatorIdx)] <- "fail"
+				dataDiagnosticsOutput$fail[c(targetIdx, comparatorIdx)] <- 1
+			}
+
+			if (anyStatFail(dataDiagnosticsOutput, outcomeRequirementStats)) {
+				outcomeIdx <- which(dataDiagnosticsOutput$statistic == "propWithRequiredOutcomeConcepts")
+				dataDiagnosticsOutput$status[outcomeIdx] <- "fail"
+				dataDiagnosticsOutput$fail[outcomeIdx] <- 1
+			}
 
 			if (k == 1) {
 				dataDiagnosticsResults <- dataDiagnosticsOutput
